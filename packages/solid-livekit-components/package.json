@@ -25,7 +25,16 @@
   "browser": {},
   "exports": {
     ".": {
-      "solid": "./src/index.tsx",
+      "solid": {
+        "development": "./dist/dev.jsx",
+        "import": "./dist/index.jsx"
+      },
+      "development": {
+        "import": {
+          "types": "./dist/index.d.ts",
+          "default": "./dist/dev.js"
+        }
+      },
       "import": {
         "types": "./dist/index.d.ts",
         "default": "./dist/index.js"

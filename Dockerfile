@@ -31,19 +31,14 @@ RUN pnpm install --frozen-lockfile
 # Locally: run `git submodule update --init --recursive` before `docker build`.
 COPY packages/ packages/
 
-# Build all sub-dependencies correctly
+# Build sub-dependencies (stoat.js, livekit-components, lingui plugins, panda css etc)
 RUN pnpm --filter stoat.js build && \
-    pnpm --filter solid-livekit-components build && \
-    pnpm --filter @lingui-solid/babel-plugin-lingui-macro build && \
-    pnpm --filter @lingui-solid/babel-plugin-extract-messages build && \
-    cd packages/client && \
-    npx lingui compile && \
-    rm -rf public/assets && \
-    node scripts/copyAssets.mjs || true && \
-    npx panda codegen && \
-    for f in components/i18n/catalogs/*/messages.js; do \
-      sed -i 's/^\/\*eslint-disable\*\/module\.exports={messages:\(.*\)};$/export const messages = \1;/' "$f"; \
-    done
+  pnpm --filter solid-livekit-components build && \
+  pnpm --filter @lingui-solid/babel-plugin-lingui-macro build && \
+  pnpm --filter @lingui-solid/babel-plugin-extract-messages build && \
+  pnpm --filter client exec lingui compile --typescript && \
+  pnpm --filter client exec node scripts/copyAssets.mjs || true && \
+  pnpm --filter client exec panda codegen 
 
 # Build the client with placeholder env vars for runtime injection 
 # these are replaced by inject.js at container run startup
@@ -55,6 +50,7 @@ ENV VITE_HCAPTCHA_SITEKEY=__VITE_HCAPTCHA_SITEKEY__
 ENV VITE_CFG_ENABLE_VIDEO=__VITE_CFG_ENABLE_VIDEO__
 ENV BASE_PATH=/
 
+RUN pnpm --filter @lingui-solid/babel-plugin-extract-messages build && pnpm --filter @lingui-solid/babel-plugin-lingui-macro build && cd packages/client && npx lingui compile && rm -rf public/assets && node scripts/copyAssets.mjs && for f in components/i18n/catalogs/*/messages.js; do sed -i 's/^\/\*eslint-disable\*\/module\.exports={messages:\(.*\)};$/export const messages = \1;/' "$f"; done
 RUN NODE_OPTIONS="--max-old-space-size=4096" pnpm --filter client exec vite build
 
 # ============================================
