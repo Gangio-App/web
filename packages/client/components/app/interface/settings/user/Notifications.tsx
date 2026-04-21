@@ -14,6 +14,20 @@ import {
 
 import MdNotifications from "@material-design-icons/svg/outlined/notifications.svg?component-solid";
 import MdSpeaker from "@material-design-icons/svg/outlined/speaker.svg?component-solid";
+import MdHearing from "@material-design-icons/svg/outlined/hearing.svg?component-solid";
+import MdMessage from "@material-design-icons/svg/outlined/message.svg?component-solid";
+import MdSend from "@material-design-icons/svg/outlined/send.svg?component-solid";
+import MdPersonAdd from "@material-design-icons/svg/outlined/person_add.svg?component-solid";
+import MdPersonRemove from "@material-design-icons/svg/outlined/person_remove.svg?component-solid";
+import MdMic from "@material-design-icons/svg/outlined/mic.svg?component-solid";
+import MdHeadset from "@material-design-icons/svg/outlined/headset.svg?component-solid";
+import MdAddReaction from "@material-design-icons/svg/outlined/add_reaction.svg?component-solid";
+import MdGroup from "@material-design-icons/svg/outlined/group.svg?component-solid";
+import MdCall from "@material-design-icons/svg/outlined/call.svg?component-solid";
+import MdVolumeUp from "@material-design-icons/svg/outlined/volume_up.svg?component-solid";
+
+import { css } from "styled-system/css";
+import { styled } from "styled-system/jsx";
 
 import {
   getMessageSoundVolume,
@@ -152,6 +166,7 @@ export default function Notifications() {
   };
 
   return (
+    <ScrollableContainer>
     <Column gap="md">
       <CategoryButtonGroup>
         <CategoryButton
@@ -167,29 +182,20 @@ export default function Notifications() {
           <Trans>Enable Desktop Notifications</Trans>
         </CategoryButton>
 
-        <Text size="small" class={"label"}>
-          {permissionDescription()}
-        </Text>
+        <div class={css({ padding: "8px 16px" })}>
+          <Text size="small" class={"label"}>
+            {permissionDescription()}
+          </Text>
+        </div>
       </CategoryButtonGroup>
-      {/* <FormGroup>
-        <CategoryButton
-          action={<Checkbox value onChange={(value) => void value} />}
-          onClick={() => void 0}
-          icon={<MdMarkUnreadChatAlt {...iconSize(22)} />}
-          description={t(
-            "app.settings.pages.notifications.descriptions.enable_push"
-          )}
-        >
-          {t("app.settings.pages.notifications.enable_push")}
-        </CategoryButton>
-      </FormGroup> */}
+
       <CategoryCollapse
         title={<Trans>Sounds</Trans>}
         icon={<MdSpeaker {...iconSize(22)} />}
         defaultOpen
       >
         <CategoryButton
-          icon="blank"
+          icon={<MdSpeaker {...iconSize(22)} />}
           action={<Checkbox checked={disableAllSounds()} />}
           onClick={() => setDisableAllSoundsSignal(!disableAllSounds())}
           description={
@@ -201,34 +207,48 @@ export default function Notifications() {
           <Trans>Disable All Notification Sounds</Trans>
         </CategoryButton>
 
-        <CategoryButton icon="blank" onClick={() => void 0}>
-          <Trans>Sound volume</Trans>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={soundVolume()}
-            onInput={(e) => setSoundVolumeSignal(Number(e.currentTarget.value))}
-          />
+        <CategoryButton icon={<MdVolumeUp {...iconSize(22)} />} onClick={() => void 0}>
+          <Column fullWidth gap="none">
+            <div class={css({ display: "flex", justifyContent: "space-between", width: "100%" })}>
+              <Trans>Sound volume</Trans>
+              <Text size="small" class={"label"}>{Math.round(soundVolume() * 100)}%</Text>
+            </div>
+            <SliderContainer>
+              <ModernSlider
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={soundVolume()}
+                onInput={(e) => setSoundVolumeSignal(Number(e.currentTarget.value))}
+              />
+            </SliderContainer>
+          </Column>
         </CategoryButton>
 
-        <CategoryButton icon="blank" onClick={() => void 0}>
-          <Trans>Message volume</Trans>
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={messageVolume()}
-            onInput={(e) =>
-              setMessageVolumeSignal(Number(e.currentTarget.value))
-            }
-          />
+        <CategoryButton icon={<MdVolumeUp {...iconSize(22)} />} onClick={() => void 0}>
+          <Column fullWidth gap="none">
+            <div class={css({ display: "flex", justifyContent: "space-between", width: "100%" })}>
+              <Trans>Message volume</Trans>
+              <Text size="small" class={"label"}>{Math.round(messageVolume() * 100)}%</Text>
+            </div>
+            <SliderContainer>
+              <ModernSlider
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={messageVolume()}
+                onInput={(e) =>
+                  setMessageVolumeSignal(Number(e.currentTarget.value))
+                }
+              />
+            </SliderContainer>
+          </Column>
         </CategoryButton>
 
         <CategoryButton
-          icon="blank"
+          icon={<MdMessage {...iconSize(22)} />}
           action={<Checkbox checked={soundMessageReceived()} />}
           onClick={() => setSoundMessageReceived(!soundMessageReceived())}
           description={
@@ -248,7 +268,7 @@ export default function Notifications() {
         </CategoryButton>
 
         <CategoryButton
-          icon="blank"
+          icon={<MdSend {...iconSize(22)} />}
           action={<Checkbox checked={soundMessageSent()} />}
           onClick={() => setSoundMessageSent(!soundMessageSent())}
           description={
@@ -268,7 +288,7 @@ export default function Notifications() {
         </CategoryButton>
 
         <CategoryButton
-          icon="blank"
+          icon={<MdPersonAdd {...iconSize(22)} />}
           action={<Checkbox checked={soundUserJoinedCall()} />}
           onClick={() => setSoundUserJoinedCall(!soundUserJoinedCall())}
           description={
@@ -288,7 +308,7 @@ export default function Notifications() {
         </CategoryButton>
 
         <CategoryButton
-          icon="blank"
+          icon={<MdPersonRemove {...iconSize(22)} />}
           action={<Checkbox checked={soundUserLeftCall()} />}
           onClick={() => setSoundUserLeftCall(!soundUserLeftCall())}
           description={
@@ -308,7 +328,7 @@ export default function Notifications() {
         </CategoryButton>
 
         <CategoryButton
-          icon="blank"
+          icon={<MdMic {...iconSize(22)} />}
           action={<Checkbox checked={soundMuteUnmute()} />}
           onClick={() => setSoundMuteUnmute(!soundMuteUnmute())}
           description={
@@ -328,7 +348,7 @@ export default function Notifications() {
         </CategoryButton>
 
         <CategoryButton
-          icon="blank"
+          icon={<MdHeadset {...iconSize(22)} />}
           action={<Checkbox checked={soundDeafenUndeafen()} />}
           onClick={() =>
             setSoundDeafenUndeafen(!soundDeafenUndeafen())
@@ -350,9 +370,9 @@ export default function Notifications() {
         </CategoryButton>
       </CategoryCollapse>
 
-      <CategoryCollapse title={<Trans>Notify me when…</Trans>} icon={<></>}>
+      <CategoryCollapse title={<Trans>Notify me when…</Trans>} icon={<MdHearing {...iconSize(22)} />}>
         <CategoryButton
-          icon="blank"
+          icon={<MdAddReaction {...iconSize(22)} />}
           action={<Checkbox checked={notifyReactions()} />}
           onClick={() => setNotifyReactions(!notifyReactions())}
         >
@@ -360,7 +380,7 @@ export default function Notifications() {
         </CategoryButton>
 
         <CategoryButton
-          icon="blank"
+          icon={<MdGroup {...iconSize(22)} />}
           action={<Checkbox checked={notifyFriendProfileUpdates()} />}
           onClick={() =>
             setNotifyFriendProfileUpdates(!notifyFriendProfileUpdates())
@@ -370,7 +390,7 @@ export default function Notifications() {
         </CategoryButton>
 
         <CategoryButton
-          icon="blank"
+          icon={<MdCall {...iconSize(22)} />}
           action={<Checkbox checked={notifyCalls()} />}
           onClick={() => setNotifyCalls(!notifyCalls())}
         >
@@ -378,5 +398,64 @@ export default function Notifications() {
         </CategoryButton>
       </CategoryCollapse>
     </Column>
+    </ScrollableContainer>
   );
 }
+
+const ScrollableContainer = styled("div", {
+  base: {
+    maxHeight: "calc(100vh - 120px)",
+    overflowY: "auto",
+    paddingRight: "4px",
+    
+    "&::-webkit-scrollbar": {
+      width: "6px",
+    },
+    "&::-webkit-scrollbar-thumb": {
+      background: "var(--md-sys-color-surface-container-highest)",
+      borderRadius: "var(--borderRadius-full)",
+    },
+  },
+});
+
+const SliderContainer = styled("div", {
+  base: {
+    height: "24px",
+    display: "flex",
+    alignItems: "center",
+    width: "100%",
+    marginTop: "var(--gap-sm)",
+  },
+});
+
+const ModernSlider = styled("input", {
+  base: {
+    appearance: "none",
+    width: "100%",
+    height: "4px",
+    borderRadius: "var(--borderRadius-full)",
+    background: "var(--md-sys-color-surface-container-highest)",
+    outline: "none",
+    cursor: "pointer",
+
+    "&::-webkit-slider-thumb": {
+      appearance: "none",
+      width: "16px",
+      height: "16px",
+      borderRadius: "50%",
+      background: "var(--md-sys-color-primary)",
+      transition: "transform 0.1s ease",
+      boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+    },
+
+    "&::-webkit-slider-thumb:hover": {
+      transform: "scale(1.2)",
+    },
+
+    "&::-webkit-slider-runnable-track": {
+        width: "100%",
+        height: "4px",
+        cursor: "pointer",
+    }
+  },
+});

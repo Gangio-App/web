@@ -29,10 +29,12 @@ import { VoiceStatefulUserIcons } from "../VoiceStatefulUserIcons";
 import { VoiceCallCardActions } from "./VoiceCallCardActions";
 import { VoiceCallCardStatus } from "./VoiceCallCardStatus";
 
+import { Channel } from "stoat.js";
+
 /**
  * Call card (active)
  */
-export function VoiceCallCardActiveRoom() {
+export function VoiceCallCardActiveRoom(props: { channel?: Channel }) {
   return (
     <View>
       <Call>
@@ -41,7 +43,7 @@ export function VoiceCallCardActiveRoom() {
         </InRoom>
       </Call>
 
-      <VoiceCallCardStatus />
+      <VoiceCallCardStatus channel={props.channel} />
       <VoiceCallCardActions size="sm" />
     </View>
   );
@@ -326,7 +328,7 @@ const tile = cva({
     borderRadius: "var(--borderRadius-lg)",
     position: "relative",
 
-    color: "var(--md-sys-color-on-surface)",
+    color: "#fff",
     background: "#0002",
 
     overflow: "hidden",

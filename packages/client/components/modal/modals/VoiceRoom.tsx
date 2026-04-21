@@ -12,7 +12,7 @@ interface Props {
 export default function VoiceRoomModal({ channel }: Props) {
   return (
     <Container>
-        <VoiceCallCardActiveRoom />
+        <VoiceCallCardActiveRoom channel={channel} />
     </Container>
   );
 }

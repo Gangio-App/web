@@ -122,6 +122,11 @@ const Interface = (props: { children: JSX.Element }) => {
     const host = window.location.host;
     const ws = new WebSocket(`${protocol}//${host}/api/call/?userId=${cl.user._id}`);
 
+    // Request notification permission on mount
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -140,7 +145,6 @@ const Interface = (props: { children: JSX.Element }) => {
             // Show a browser notification if not focused and allowed by settings
             const notifyCalls = localStorage.getItem("notify_incoming_calls") !== "0";
             if (
-              !document.hasFocus() &&
               Notification.permission === "granted" &&
               notifyCalls
             ) {

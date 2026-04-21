@@ -3,15 +3,31 @@ import { Match, Switch } from "solid-js";
 import { Trans } from "@lingui-solid/solid/macro";
 import { styled } from "styled-system/jsx";
 
+import { Channel } from "stoat.js";
+import { useTracks } from "solid-livekit-components";
+import { Track } from "livekit-client";
+
 import { useVoice } from "@revolt/rtc";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
-export function VoiceCallCardStatus() {
+export function VoiceCallCardStatus(props: { channel?: Channel }) {
   const voice = useVoice();
+  const tracks = useTracks(
+    [{ source: Track.Source.Microphone, withPlaceholder: false }],
+    { onlySubscribed: false }
+  );
+
+  const isRinging = () => 
+    voice.state() === "CONNECTED" && 
+    props.channel?.type === "DirectMessage" && 
+    tracks.length <= 1;
 
   return (
     <Status status={voice.state()}>
       <Switch>
+        <Match when={isRinging()}>
+          <Symbol>wifi_tethering</Symbol> <Trans>Ringing...</Trans>
+        </Match>
         <Match when={voice.state() === "CONNECTED"}>
           <Symbol>wifi_tethering</Symbol> <Trans>Connected</Trans>
         </Match>

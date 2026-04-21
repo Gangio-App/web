@@ -4138,3 +4138,6 @@ msgstr "Calling <b>{0}</b>"
 
 msgid "Incoming call from {0}"
 msgstr "Incoming call from {0}"
+
+msgid "Ringing..."
+msgstr "Ringing..."

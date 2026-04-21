@@ -4201,3 +4201,6 @@ msgstr "<b>{0}</b> aranıyor..."
 
 msgid "Incoming call from {0}"
 msgstr "{0} kullanıcısından gelen arama"
+
+msgid "Ringing..."
+msgstr "Aranıyor..."

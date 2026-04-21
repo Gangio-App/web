@@ -187,13 +187,6 @@ export function ChannelHeader(props: Props) {
         <IconButton
           onPress={async () => {
             try {
-              // Open the outgoing call UI state
-              openModal({
-                type: "outgoing_call",
-                channel: props.channel,
-                recipient: props.channel.recipient,
-              });
-
               // Call the backend API to initiate the call and notify recipients
               await fetch("/api/call/start", {
                 method: "POST",
@@ -212,10 +205,13 @@ export function ChannelHeader(props: Props) {
               voice.connect(props.channel);
             }
           }}
+          disabled={voice.active()}
           use:floating={{
             tooltip: {
               placement: "bottom",
-              content: t`Start Voice Call`,
+              content: voice.active()
+                ? t`You are already in a call`
+                : t`Start Voice Call`,
             },
           }}
         >
