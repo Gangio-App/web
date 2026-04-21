@@ -59,6 +59,7 @@ import { UserProfileModal } from "./modals/UserProfile";
 import { UserProfileMutualFriendsModal } from "./modals/UserProfileMutualFriends";
 import { UserProfileMutualGroupsModal } from "./modals/UserProfileMutualGroups";
 import { UserProfileRolesModal } from "./modals/UserProfileRoles";
+import { IncomingCallModal } from "./modals/IncomingCall";
 import VoiceRoomModal from "./modals/VoiceRoom";
 
 /**
@@ -192,6 +193,8 @@ export function RenderModal(props: ActiveModal & { onClose: () => void }) {
       return <DesktopScreenshareModal {...modalProps} />;
     case "voice_room":
       return <VoiceRoomModal {...modalProps} />;
+    case "incoming_call":
+      return <IncomingCallModal {...modalProps} />;
 
     default:
       console.error(

@@ -4181,3 +4181,12 @@ msgstr ""
 #: components/i18n/errors.ts
 msgid "Your user has already been created? Try logging in again or refreshing the app."
 msgstr "Zaten üye oldunuz mu? Tekrar giriş yapın veya sayfayı yenileyin."
+
+msgid "Start Voice Call"
+msgstr "Sesli Aramayı Başlat"
+
+msgid "Incoming Call"
+msgstr "Gelen Arama"
+
+msgid "Incoming call from <b>{props.caller?.username || "Unknown"}</b>"
+msgstr "<b>{props.caller?.username || "Unknown"}</b> kullanıcısından gelen arama"

@@ -4122,3 +4122,12 @@ msgstr "Your use of the service is at your sole risk. The service is provided on
 #: components/i18n/errors.ts
 msgid "Your user has already been created? Try logging in again or refreshing the app."
 msgstr "Your user has already been created? Try logging in again or refreshing the app."
+
+msgid "Start Voice Call"
+msgstr "Start Voice Call"
+
+msgid "Incoming Call"
+msgstr "Incoming Call"
+
+msgid "Incoming call from <b>{props.caller?.username || "Unknown"}</b>"
+msgstr "Incoming call from <b>{props.caller?.username || "Unknown"}</b>"

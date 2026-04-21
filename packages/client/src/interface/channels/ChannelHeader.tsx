@@ -185,7 +185,26 @@ export function ChannelHeader(props: Props) {
 
       <Show when={props.channel.type === "DirectMessage"}>
         <IconButton
-          onPress={() => voice.connect(props.channel)}
+          onPress={async () => {
+            try {
+              // Call the backend API to initiate the call and notify recipients
+              await fetch("/api/call/start", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  channelId: props.channel._id,
+                  userId: client()?.user?._id,
+                }),
+              });
+
+              // Connect to the voice channel locally
+              voice.connect(props.channel);
+            } catch (err) {
+              console.error("Failed to start calling:", err);
+              // Fallback to direct connection if API fails
+              voice.connect(props.channel);
+            }
+          }}
           use:floating={{
             tooltip: {
               placement: "bottom",

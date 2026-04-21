@@ -325,4 +325,9 @@ export type Modals =
   | {
       type: "voice_room";
       channel: Channel;
+    }
+  | {
+      type: "incoming_call";
+      channel: Channel;
+      caller?: User;
     };

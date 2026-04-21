@@ -111,6 +111,39 @@ const Interface = (props: { children: JSX.Element }) => {
   });
 
   createEffect(() => {
+    if (!isLoggedIn()) return;
+    const cl = client();
+    if (!cl || !cl.user) return;
+
+    // Use current protocol for WS connection
+    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const host = window.location.host;
+    const ws = new WebSocket(`${protocol}//${host}/api/call/?userId=${cl.user._id}`);
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === "CALL_INITIATED") {
+          const channel = cl.channels.get(data.channelId);
+          const caller = cl.users.get(data.callerId);
+
+          if (channel) {
+            openModal({
+              type: "incoming_call",
+              channel,
+              caller,
+            });
+          }
+        }
+      } catch (e) {
+        console.error("Failed to process call event:", e);
+      }
+    };
+
+    return () => ws.close();
+  });
+
+  createEffect(() => {
     if (!isLoggedIn()) {
       state.layout.setNextPath(pathname);
       console.debug("WAITING... currently", lifecycle.state());
