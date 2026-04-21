@@ -1,6 +1,6 @@
 import { useTime } from "@revolt/i18n";
 import { BiSolidShield } from "solid-icons/bi";
-import { Show } from "solid-js";
+import { Show, createResource, For } from "solid-js";
 
 import { Trans, useLingui } from "@lingui-solid/solid/macro";
 import { User, UserBadges } from "stoat.js";
@@ -21,9 +21,30 @@ import { Text } from "../../design";
 
 import { ProfileCard } from "./ProfileCard";
 
+interface Badge {
+  name: string;
+  bit: number;
+  css_class: string;
+  icon_name?: string | null;
+}
+
+async function fetchBadges(): Promise<Badge[]> {
+  try {
+    const res = await fetch("/ctrl-9d06e1cd/api/badges/public");
+    if (res.ok) {
+      const data = await res.json();
+      return data.badges || [];
+    }
+  } catch (e) {
+    console.error("Failed to load badges:", e);
+  }
+  return [];
+}
+
 export function ProfileBadges(props: { user: User; compact?: boolean }) {
   const { t } = useLingui();
   const dayjs = useTime();
+  const [dynamicBadges] = createResource<Badge[]>(fetchBadges);
 
   const content = (
     <BadgeRow>
@@ -164,6 +185,24 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
           }}
           src={badgeRaccoon}
         />
+      </Show>
+      
+      <Show when={dynamicBadges()}>
+        <For each={dynamicBadges()}>
+          {(badge: Badge) => (
+            <Show when={(props.user.badges & badge.bit) && badge.icon_name}>
+              <img
+                use:floating={{
+                  tooltip: {
+                    placement: "top",
+                    content: badge.name,
+                  },
+                }}
+                src={`/assets/badges/${badge.icon_name}`}
+              />
+            </Show>
+          )}
+        </For>
       </Show>
     </BadgeRow>
   );

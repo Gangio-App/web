@@ -164,6 +164,9 @@ class Lifecycle {
     this.client.events.on("state", this.onState);
     this.client.on("ready", this.onReady);
     this.client.on("policyChanges", this.onPolicyChanges);
+    this.client.on("error", (error: any) => {
+      console.error("Client encountered an error:", error);
+    });
   }
 
   #enter(nextState: State) {
