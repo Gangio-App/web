@@ -201,6 +201,20 @@ export class Server {
   }
 
   /**
+   * Custom tag for this server
+   */
+  get tag(): string | undefined {
+    return this.#collection.getUnderlyingObject(this.id).tag;
+  }
+
+  /**
+   * Custom tag icon for this server
+   */
+  get tagIcon(): string | undefined {
+    return this.#collection.getUnderlyingObject(this.id).tagIcon;
+  }
+
+  /**
    * Get an array of ordered categories with their respective channels.
    * Uncategorised channels are returned in `id="default"` category.
    */

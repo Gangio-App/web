@@ -61,14 +61,15 @@ const ThinkingCircle = styled("div", {
 
 const StatusBubble = styled("div", {
   base: {
-    padding: "8px 14px",
+    padding: "6px 12px",
     background: "rgba(255, 255, 255, 0.15)",
     backdropFilter: "blur(16px)",
-    borderRadius: "18px",
-    fontSize: "13px",
-    fontWeight: "500",
+    borderRadius: "16px",
+    fontSize: "11px", // Smaller text
+    lineHeight: "1.3",
+    fontWeight: "600",
     color: "#fff",
-    maxWidth: "200px",
+    maxWidth: "160px", // Slightly narrower
     boxShadow: "0 8px 24px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.1)",
     position: "relative",
     zIndex: 20,
@@ -255,23 +256,24 @@ export function UserCard(
             <Column gap="none" style={{ padding: "0 4px" }}>
               <NameText style={{ color: info().colour ?? "var(--md-sys-color-on-surface)" }}>
                 {info().username}
-                <Show when={props.member}>
-                    <ServerTag>
-                        <IconSymbol size={12}>shield</IconSymbol>
-                        Member
-                    </ServerTag>
+                <Show when={props.user.profileTagServerId}>
+                    {() => {
+                        const targetServer = () => client().servers.get(props.user.profileTagServerId!);
+                        return (
+                            <Show when={targetServer()?.tag}>
+                                <ServerTag>
+                                    <IconSymbol size={12}>{targetServer()?.tagIcon ?? "shield"}</IconSymbol>
+                                    {targetServer()?.tag}
+                                </ServerTag>
+                            </Show>
+                        );
+                    }}
                 </Show>
               </NameText>
               <UsernameText onClick={openFull}>
                 @{props.user.username}
               </UsernameText>
             </Column>
-
-            <Show when={props.user.status?.text}>
-                <Divider />
-                <SectionTitle>Status</SectionTitle>
-                <StatusText>{props.user.status?.text}</StatusText>
-            </Show>
 
             <Divider />
 

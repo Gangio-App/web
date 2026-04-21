@@ -29,12 +29,14 @@ export type HydratedUser = {
   status?: UserStatus;
   profile?: UserProfile;
   bot?: BotInformation;
+  profileTagServerId?: string;
 };
 
 export const userHydration: Hydrate<APIUser, HydratedUser> = {
   keyMapping: {
     _id: "id",
     display_name: "displayName",
+    profile_tag_server_id: "profileTagServerId",
   },
   functions: {
     id: (user) => user._id,
@@ -55,6 +57,7 @@ export const userHydration: Hydrate<APIUser, HydratedUser> = {
     profile: (user, ctx) =>
       new UserProfile(ctx as Client, (user as any).profile!),
     bot: (user) => user.bot!,
+    profileTagServerId: (user: any) => user.profile_tag_server_id,
   },
   initialHydration: () => ({
     relationship: "None",
