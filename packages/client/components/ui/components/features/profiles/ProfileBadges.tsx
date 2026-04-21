@@ -30,7 +30,7 @@ interface Badge {
 
 async function fetchBadges(): Promise<Badge[]> {
   try {
-    const res = await fetch("/ctrl-9d06e1cd/api/badges/public");
+    const res = await fetch("/api/badges/public");
     if (res.ok) {
       const data = await res.json();
       return data.badges || [];
