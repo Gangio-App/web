@@ -23,6 +23,7 @@ import { ProfileCard } from "./ProfileCard";
 
 interface Badge {
   name: string;
+  translations?: Record<string, string>;
   bit: number;
   css_class: string;
   icon_name?: string | null;
@@ -42,9 +43,11 @@ async function fetchBadges(): Promise<Badge[]> {
 }
 
 export function ProfileBadges(props: { user: User; compact?: boolean }) {
-  const { t } = useLingui();
+  const { t, i18n } = useLingui();
   const dayjs = useTime();
   const [dynamicBadges] = createResource<Badge[]>(fetchBadges);
+  const overriddenBits = () => new Set(dynamicBadges()?.map((b: Badge) => b.bit) || []);
+  const getBadgeName = (badge: Badge) => badge.translations?.[i18n.locale] || badge.name;
 
   const content = (
     <BadgeRow>
@@ -59,7 +62,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
         }}
         src={badgeGangio}
       />
-      <Show when={props.user.badges & UserBadges.Founder}>
+      <Show when={(props.user.badges & UserBadges.Founder) && !overriddenBits().has(UserBadges.Founder)}>
         <img
           use:floating={{
             tooltip: {
@@ -70,7 +73,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
           src={badgeFounder}
         />
       </Show>
-      <Show when={props.user.badges & UserBadges.Developer}>
+      <Show when={(props.user.badges & UserBadges.Developer) && !overriddenBits().has(UserBadges.Developer)}>
         <img
           use:floating={{
             tooltip: {
@@ -81,7 +84,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
           src={badgeDeveloper}
         />
       </Show>
-      <Show when={props.user.badges & UserBadges.Supporter}>
+      <Show when={(props.user.badges & UserBadges.Supporter) && !overriddenBits().has(UserBadges.Supporter)}>
         <img
           use:floating={{
             tooltip: {
@@ -92,7 +95,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
           src={badgeSupporter}
         />
       </Show>
-      <Show when={props.user.badges & UserBadges.Translator}>
+      <Show when={(props.user.badges & UserBadges.Translator) && !overriddenBits().has(UserBadges.Translator)}>
         <img
           use:floating={{
             tooltip: {
@@ -103,7 +106,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
           src={badgeTranslator}
         />
       </Show>
-      <Show when={props.user.badges & UserBadges.EarlyAdopter}>
+      <Show when={(props.user.badges & UserBadges.EarlyAdopter) && !overriddenBits().has(UserBadges.EarlyAdopter)}>
         <img
           use:floating={{
             tooltip: {
@@ -114,7 +117,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
           src={badgeEarlyAdopter}
         />
       </Show>
-      <Show when={props.user.badges & UserBadges.PlatformModeration}>
+      <Show when={(props.user.badges & UserBadges.PlatformModeration) && !overriddenBits().has(UserBadges.PlatformModeration)}>
         <span
           use:floating={{
             tooltip: {
@@ -126,7 +129,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
           <img src={badgeModeration} />
         </span>
       </Show>
-      <Show when={props.user.badges & UserBadges.ResponsibleDisclosure}>
+      <Show when={(props.user.badges & UserBadges.ResponsibleDisclosure) && !overriddenBits().has(UserBadges.ResponsibleDisclosure)}>
         <span
           use:floating={{
             tooltip: {
@@ -139,7 +142,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
         </span>
       </Show>
       <Show
-        when={props.user.badges & UserBadges.ReservedRelevantJokeBadge1}
+        when={(props.user.badges & UserBadges.ReservedRelevantJokeBadge1) && !overriddenBits().has(UserBadges.ReservedRelevantJokeBadge1)}
       >
         <img
           use:floating={{
@@ -152,7 +155,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
         />
       </Show>
       <Show
-        when={props.user.badges & UserBadges.ReservedRelevantJokeBadge1}
+        when={(props.user.badges & UserBadges.ReservedRelevantJokeBadge1) && !overriddenBits().has(UserBadges.ReservedRelevantJokeBadge1)}
       >
         <img
           use:floating={{
@@ -164,7 +167,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
           src={badgeJoke2}
         />
       </Show>
-      <Show when={props.user.badges & UserBadges.Paw}>
+      <Show when={(props.user.badges & UserBadges.Paw) && !overriddenBits().has(UserBadges.Paw)}>
         <img
           use:floating={{
             tooltip: {
@@ -195,7 +198,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
                 use:floating={{
                   tooltip: {
                     placement: "top",
-                    content: badge.name,
+                    content: getBadgeName(badge),
                   },
                 }}
                 src={`/assets/badges/${badge.icon_name}`}
