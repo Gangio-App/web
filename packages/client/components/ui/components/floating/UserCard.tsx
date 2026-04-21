@@ -17,23 +17,28 @@ import MdPersonAdd from "@material-design-icons/svg/filled/person_add.svg?compon
 import MdHowToReg from "@material-design-icons/svg/filled/how_to_reg.svg?component-solid";
 import MdPersonRemove from "@material-design-icons/svg/filled/person_remove.svg?component-solid";
 
-const NameText = styled(Text, {
+const NameText = styled("div", {
   base: {
-    fontWeight: "800",
-    fontSize: "18px",
-    lineHeight: "1.2",
+    fontWeight: "900", // Extra bold
+    fontSize: "22px",
+    lineHeight: "1.1",
+    color: "var(--md-sys-color-on-surface)",
+    letterSpacing: "-0.02em",
   },
 });
 
-const UsernameText = styled(Text, {
+const UsernameText = styled("div", {
   base: {
-    opacity: 0.6,
-    fontSize: "12px",
-    fontWeight: "500",
+    opacity: 0.5,
+    fontSize: "13px",
+    fontWeight: "600",
+    color: "var(--md-sys-color-on-surface-variant)",
     cursor: "pointer",
+    transition: "all 0.2s ease",
     "&:hover": {
         textDecoration: "underline",
-        opacity: 0.8,
+        opacity: 1,
+        color: "var(--md-sys-color-primary)",
     }
   },
 });
@@ -174,10 +179,10 @@ export function UserCard(
       <ContentArea>
         <Column gap="sm">
             <Column gap="none" style={{ padding: "0 4px" }}>
-              <NameText class="title">
+              <NameText>
                 {props.member?.displayName ?? props.user.displayName}
               </NameText>
-              <UsernameText class="body" onClick={openFull}>
+              <UsernameText onClick={openFull}>
                 @{props.user.username}
               </UsernameText>
             </Column>
