@@ -60,6 +60,7 @@ import { UserProfileMutualFriendsModal } from "./modals/UserProfileMutualFriends
 import { UserProfileMutualGroupsModal } from "./modals/UserProfileMutualGroups";
 import { UserProfileRolesModal } from "./modals/UserProfileRoles";
 import { IncomingCallModal } from "./modals/IncomingCall";
+import { OutgoingCallModal } from "./modals/OutgoingCall";
 import VoiceRoomModal from "./modals/VoiceRoom";
 
 /**
@@ -195,6 +196,8 @@ export function RenderModal(props: ActiveModal & { onClose: () => void }) {
       return <VoiceRoomModal {...modalProps} />;
     case "incoming_call":
       return <IncomingCallModal {...modalProps} />;
+    case "outgoing_call":
+      return <OutgoingCallModal {...modalProps} />;
 
     default:
       console.error(

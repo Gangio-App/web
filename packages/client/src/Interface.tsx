@@ -20,6 +20,7 @@ import { useState } from "@revolt/state";
 import { LAYOUT_SECTIONS } from "@revolt/state/stores/Layout";
 import { CircularProgress } from "@revolt/ui";
 
+import { useLingui } from "@lingui-solid/solid/macro";
 import { Sidebar } from "./interface/Sidebar";
 import { MobileNavbar } from "./interface/navigation/MobileNavbar";
 
@@ -27,6 +28,7 @@ import { MobileNavbar } from "./interface/navigation/MobileNavbar";
  * Application layout
  */
 const Interface = (props: { children: JSX.Element }) => {
+  const { t } = useLingui();
   const state = useState();
   const client = useClient();
   const { openModal } = useModals();
@@ -128,11 +130,36 @@ const Interface = (props: { children: JSX.Element }) => {
           const caller = cl.users.get(data.callerId);
 
           if (channel) {
+            // Show the modal regardless of focus
             openModal({
               type: "incoming_call",
               channel,
               caller,
             });
+
+            // Show a browser notification if not focused and allowed by settings
+            const notifyCalls = localStorage.getItem("notify_incoming_calls") !== "0";
+            if (
+              !document.hasFocus() &&
+              Notification.permission === "granted" &&
+              notifyCalls
+            ) {
+              const notification = new Notification(t`Incoming Call`, {
+                body: t`Incoming call from ${caller?.username || "Unknown"}`,
+                icon: caller?.avatarURL,
+                tag: `call:${data.channelId}`,
+                badge: "/assets/web/android-chrome-512x512.png",
+              });
+
+              notification.onclick = () => {
+                window.focus();
+                openModal({
+                  type: "incoming_call",
+                  channel,
+                  caller,
+                });
+              };
+            }
           }
         }
       } catch (e) {

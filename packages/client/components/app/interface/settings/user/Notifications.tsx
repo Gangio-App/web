@@ -78,6 +78,9 @@ export default function Notifications() {
   const [notifyReactions, setNotifyReactions] = createSignal(
     readBool("notify_reactions_to_my_messages", false),
   );
+  const [notifyCalls, setNotifyCalls] = createSignal(
+    readBool("notify_incoming_calls", true),
+  );
   const [notifyFriendProfileUpdates, setNotifyFriendProfileUpdates] =
     createSignal(readBool("notify_friends_profile_updates", false));
 
@@ -125,6 +128,10 @@ export default function Notifications() {
 
   createEffect(() => {
     writeBool("notify_reactions_to_my_messages", notifyReactions());
+  });
+
+  createEffect(() => {
+    writeBool("notify_incoming_calls", notifyCalls());
   });
 
   createEffect(() => {
@@ -360,6 +367,14 @@ export default function Notifications() {
           }
         >
           <Trans>Friends update their profile</Trans>
+        </CategoryButton>
+
+        <CategoryButton
+          icon="blank"
+          action={<Checkbox checked={notifyCalls()} />}
+          onClick={() => setNotifyCalls(!notifyCalls())}
+        >
+          <Trans>Someone calls me</Trans>
         </CategoryButton>
       </CategoryCollapse>
     </Column>

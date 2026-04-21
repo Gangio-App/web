@@ -4188,5 +4188,16 @@ msgstr "Sesli Aramayı Başlat"
 msgid "Incoming Call"
 msgstr "Gelen Arama"
 
-msgid "Incoming call from <b>{props.caller?.username || "Unknown"}</b>"
-msgstr "<b>{props.caller?.username || "Unknown"}</b> kullanıcısından gelen arama"
+
+msgid "Calling..."
+msgstr "Aranıyor..."
+
+
+msgid "Incoming call from <b>{0}</b>"
+msgstr "<b>{0}</b> kullanıcısından gelen arama"
+
+msgid "Calling <b>{0}</b>"
+msgstr "<b>{0}</b> aranıyor..."
+
+msgid "Incoming call from {0}"
+msgstr "{0} kullanıcısından gelen arama"

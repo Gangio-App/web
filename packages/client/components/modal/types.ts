@@ -330,4 +330,9 @@ export type Modals =
       type: "incoming_call";
       channel: Channel;
       caller?: User;
+    }
+  | {
+      type: "outgoing_call";
+      channel: Channel;
+      recipient?: User;
     };

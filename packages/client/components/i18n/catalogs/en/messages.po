@@ -4129,5 +4129,12 @@ msgstr "Start Voice Call"
 msgid "Incoming Call"
 msgstr "Incoming Call"
 
-msgid "Incoming call from <b>{props.caller?.username || "Unknown"}</b>"
-msgstr "Incoming call from <b>{props.caller?.username || "Unknown"}</b>"
+
+msgid "Incoming call from <b>{0}</b>"
+msgstr "Incoming call from <b>{0}</b>"
+
+msgid "Calling <b>{0}</b>"
+msgstr "Calling <b>{0}</b>"
+
+msgid "Incoming call from {0}"
+msgstr "Incoming call from {0}"

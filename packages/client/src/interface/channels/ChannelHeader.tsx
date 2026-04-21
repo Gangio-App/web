@@ -187,6 +187,13 @@ export function ChannelHeader(props: Props) {
         <IconButton
           onPress={async () => {
             try {
+              // Open the outgoing call UI state
+              openModal({
+                type: "outgoing_call",
+                channel: props.channel,
+                recipient: props.channel.recipient,
+              });
+
               // Call the backend API to initiate the call and notify recipients
               await fetch("/api/call/start", {
                 method: "POST",
