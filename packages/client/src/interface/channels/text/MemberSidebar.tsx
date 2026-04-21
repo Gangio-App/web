@@ -21,6 +21,7 @@ import { TextWithEmoji } from "@revolt/markdown";
 import { userInformation } from "@revolt/markdown/users";
 import {
   Avatar,
+  Button,
   Deferred,
   MenuButton,
   OverflowingText,
@@ -86,32 +87,74 @@ export function DirectMessageSidebar(props: Props) {
   const user = () => props.channel.recipient!;
 
   return (
-    <Container>
+    <DMSidebarContainer>
       <Show when={props.channel.recipient}>
-        <ProfileGrid>
+        <DMSidebarProfile>
           <Profile.Banner
-            width={1}
+            width={1 as any}
             user={user()}
             bannerUrl={query.data?.animatedBannerURL}
           />
-          <Profile.Actions user={user()} width={1} />
-          <Profile.Status user={user()} />
-          <Profile.Badges user={user()} />
-          <Profile.Joined user={user()} />
-          <Profile.Mutuals user={user()} />
-          <Profile.Bio content={query.data?.content} full />
-        </ProfileGrid>
+          <DMSidebarContent>
+            {/* Custom Action buttons minus Message */}
+            <Show when={user().relationship === "None" && !user().bot}>
+              <Button style={{ "margin-top": "-10px" }} onPress={() => user().addFriend()}>
+                <Trans>Add Friend</Trans>
+              </Button>
+            </Show>
+            <Show when={user().relationship === "Incoming"}>
+              <div style={{ display: "flex", gap: "8px", "margin-top": "-10px" }}>
+                <Button style={{ flex: 1 }} onPress={() => user().addFriend()}>
+                  <Trans>Accept friend request</Trans>
+                </Button>
+                <Button variant="secondary" onPress={() => user().removeFriend()}>
+                  <Trans>Decline</Trans>
+                </Button>
+              </div>
+            </Show>
+            <Show when={user().relationship === "Outgoing"}>
+              <Button variant="secondary" style={{ "margin-top": "-10px" }} onPress={() => user().removeFriend()}>
+                <Trans>Cancel friend request</Trans>
+              </Button>
+            </Show>
+
+            <Profile.Status user={user()} />
+            <Profile.Badges user={user()} />
+            <Profile.Joined user={user()} />
+            <Profile.Mutuals user={user()} />
+            <Profile.Bio content={query.data?.content} full />
+          </DMSidebarContent>
+        </DMSidebarProfile>
       </Show>
-    </Container>
+    </DMSidebarContainer>
   );
 }
 
-const ProfileGrid = styled("div", {
+const DMSidebarContainer = styled("div", {
+  base: {
+    padding: "var(--gap-md)",
+    paddingLeft: 0,
+    width: "100%",
+  },
+});
+
+const DMSidebarProfile = styled("div", {
   base: {
     display: "flex",
     flexDirection: "column",
     gap: "var(--gap-md)",
-    paddingBottom: "var(--gap-xl)",
+    background: "var(--md-sys-color-surface-container-low)",
+    borderRadius: "var(--borderRadius-xl)",
+    overflow: "hidden",
+  },
+});
+
+const DMSidebarContent = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--gap-md)",
+    padding: "0 var(--gap-md) var(--gap-xl) var(--gap-md)",
   },
 });
 

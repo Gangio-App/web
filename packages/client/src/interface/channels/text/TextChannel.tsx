@@ -27,6 +27,7 @@ import {
   main,
 } from "@revolt/ui";
 import { VoiceChannelCallCardMount } from "@revolt/ui/components/features/voice/callCard/VoiceCallCard";
+import { useVoice } from "@revolt/rtc";
 
 import { ChannelHeader } from "../ChannelHeader";
 import { ChannelPageProps } from "../ChannelPage";
@@ -56,6 +57,7 @@ export type SidebarState =
 export function TextChannel(props: ChannelPageProps) {
   const state = useState();
   const client = useClient();
+  const voice = useVoice();
 
   // Last unread message id
   const [lastId, setLastId] = createSignal<string>();
@@ -69,6 +71,8 @@ export function TextChannel(props: ChannelPageProps) {
    * @returns Message Id
    */
   const highlightMessageId = () => params().messageId;
+
+  const inCall = () => voice.channel()?.id === props.channel.id;
 
   const canConnect = () =>
     props.channel.isVoice && props.channel.havePermission("Connect");
@@ -168,7 +172,7 @@ export function TextChannel(props: ChannelPageProps) {
       <Content>
         <main class={main()}>
           <Show
-            when={canConnect() && props.channel.type !== "DirectMessage"}
+            when={canConnect() && (props.channel.type !== "DirectMessage" || inCall())}
             fallback={
               <BelowFloatingHeader>
                 <div>
@@ -229,7 +233,7 @@ export function TextChannel(props: ChannelPageProps) {
               class: sidebar(),
             }}
             style={{
-              width: sidebarState().state !== "default" ? "360px" : "",
+              width: sidebarState().state !== "default" ? "360px" : (props.channel.type === "DirectMessage" ? "330px" : ""),
             }}
           >
             <Switch

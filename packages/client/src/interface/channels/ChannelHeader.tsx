@@ -20,6 +20,7 @@ import {
   typography,
 } from "@revolt/ui";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
+import { useVoice } from "@revolt/rtc";
 
 import MdGroup from "@material-design-icons/svg/outlined/group.svg?component-solid";
 import MdPersonAdd from "@material-design-icons/svg/outlined/person_add.svg?component-solid";
@@ -55,6 +56,7 @@ export function ChannelHeader(props: Props) {
   const client = useClient();
   const { t } = useLingui();
   const state = useState();
+  const voice = useVoice();
 
   const searchValue = () => {
     if (!props.sidebarState) return null;
@@ -183,9 +185,7 @@ export function ChannelHeader(props: Props) {
 
       <Show when={props.channel.type === "DirectMessage"}>
         <IconButton
-          onPress={() => {
-            // TODO: implement call feature later
-          }}
+          onPress={() => voice.connect(props.channel)}
           use:floating={{
             tooltip: {
               placement: "bottom",

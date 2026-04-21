@@ -18,6 +18,7 @@ import { Channel } from "stoat.js";
 import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
+import { useModals } from "@revolt/modal";
 import { InRoom, useVoice } from "@revolt/rtc";
 
 import { VoiceCallCardActiveRoom } from "./VoiceCallCardActiveRoom";
@@ -276,11 +277,22 @@ export function VoiceChannelCallCardMount(props: { channel: Channel }) {
  */
 function VoiceCallCard(props: { channel: Channel }) {
   const voice = useVoice();
+  const { openModal } = useModals();
   const inCall = () => voice.channel()?.id === props.channel.id;
 
   return (
     <Base>
-      <Card active={inCall()}>
+      <Card
+        active={inCall()}
+        onClick={() => {
+          if (inCall()) {
+            openModal({
+              type: "voice_room",
+              channel: props.channel,
+            });
+          }
+        }}
+      >
         <Show
           when={inCall()}
           fallback={<VoiceCallCardPreview channel={props.channel} />}

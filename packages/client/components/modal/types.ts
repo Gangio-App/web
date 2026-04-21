@@ -321,4 +321,8 @@ export type Modals =
   | {
       type: "desktop_screenshare";
       callback: (sourceId?: string) => void;
+    }
+  | {
+      type: "voice_room";
+      channel: Channel;
     };

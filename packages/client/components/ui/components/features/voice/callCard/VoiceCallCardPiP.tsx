@@ -15,17 +15,33 @@ import { Avatar } from "@revolt/ui/components/design";
 import { Row } from "@revolt/ui/components/layout";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
+import { useModals } from "@revolt/modal";
+import { useVoice } from "@revolt/rtc";
+
 import { VoiceCallCardActions } from "./VoiceCallCardActions";
 import { VoiceCallCardStatus } from "./VoiceCallCardStatus";
 
 export function VoiceCallCardPiP() {
+  const { openModal } = useModals();
+  const voice = useVoice();
   const tracks = useTracks(
     [{ source: Track.Source.Microphone, withPlaceholder: true }],
     { onlySubscribed: false },
   );
 
   return (
-    <MiniCard>
+    <MiniCard
+      onClick={() => {
+        const channel = voice.channel();
+        if (channel) {
+          openModal({
+            type: "voice_room",
+            channel,
+          });
+        }
+      }}
+      style={{ cursor: "pointer" }}
+    >
       <Row>
         <TrackLoop tracks={tracks}>{() => <ConnectedUser />}</TrackLoop>
       </Row>

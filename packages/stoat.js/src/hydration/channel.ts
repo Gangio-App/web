@@ -48,7 +48,7 @@ export const channelHydration: Hydrate<Merge<APIChannel>, HydratedChannel> = {
     role_permissions: "rolePermissions",
     last_message_id: "lastMessageId",
     slow_mode: "slowMode",
-  },
+  } as any,
   functions: {
     id: (channel) => channel._id,
     channelType: (channel) => channel.channel_type,
@@ -68,7 +68,7 @@ export const channelHydration: Hydrate<Merge<APIChannel>, HydratedChannel> = {
     }),
     rolePermissions: (channel) =>
       Object.fromEntries(
-        Object.entries(channel.role_permissions ?? {}).map(([k, v]) => [
+        Object.entries(channel.role_permissions ?? {}).map(([k, v]: [string, any]) => [
           k,
           {
             a: BigInt(v.a),
