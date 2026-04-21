@@ -123,8 +123,10 @@ export function ChannelHeader(props: Props) {
           <HeaderIcon>
             <Symbol>alternate_email</Symbol>
           </HeaderIcon>
-          <TextWithEmoji content={props.channel.recipient?.username} />
-          <UserStatus status={props.channel.recipient?.presence} size="8px" />
+          <TextWithEmoji content={props.channel.recipient?.username ?? ""} />
+          <Show when={props.channel.recipient?.presence}>
+            <UserStatus status={props.channel.recipient!.presence} size="8px" />
+          </Show>
         </Match>
         <Match when={props.channel.type === "SavedMessages"}>
           <HeaderIcon>
@@ -192,8 +194,8 @@ export function ChannelHeader(props: Props) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                  channelId: props.channel._id,
-                  userId: client()?.user?._id,
+                  channelId: props.channel.id,
+                  userId: client()?.user?.id,
                 }),
               });
 
@@ -205,11 +207,11 @@ export function ChannelHeader(props: Props) {
               voice.connect(props.channel);
             }
           }}
-          disabled={voice.active()}
+          disabled={voice.active}
           use:floating={{
             tooltip: {
               placement: "bottom",
-              content: voice.active()
+              content: voice.active
                 ? t`You are already in a call`
                 : t`Start Voice Call`,
             },

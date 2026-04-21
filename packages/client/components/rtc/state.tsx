@@ -223,6 +223,10 @@ class Voice {
   get speakingPermission() {
     return !!this.channel()?.havePermission("Speak");
   }
+
+  get active() {
+    return !!this.channel();
+  }
 }
 
 const voiceContext = createContext<Voice>(null as unknown as Voice);

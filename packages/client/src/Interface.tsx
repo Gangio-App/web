@@ -120,7 +120,7 @@ const Interface = (props: { children: JSX.Element }) => {
     // Use current protocol for WS connection
     const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
     const host = window.location.host;
-    const ws = new WebSocket(`${protocol}//${host}/api/call/?userId=${cl.user._id}`);
+    const ws = new WebSocket(`${protocol}//${host}/api/call/?userId=${cl.user.id}`);
 
     // Request notification permission on mount
     if (Notification.permission === "default") {
