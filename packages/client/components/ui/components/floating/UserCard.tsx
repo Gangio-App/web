@@ -76,6 +76,17 @@ const StatusBubble = styled("div", {
     position: "relative",
     zIndex: 20,
     textAlign: "center",
+    transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+    cursor: "help",
+
+    "&:hover": {
+        maxWidth: "240px",
+        whiteSpace: "normal",
+        overflow: "visible",
+        zIndex: 50,
+        background: "rgba(255, 255, 255, 0.25)",
+        transform: "scale(1.05) translateY(-2px)",
+    }
   }
 });
 
@@ -263,12 +274,6 @@ export function UserCard(
                 @{props.user.username}
               </UsernameText>
             </Column>
-
-            <Show when={props.user.status?.text}>
-                <Divider />
-                <SectionTitle>Status</SectionTitle>
-                <StatusText>{props.user.status?.text}</StatusText>
-            </Show>
 
             <Divider />
 
