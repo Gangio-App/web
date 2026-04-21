@@ -10,6 +10,7 @@ import { UserContextMenu } from "@revolt/app";
 import { Profile } from "../features";
 import { Avatar, UserStatus, Text, IconButton } from "../design";
 import { Column, Row } from "../layout";
+import { Symbol as IconSymbol } from "../utils/Symbol";
 
 import MdSend from "@material-design-icons/svg/filled/send.svg?component-solid";
 import MdMoreVert from "@material-design-icons/svg/filled/more_vert.svg?component-solid";
@@ -24,36 +25,54 @@ const NameText = styled("div", {
     fontSize: "22px",
     lineHeight: "1.1",
     letterSpacing: "-0.02em",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
   },
+});
+
+const ServerTag = styled("div", {
+    base: {
+        background: "rgba(255,255,255,0.1)",
+        border: "1px solid rgba(255,255,255,0.15)",
+        borderRadius: "4px",
+        padding: "2px 6px",
+        fontSize: "10px",
+        fontWeight: "800",
+        textTransform: "uppercase",
+        color: "white",
+        display: "flex",
+        alignItems: "center",
+        gap: "4px",
+        letterSpacing: "0.05em",
+    }
+});
+
+const ThinkingCircle = styled("div", {
+    base: {
+        position: "absolute",
+        background: "rgba(255, 255, 255, 0.15)",
+        backdropFilter: "blur(12px)",
+        borderRadius: "100%",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+        border: "1px solid rgba(255,255,255,0.1)",
+    }
 });
 
 const StatusBubble = styled("div", {
   base: {
-    padding: "6px 12px",
-    background: "var(--md-sys-color-surface-container-high)",
-    borderRadius: "12px",
-    borderBottomLeftRadius: "2px",
+    padding: "8px 14px",
+    background: "rgba(255, 255, 255, 0.15)",
+    backdropFilter: "blur(16px)",
+    borderRadius: "18px",
     fontSize: "13px",
-    color: "var(--md-sys-color-on-surface)",
-    maxWidth: "180px",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    fontWeight: "500",
+    color: "#fff",
+    maxWidth: "200px",
+    boxShadow: "0 8px 24px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.1)",
     position: "relative",
-    marginLeft: "12px",
-    marginBottom: "8px",
-    
-    "&:after": {
-        content: '""',
-        position: "absolute",
-        bottom: 0,
-        left: "-6px",
-        width: "12px",
-        height: "12px",
-        background: "var(--md-sys-color-surface-container-high)",
-        clipPath: "polygon(100% 0, 0% 100%, 100% 100%)",
-    }
+    zIndex: 20,
+    textAlign: "center",
   }
 });
 
@@ -193,7 +212,11 @@ export function UserCard(
       </BannerWrapper>
       
       <HeaderSection>
-        <AvatarWrapper>
+        <AvatarWrapper 
+          onMouseDown={(e: MouseEvent) => {
+             e.stopPropagation();
+          }}
+        >
           <Avatar
             src={props.user.animatedAvatarURL}
             size={80}
@@ -204,10 +227,21 @@ export function UserCard(
         </AvatarWrapper>
         
         <Show when={props.user.status?.text}>
-            <div style={{ position: "absolute", bottom: "4px", left: "100px" }}>
+            <div style={{ 
+                position: "absolute", 
+                top: "-42px", 
+                left: "90px", 
+                display: "flex", 
+                "flex-direction": "column",
+                "align-items": "center"
+            }}>
                 <StatusBubble>
                     {props.user.status?.text}
                 </StatusBubble>
+                <div style={{ position: "relative", width: "100%", height: "12px" }}>
+                    <ThinkingCircle style={{ width: "8px", height: "8px", bottom: "-4px", left: "10px" }} />
+                    <ThinkingCircle style={{ width: "4px", height: "4px", bottom: "-12px", left: "4px" }} />
+                </div>
             </div>
         </Show>
         
@@ -221,6 +255,12 @@ export function UserCard(
             <Column gap="none" style={{ padding: "0 4px" }}>
               <NameText style={{ color: info().colour ?? "var(--md-sys-color-on-surface)" }}>
                 {info().username}
+                <Show when={props.member}>
+                    <ServerTag>
+                        <IconSymbol size={12}>shield</IconSymbol>
+                        Member
+                    </ServerTag>
+                </Show>
               </NameText>
               <UsernameText onClick={openFull}>
                 @{props.user.username}
@@ -248,11 +288,11 @@ export function UserCard(
 
       <Show when={!props.user.self && !props.user.bot}>
           <MessageInputArea>
-             <form onSubmit={sendMessage} style={{ display: "flex", width: "100%", gap: "8px" }}>
+             <form onSubmit={(e: Event) => sendMessage(e)} style={{ display: "flex", width: "100%", gap: "8px" }}>
                 <StyledInput 
                     placeholder={`Message @${props.user.username}`} 
                     value={message()}
-                    onInput={(e) => setMessage(e.currentTarget.value)}
+                    onInput={(e: InputEvent & { currentTarget: HTMLInputElement }) => setMessage(e.currentTarget.value)}
                 />
                 <IconButton onPress={sendMessage} size="small" disabled={!message().trim()}>
                     <MdSend />
