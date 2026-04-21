@@ -1,4 +1,5 @@
-import { JSX, Show, createSignal } from "solid-js";
+import { JSX, Show, createSignal, createMemo } from "solid-js";
+import { userInformation } from "@revolt/markdown/users";
 import { useQuery } from "@tanstack/solid-query";
 import { cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
@@ -22,9 +23,38 @@ const NameText = styled("div", {
     fontWeight: "900", // Extra bold
     fontSize: "22px",
     lineHeight: "1.1",
-    color: "var(--md-sys-color-on-surface)",
     letterSpacing: "-0.02em",
   },
+});
+
+const StatusBubble = styled("div", {
+  base: {
+    padding: "6px 12px",
+    background: "var(--md-sys-color-surface-container-high)",
+    borderRadius: "12px",
+    borderBottomLeftRadius: "2px",
+    fontSize: "13px",
+    color: "var(--md-sys-color-on-surface)",
+    maxWidth: "180px",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    position: "relative",
+    marginLeft: "12px",
+    marginBottom: "8px",
+    
+    "&:after": {
+        content: '""',
+        position: "absolute",
+        bottom: 0,
+        left: "-6px",
+        width: "12px",
+        height: "12px",
+        background: "var(--md-sys-color-surface-container-high)",
+        clipPath: "polygon(100% 0, 0% 100%, 100% 100%)",
+    }
+  }
 });
 
 const UsernameText = styled("div", {
@@ -57,7 +87,7 @@ const base = cva({
     height: "auto",
     minHeight: "fit-content",
 
-    borderRadius: "16px",
+    borderRadius: "24px", // More premium rounded corners
     overflowY: "auto",
     overflowX: "hidden",
     position: "relative",
@@ -76,6 +106,8 @@ export function UserCard(
   const { openModal } = useModals();
   const [message, setMessage] = createSignal("");
   
+  const info = createMemo(() => userInformation(props.user, props.member));
+
   const query = useQuery(() => ({
     queryKey: ["profile", props.user.id],
     queryFn: () => props.user.fetchProfile(),
@@ -171,6 +203,14 @@ export function UserCard(
           />
         </AvatarWrapper>
         
+        <Show when={props.user.status?.text}>
+            <div style={{ position: "absolute", bottom: "4px", left: "100px" }}>
+                <StatusBubble>
+                    {props.user.status?.text}
+                </StatusBubble>
+            </div>
+        </Show>
+        
         <BadgesContainer>
             <Profile.Badges user={props.user} compact />
         </BadgesContainer>
@@ -179,8 +219,8 @@ export function UserCard(
       <ContentArea>
         <Column gap="sm">
             <Column gap="none" style={{ padding: "0 4px" }}>
-              <NameText>
-                {props.member?.displayName ?? props.user.displayName}
+              <NameText style={{ color: info().colour ?? "var(--md-sys-color-on-surface)" }}>
+                {info().username}
               </NameText>
               <UsernameText onClick={openFull}>
                 @{props.user.username}
