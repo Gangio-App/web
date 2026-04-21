@@ -40,8 +40,6 @@ export default function ServerOverview(props: ServerSettingsProps) {
     name: createFormControl(props.server.name),
     description: createFormControl(props.server.description || ""),
     discoverable: createFormControl(props.server.discoverable ?? false),
-    tag: createFormControl(props.server.tag || ""),
-    tagIcon: createFormControl(props.server.tagIcon || "shield"),
     icon: createFormControl<string | File[] | null>(
       props.server.animatedIconURL,
     ),
@@ -100,16 +98,6 @@ export default function ServerOverview(props: ServerSettingsProps) {
   );
 
   createEffect(
-    on(
-      () => props.server.tag,
-      (tag: string | undefined) =>
-        !editGroup.controls.tag.isDirty &&
-        editGroup.controls.tag.setValue(tag || ""),
-      { defer: true },
-    ),
-  );
-
-  createEffect(
     on(canEditDiscoverable, (canEdit) =>
       editGroup.controls.discoverable.markDisabled(!canEdit),
     ),
@@ -125,7 +113,6 @@ export default function ServerOverview(props: ServerSettingsProps) {
         editGroup.controls.sys_user_left.markDisabled(!canEdit);
         editGroup.controls.sys_user_kicked.markDisabled(!canEdit);
         editGroup.controls.sys_user_banned.markDisabled(!canEdit);
-        editGroup.controls.tag.markDisabled(!canEdit);
       },
       { defer: true },
     ),
@@ -166,8 +153,6 @@ export default function ServerOverview(props: ServerSettingsProps) {
     editGroup.controls.name.setValue(props.server.name);
     editGroup.controls.description.setValue(props.server.description || "");
     editGroup.controls.discoverable.setValue(props.server.discoverable ?? false);
-    editGroup.controls.tag.setValue(props.server.tag || "");
-    editGroup.controls.tagIcon.setValue(props.server.tagIcon || "shield");
     editGroup.controls.icon.setValue(props.server.animatedIconURL ?? null);
     editGroup.controls.banner.setValue(props.server.bannerURL ?? null);
     editGroup.controls.sys_user_joined.setValue(
@@ -182,7 +167,6 @@ export default function ServerOverview(props: ServerSettingsProps) {
     editGroup.controls.sys_user_banned.setValue(
       props.server.systemMessages?.user_banned ?? "none",
     );
-    editGroup.controls.tag.setValue(props.server.tag || "");
   }
 
   async function onSubmit() {
@@ -284,20 +268,6 @@ export default function ServerOverview(props: ServerSettingsProps) {
       }
     }
 
-    if (editGroup.controls.tag.isDirty) {
-      const tag = editGroup.controls.tag.value.trim();
-
-      if (tag) {
-        changes.tag = tag;
-      } else {
-        changes.remove!.push("Tag" as any);
-      }
-    }
-
-    if (editGroup.controls.tagIcon.isDirty) {
-      changes.tag_icon = editGroup.controls.tagIcon.value;
-    }
-
     try {
       await props.server.edit(changes);
     } catch (err) {
@@ -331,25 +301,6 @@ export default function ServerOverview(props: ServerSettingsProps) {
             control={editGroup.controls.name}
             label={t`Server Name`}
           />
-          <Form2.TextField
-            name="tag"
-            maxLength={4}
-            control={editGroup.controls.tag}
-            label={t`Server Tag`}
-            placeholder={t`e.g. GG`}
-          />
-          <Form2.TextField.Select
-            control={editGroup.controls.tagIcon}
-            label={t`Tag Icon`}
-          >
-            <MenuItem value="shield">{t`Shield`}</MenuItem>
-            <MenuItem value="star">{t`Star`}</MenuItem>
-            <MenuItem value="verified">{t`Verified`}</MenuItem>
-            <MenuItem value="favorite">{t`Heart`}</MenuItem>
-            <MenuItem value="bolt">{t`Bolt`}</MenuItem>
-            <MenuItem value="auto_awesome">{t`Magic`}</MenuItem>
-            <MenuItem value="military_tech">{t`Medal`}</MenuItem>
-          </Form2.TextField.Select>
           <Form2.TextField
             autosize
             min-rows={2}

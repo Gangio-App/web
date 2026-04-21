@@ -64,12 +64,14 @@ const StatusBubble = styled("div", {
     padding: "6px 12px",
     background: "rgba(255, 255, 255, 0.15)",
     backdropFilter: "blur(16px)",
-    borderRadius: "16px",
-    fontSize: "11px", // Smaller text
-    lineHeight: "1.3",
-    fontWeight: "600",
+    borderRadius: "18px",
+    fontSize: "12px",
+    fontWeight: "500",
     color: "#fff",
-    maxWidth: "160px", // Slightly narrower
+    maxWidth: "140px",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
     boxShadow: "0 8px 24px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.1)",
     position: "relative",
     zIndex: 20,
@@ -256,24 +258,17 @@ export function UserCard(
             <Column gap="none" style={{ padding: "0 4px" }}>
               <NameText style={{ color: info().colour ?? "var(--md-sys-color-on-surface)" }}>
                 {info().username}
-                <Show when={props.user.profileTagServerId}>
-                    {() => {
-                        const targetServer = () => client().servers.get(props.user.profileTagServerId!);
-                        return (
-                            <Show when={targetServer()?.tag}>
-                                <ServerTag>
-                                    <IconSymbol size={12}>{targetServer()?.tagIcon ?? "shield"}</IconSymbol>
-                                    {targetServer()?.tag}
-                                </ServerTag>
-                            </Show>
-                        );
-                    }}
-                </Show>
               </NameText>
               <UsernameText onClick={openFull}>
                 @{props.user.username}
               </UsernameText>
             </Column>
+
+            <Show when={props.user.status?.text}>
+                <Divider />
+                <SectionTitle>Status</SectionTitle>
+                <StatusText>{props.user.status?.text}</StatusText>
+            </Show>
 
             <Divider />
 

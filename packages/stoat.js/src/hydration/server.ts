@@ -1,79 +1,81 @@
-import type { Server as APIServer } from "stoat-api";
-
+import { ReactiveMap } from "@solid-primitives/map";
 import { ReactiveSet } from "@solid-primitives/set";
+import type {
+  Server as APIServer,
+  Category,
+  SystemMessageChannels,
+} from "stoat-api";
+
+import type { Client } from "../Client.js";
+import { File } from "../classes/File.js";
+import { ServerRole } from "../classes/ServerRole.js";
 
 import type { Hydrate } from "./index.js";
 
 export type HydratedServer = {
   id: string;
-  nonce?: string;
   ownerId: string;
+
   name: string;
   description?: string;
+
+  icon?: File;
+  banner?: File;
+
   channelIds: ReactiveSet<string>;
-  categories: {
-    id: string;
-    title: string;
-    channels: string[];
-  }[];
-  systemMessages?: {
-    user_joined?: string;
-    user_left?: string;
-    user_kicked?: string;
-    user_banned?: string;
-  };
-  roles?: Record<
-    string,
-    {
-      name: string;
-      permissions: [number, number];
-      colour?: string;
-      hoist?: boolean;
-      rank?: number;
-    }
-  >;
-  defaultPermissions: [number, number];
-  iconId?: string;
-  bannerId?: string;
+  categories?: Category[];
+
+  systemMessages?: SystemMessageChannels;
+  roles: ReactiveMap<string, ServerRole>;
+  defaultPermissions: bigint;
+
+  flags: ServerFlags;
   analytics: boolean;
   discoverable: boolean;
   nsfw: boolean;
-  tag?: string;
-  tagIcon?: string;
 };
 
 export const serverHydration: Hydrate<APIServer, HydratedServer> = {
   keyMapping: {
     _id: "id",
     owner: "ownerId",
-    default_permissions: "defaultPermissions",
+    channels: "channelIds",
     system_messages: "systemMessages",
+    default_permissions: "defaultPermissions",
   },
   functions: {
     id: (server) => server._id,
-    nonce: (server) => server.nonce,
     ownerId: (server) => server.owner,
     name: (server) => server.name,
-    description: (server) => server.description || undefined,
-    channelIds: () => new ReactiveSet(),
-    categories: (server) =>
-      (server.categories || []).map((category: any) => ({
-        id: category.id,
-        title: category.title,
-        channels: category.channels,
-      })),
-    systemMessages: (server) => server.system_messages || undefined,
-    roles: (server) => server.roles || undefined,
-    defaultPermissions: (server) => server.default_permissions,
-    iconId: (server) => server.icon?.id,
-    bannerId: (server) => server.banner?.id,
+    description: (server) => server.description!,
+    channelIds: (server) => new ReactiveSet(server.channels),
+    categories: (server) => server.categories ?? [],
+    systemMessages: (server) => server.system_messages ?? {},
+    roles: (server, ctx) =>
+      new ReactiveMap(
+        Object.keys(server.roles!).map((id) => [
+          id,
+          new ServerRole(ctx as Client, server._id, id, server.roles![id]),
+        ]),
+      ),
+    defaultPermissions: (server) => BigInt(server.default_permissions),
+    icon: (server, ctx) => new File(ctx as Client, server.icon!),
+    banner: (server, ctx) => new File(ctx as Client, server.banner!),
+    flags: (server) => server.flags!,
     analytics: (server) => server.analytics || false,
     discoverable: (server) => server.discoverable || false,
     nsfw: (server) => server.nsfw || false,
-    tag: (server: any) => server.tag,
-    tagIcon: (server: any) => server.tag_icon,
   },
   initialHydration: () => ({
     channelIds: new ReactiveSet(),
+    roles: new ReactiveMap(),
   }),
 };
+
+/**
+ * Flags attributed to servers
+ */
+export enum ServerFlags {
+  Official = 1,
+  Verified = 2,
+}

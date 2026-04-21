@@ -140,13 +140,6 @@ export class User {
   }
 
   /**
-   * Selected global profile tag (serverId)
-   */
-  get profileTagServerId(): string | undefined {
-    return this.#collection.getUnderlyingObject(this.id).profileTagServerId;
-  }
-
-  /**
    * Whether this user can be messaged by non-friends
    */
   get canBeMessagedByNonFriends(): boolean {

@@ -1,5 +1,5 @@
 import { createFormControl, createFormGroup } from "solid-forms";
-import { For, Show, createEffect, createSignal, on } from "solid-js";
+import { Show, createEffect, createSignal, on } from "solid-js";
 
 import { Trans, useLingui } from "@lingui-solid/solid/macro";
 import { useQuery, useQueryClient } from "@tanstack/solid-query";
@@ -12,7 +12,6 @@ import {
   CircularProgress,
   Column,
   Form2,
-  MenuItem,
   Row,
   Text,
 } from "@revolt/ui";
@@ -48,7 +47,6 @@ export function UserProfileEditor(props: Props) {
     ),
     banner: createFormControl<string | File[] | null>(null),
     bio: createFormControl(""),
-    profileTagServerId: createFormControl(props.user.profileTagServerId || ""),
   });
   /* eslint-enable solid/reactivity */
 
@@ -136,13 +134,6 @@ export function UserProfileEditor(props: Props) {
         newBannerUrl = editGroup.controls.banner.value;
       }
     }
-    if (editGroup.controls.profileTagServerId.isDirty) {
-      if (!editGroup.controls.profileTagServerId.value) {
-        changes.remove!.push("ProfileTag" as any);
-      } else {
-        changes.profile_tag_server_id = editGroup.controls.profileTagServerId.value;
-      }
-    }
 
     await props.user.edit(changes);
 
@@ -201,30 +192,6 @@ export function UserProfileEditor(props: Props) {
           control={editGroup.controls.bio}
           placeholder={t`Something cool about me...`}
         />
-
-        <Text class="label">
-          <Trans>Identity Tag</Trans>
-        </Text>
-        <Form2.TextField.Select
-          control={editGroup.controls.profileTagServerId}
-          label={t`Showcase a community tag on your profile`}
-        >
-          <MenuItem value="">
-            <Trans>None</Trans>
-          </MenuItem>
-          <For
-            each={[...client().servers.values()].filter(
-              (s) =>
-                s.tag && client().serverMembers.has(`${s.id}:${props.user.id}`),
-            )}
-          >
-            {(s: any) => (
-              <MenuItem value={s.id}>
-                {s.name} ({s.tag})
-              </MenuItem>
-            )}
-          </For>
-        </Form2.TextField.Select>
 
         <Row>
           <Form2.Reset group={editGroup} onReset={onReset} />
