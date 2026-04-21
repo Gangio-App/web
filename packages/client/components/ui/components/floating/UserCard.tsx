@@ -295,6 +295,7 @@ export function UserCard(
                     placeholder={`Message @${props.user.username}`} 
                     value={message()}
                     onInput={(e: InputEvent & { currentTarget: HTMLInputElement }) => setMessage(e.currentTarget.value)}
+                    onContextMenu={(e) => e.stopPropagation()}
                 />
                 <IconButton onPress={sendMessage} size="small" disabled={!message().trim()}>
                     <MdSend />
