@@ -72,7 +72,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
         use:floating={{
           tooltip: {
             placement: "top",
-            content: `Joined Gangio\n${dayjs(props.user.createdAt).format(
+            content: `${t`Joined Gangio`}\n${dayjs(props.user.createdAt).format(
               "MMM D, YYYY",
             )}`,
           },
