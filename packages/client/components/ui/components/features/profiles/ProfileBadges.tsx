@@ -47,11 +47,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
   const dayjs = useTime();
   const [dynamicBadges] = createResource<Badge[]>(fetchBadges);
   const overriddenBits = () => new Set(dynamicBadges()?.map((b: Badge) => b.bit) || []);
-  const getBadgeName = (badge: Badge) => {
-    const locale = i18n.locale;
-    const shortLocale = locale.split(/[-_]/)[0];
-    return badge.translations?.[locale] || badge.translations?.[shortLocale] || badge.name;
-  };
+  const getBadgeName = (badge: Badge) => badge.translations?.[i18n.locale] || badge.name;
 
   const content = (
     <BadgeRow>
@@ -59,7 +55,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
         use:floating={{
           tooltip: {
             placement: "top",
-            content: t`Joined Gangio` + `\n${dayjs(props.user.createdAt).format(
+            content: `Joined Gangio\n${dayjs(props.user.createdAt).format(
               "MMM D, YYYY",
             )}`,
           },
