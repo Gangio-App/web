@@ -1,6 +1,6 @@
 import { useTime } from "@revolt/i18n";
 import { BiSolidShield } from "solid-icons/bi";
-import { Show, createResource, For } from "solid-js";
+import { Show, createResource, For, createMemo } from "solid-js";
 
 import { Trans, useLingui } from "@lingui-solid/solid/macro";
 import { User, UserBadges } from "stoat.js";
@@ -46,8 +46,25 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
   const { t, i18n } = useLingui();
   const dayjs = useTime();
   const [dynamicBadges] = createResource<Badge[]>(fetchBadges);
-  const overriddenBits = () => new Set(dynamicBadges()?.map((b: Badge) => b.bit) || []);
-  const getBadgeName = (badge: Badge) => badge.translations?.[i18n.locale] || badge.name;
+  
+  // Only override if the dynamic badge actually has an icon to display
+  const overriddenBits = createMemo(() => {
+    const set = new Set<number>();
+    const badges = dynamicBadges();
+    if (badges) {
+      for (const b of badges) {
+        if (b.icon_name) {
+          set.add(Number(b.bit));
+        }
+      }
+    }
+    return set;
+  });
+
+  const getBadgeName = (badge: Badge) => {
+    const locale = i18n().locale;
+    return badge.translations?.[locale] || badge.name;
+  };
 
   const content = (
     <BadgeRow>
@@ -155,7 +172,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
         />
       </Show>
       <Show
-        when={(props.user.badges & UserBadges.ReservedRelevantJokeBadge1) && !overriddenBits().has(UserBadges.ReservedRelevantJokeBadge1)}
+        when={(props.user.badges & UserBadges.ReservedRelevantJokeBadge2) && !overriddenBits().has(UserBadges.ReservedRelevantJokeBadge2)}
       >
         <img
           use:floating={{
@@ -193,7 +210,7 @@ export function ProfileBadges(props: { user: User; compact?: boolean }) {
       <Show when={dynamicBadges()}>
         <For each={dynamicBadges()}>
           {(badge: Badge) => (
-            <Show when={(props.user.badges & badge.bit) && badge.icon_name}>
+            <Show when={(props.user.badges & Number(badge.bit)) && badge.icon_name}>
               <img
                 use:floating={{
                   tooltip: {
