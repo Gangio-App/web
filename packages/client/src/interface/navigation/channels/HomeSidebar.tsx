@@ -337,120 +337,121 @@ function Entry(
   };
 
   return (
-    <MenuButton
-      onPress={() => navigate(`/channel/${local.channel.id}`)}
-      size="normal"
-      alert={
-        !local.active &&
-        local.channel.unread &&
-        (local.channel.mentions?.size || true)
-      }
-      attention={
-        local.active
-          ? "selected"
-          : local.channel.muted
-            ? "muted"
-            : local.channel.unread
-              ? "active"
-              : "normal"
-      }
-      icon={
-        <Switch>
-          <Match when={local.channel.type === "Group"}>
-            <Avatar
-              size={32}
-              shape="rounded-square"
-              fallback={local.channel.name}
-              src={local.channel.iconURL}
-              primaryContrast
-            />
-          </Match>
-          <Match when={local.channel.type === "DirectMessage"}>
-            <Avatar
-              size={32}
-              src={local.channel.iconURL}
-              holepunch="bottom-right"
-              overlay={
-                <UserStatus.Graphic
-                  status={local.channel?.recipient?.presence}
-                />
-              }
-            />
-          </Match>
-        </Switch>
-      }
-      actions={
-        <a
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            openModal({
-              type: "delete_channel",
-              channel: local.channel,
-            });
-          }}
-        >
-          <MdClose {...iconSize("18px")} />
-        </a>
-      }
-      use:floating={{
-        contextMenu: () =>
-          local.channel.type === "DirectMessage" ? (
-            <UserContextMenu
-              user={local.channel.recipient!}
-              channel={local.channel}
-            />
-          ) : (
-            <ChannelContextMenu channel={local.channel} />
-          ),
-      }}
-    >
-      <NameStatusStack>
-        <Switch>
-          <Match when={local.channel.type === "Group"}>
-            <OverflowingText>
-              <TextWithEmoji content={local.channel.name!} />
-            </OverflowingText>
-            <span class={typography({ class: "_status" })}>
-              {/* <Plural
+    <a {...remote} href={`/channel/${local.channel.id}`}>
+      <MenuButton
+        size="normal"
+        alert={
+          !local.active &&
+          local.channel.unread &&
+          (local.channel.mentions?.size || true)
+        }
+        attention={
+          local.active
+            ? "selected"
+            : local.channel.muted
+              ? "muted"
+              : local.channel.unread
+                ? "active"
+                : "normal"
+        }
+        icon={
+          <Switch>
+            <Match when={local.channel.type === "Group"}>
+              <Avatar
+                size={32}
+                shape="rounded-square"
+                fallback={local.channel.name}
+                src={local.channel.iconURL}
+                primaryContrast
+              />
+            </Match>
+            <Match when={local.channel.type === "DirectMessage"}>
+              <Avatar
+                size={32}
+                src={local.channel.iconURL}
+                holepunch="bottom-right"
+                overlay={
+                  <UserStatus.Graphic
+                    status={local.channel?.recipient?.presence}
+                  />
+                }
+              />
+            </Match>
+          </Switch>
+        }
+        actions={
+          <a
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              openModal({
+                type: "delete_channel",
+                channel: local.channel,
+              });
+            }}
+          >
+            <MdClose {...iconSize("18px")} />
+          </a>
+        }
+        use:floating={{
+          contextMenu: () =>
+            local.channel.type === "DirectMessage" ? (
+              <UserContextMenu
+                user={local.channel.recipient!}
+                channel={local.channel}
+              />
+            ) : (
+              <ChannelContextMenu channel={local.channel} />
+            ),
+        }}
+      >
+        <NameStatusStack>
+          <Switch>
+            <Match when={local.channel.type === "Group"}>
+              <OverflowingText>
+                <TextWithEmoji content={local.channel.name!} />
+              </OverflowingText>
+              <span class={typography({ class: "_status" })}>
+                {/* <Plural
                   value={local.channel.recipientIds.size}
                   one="# Member"
                   other="# Members"
                 /> */}
-              {local.channel.recipientIds.size}{" "}
-              {local.channel.recipientIds.size > 1 ? `Members` : "Member"}
-            </span>
-          </Match>
-          <Match when={local.channel.type === "DirectMessage"}>
-            <OverflowingText>
-              {local.channel?.recipient?.displayName}
-            </OverflowingText>
-            <Show when={status()}>
-              <Tooltip
-                content={() => <TextWithEmoji content={status()!} />}
-                placement="top-start"
-                aria={status()!}
-              >
-                <OverflowingText class={typography({ class: "_status" })}>
-                  <div
-                    class={css({
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "2px",
-                    })}
-                  >
-                    <Show when={isSharing()}>
-                      <Symbol size={12}>screen_share</Symbol>
-                    </Show>
-                    <TextWithEmoji content={status()!} />
-                  </div>
-                </OverflowingText>
-              </Tooltip>
-            </Show>
-          </Match>
-        </Switch>
-      </NameStatusStack>
-    </MenuButton>
+                {local.channel.recipientIds.size}{" "}
+                {local.channel.recipientIds.size > 1 ? `Members` : "Member"}
+              </span>
+            </Match>
+            <Match when={local.channel.type === "DirectMessage"}>
+              <OverflowingText>
+                {local.channel?.recipient?.displayName}
+              </OverflowingText>
+              <Show when={status()}>
+                <Tooltip
+                  content={() => <TextWithEmoji content={status()!} />}
+                  placement="top-start"
+                  aria={status()!}
+                >
+                  <OverflowingText class={typography({ class: "_status" })}>
+                    <div
+                      class={css({
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "2px",
+                      })}
+                    >
+                      <Show when={isSharing()}>
+                        <Symbol size={12}>screen_share</Symbol>
+                      </Show>
+                      <TextWithEmoji content={status()!} />
+                    </div>
+                  </OverflowingText>
+                </Tooltip>
+              </Show>
+            </Match>
+          </Switch>
+        </NameStatusStack>
+      </MenuButton>
+    </a>
   );
 }
 
