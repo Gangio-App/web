@@ -353,7 +353,19 @@ function CallEventCard(props: { message: MessageInterface }) {
   const voice = useVoice();
   const { t } = useLingui();
   const inThisCall = () => voice.channel()?.id === props.message.channelId;
-  const isCallActive = () => props.message.channel!.voiceParticipants.size > 0;
+  const isCallActive = () => {
+    const participants = props.message.channel!.voiceParticipants.size > 0;
+    if (!participants) return false;
+
+    // Only show as active if it's the latest call start message we know about
+    const messages = props.message.channel!.messages;
+    const callStartMessages = messages.filter(
+      (m) => m.content === "[CALL_START_EVENT]",
+    );
+    return (
+      callStartMessages[callStartMessages.length - 1]?.id === props.message.id
+    );
+  };
 
   return (
     <div
