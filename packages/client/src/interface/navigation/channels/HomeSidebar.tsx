@@ -10,6 +10,7 @@ import { ChannelContextMenu, UserContextMenu } from "@revolt/app";
 import { useClient } from "@revolt/client";
 import { TextWithEmoji } from "@revolt/markdown";
 import { useModals } from "@revolt/modal";
+import { useVoice } from "@revolt/rtc";
 import { useLocation, useNavigate } from "@revolt/routing";
 import {
   Avatar,
@@ -270,6 +271,8 @@ function Entry(
 
   const { t } = useLingui();
   const { openModal } = useModals();
+  const client = useClient();
+  const voice = useVoice();
 
   const isSharing = () =>
     [...local.channel.voiceParticipants.values()].some(
@@ -290,22 +293,19 @@ function Entry(
       return { type: "with_you" as const };
     }
 
-    // Check mutual servers for voice activity
-    for (const server of client().servers.values()) {
-      if (server.members.has(recipientId)) {
-        for (const channel of server.channels) {
-          if (
-            channel.type === "VoiceChannel" &&
-            channel.voiceParticipants.has(recipientId)
-          ) {
-            return {
-              type: "mutual" as const,
-              serverName: server.name,
-              channelName: channel.name,
-            };
-          }
-        }
-      }
+    // Check all channels for voice activity
+    const vChannel = client().channels.find(
+      (channel) =>
+        channel.type === "VoiceChannel" &&
+        channel.voiceParticipants.has(recipientId),
+    );
+
+    if (vChannel && vChannel.server) {
+      return {
+        type: "mutual" as const,
+        serverName: vChannel.server.name,
+        channelName: vChannel.name,
+      };
     }
   });
 
