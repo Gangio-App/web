@@ -27,6 +27,7 @@ export function ProfileMutuals(props: { user: User }) {
       }
 
       const clnt = client();
+      if (!clnt || !clnt.users) return { users: [], groups: [] };
       const { users, servers } = await props.user.fetchMutual();
 
       return {

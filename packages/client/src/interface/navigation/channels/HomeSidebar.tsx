@@ -62,8 +62,9 @@ export const HomeSidebar = (props: Props) => {
   let scrollTargetElement!: HTMLDivElement;
 
   const pendingRequests = createMemo(() => {
-    return client().users.filter((user) => user.relationship === "Incoming")
-      .length;
+    const cl = client();
+    if (!cl || !cl.users) return 0;
+    return cl.users.filter((user) => user.relationship === "Incoming").length;
   });
 
   return (
@@ -286,7 +287,9 @@ function Entry(
 
     // We search across all channels to find where the recipient is
     // We access voiceParticipants.size to ensure reactivity when people join/leave
-    const vChannel = client().channels.find((channel) => {
+    const cl = client();
+    if (!cl || !cl.channels) return;
+    const vChannel = cl.channels.find((channel) => {
       if (channel.type !== "VoiceChannel") return false;
       return channel.voiceParticipants.has(recipientId);
     });
