@@ -4141,3 +4141,15 @@ msgstr "Incoming call from {0}"
 
 msgid "Ringing..."
 msgstr "Ringing..."
+
+msgid "Leave Call"
+msgstr "Leave Call"
+
+msgid "Someone"
+msgstr "Someone"
+
+msgid "You are already in a call"
+msgstr "You are already in a call"
+
+msgid "{names} is in the call"
+msgstr "{names} is in the call"

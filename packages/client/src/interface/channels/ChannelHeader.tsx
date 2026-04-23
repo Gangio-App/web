@@ -186,39 +186,90 @@ export function ChannelHeader(props: Props) {
       </Show>
 
       <Show when={props.channel.type === "DirectMessage"}>
-        <IconButton
-          onPress={async () => {
-            try {
-              // Call the backend API to initiate the call and notify recipients
-              await fetch("/api/call/start", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  channelId: props.channel.id,
-                  userId: client()?.user?.id,
-                }),
-              });
-
-              // Connect to the voice channel locally
-              voice.connect(props.channel);
-            } catch (err) {
-              console.error("Failed to start calling:", err);
-              // Fallback to direct connection if API fails
-              voice.connect(props.channel);
-            }
-          }}
-          disabled={voice.active}
-          use:floating={{
-            tooltip: {
-              placement: "bottom",
-              content: voice.active
-                ? t`You are already in a call`
-                : t`Start Voice Call`,
-            },
-          }}
+        <div
+          class={css({
+            position: "relative",
+          })}
         >
-          <Symbol>call</Symbol>
-        </IconButton>
+          <IconButton
+            onPress={async () => {
+              if (voice.channel()?.id === props.channel.id) {
+                voice.disconnect();
+                return;
+              }
+
+              try {
+                // Call the backend API to initiate the call and notify recipients
+                await fetch("/api/call/start", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    channelId: props.channel.id,
+                    userId: client()?.user?.id,
+                  }),
+                });
+
+                // Connect to the voice channel locally
+                voice.connect(props.channel);
+              } catch (err) {
+                console.error("Failed to start calling:", err);
+                // Fallback to direct connection if API fails
+                voice.connect(props.channel);
+              }
+            }}
+            variant={voice.channel()?.id === props.channel.id ? "tonal" : "standard"}
+            use:floating={{
+              tooltip: {
+                placement: "bottom",
+                content: () => {
+                  if (voice.channel()?.id === props.channel.id) return t`Leave Call`;
+                  if (voice.active) return t`You are already in a call`;
+                  const participants = [
+                    ...props.channel.voiceParticipants.values(),
+                  ];
+                  if (participants.length > 0) {
+                    const names = participants
+                      .map((p) => props.channel.client.users.get(p.userId)?.username ?? t`Someone`)
+                      .join(", ");
+                    return t`${names} is in the call`;
+                  }
+                  return t`Start Voice Call`;
+                },
+              },
+            }}
+          >
+            <Show when={voice.channel()?.id === props.channel.id} fallback={<Symbol>call</Symbol>}>
+              <Symbol>call_end</Symbol>
+            </Show>
+          </IconButton>
+          <Show when={props.channel.voiceParticipants.size > 0 && voice.channel()?.id !== props.channel.id}>
+            <div
+              class={css({
+                position: "absolute",
+                bottom: "-2px",
+                right: "-2px",
+                display: "flex",
+                gap: "2px",
+                padding: "2px",
+                borderRadius: "var(--borderRadius-circle)",
+                background: "var(--md-sys-color-primary)",
+                color: "var(--md-sys-color-on-primary)",
+                boxShadow: "var(--shadow-sm)",
+              })}
+            >
+              <Symbol size={10} fill>
+                fiber_manual_record
+              </Symbol>
+              <Show
+                when={[...props.channel.voiceParticipants.values()].some((p) =>
+                  p.isScreensharing(),
+                )}
+              >
+                <Symbol size={10}>screen_share</Symbol>
+              </Show>
+            </div>
+          </Show>
+        </div>
       </Show>
 
       <Show when={props.sidebarState}>

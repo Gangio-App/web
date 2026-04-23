@@ -281,7 +281,7 @@ export function Messages(props: Props) {
       // If we're not at the end, restore scroll position
       if (existingState && !existingState.atEnd) {
         setTimeout(() =>
-          listRef!.scrollTo({
+          listRef?.scrollTo({
             top: existingState.scrollTop!,
             behavior: "instant",
           }),
@@ -290,7 +290,7 @@ export function Messages(props: Props) {
       // Or... reset scroll to the end
       else if (atEnd()) {
         setTimeout(() =>
-          listRef!.scrollTo({
+          listRef?.scrollTo({
             top: 9999999,
             behavior: "instant",
           }),
@@ -461,12 +461,15 @@ export function Messages(props: Props) {
     }
 
     // Scroll to the bottom if we're already at the end
-    if (atEnd()) {
-      const containerChild = findScrollContainer(listRef!)!.children[0];
-      containerChild!.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-      });
+    if (atEnd() && listRef) {
+      const container = findScrollContainer(listRef);
+      const containerChild = container?.children[0];
+      if (containerChild) {
+        containerChild.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+        });
+      }
     }
     // Otherwise fetch present messages
     else {
@@ -513,22 +516,25 @@ export function Messages(props: Props) {
 
         // Animate scroll to bottom
         setTimeout(() => {
-          const containerChild = findScrollContainer(listRef!)!.children[0];
+          const container = findScrollContainer(listRef!);
+          const containerChild = container?.children[0];
 
-          containerChild!.scrollIntoView({
-            behavior: "instant",
-            block: "start",
-          });
-
-          setTimeout(() => {
-            containerChild!.scrollIntoView({
-              behavior: "smooth",
-              block: "end",
+          if (containerChild) {
+            containerChild.scrollIntoView({
+              behavior: "instant",
+              block: "start",
             });
 
-            // Mark as fetching has ended
-            setFetching();
-          });
+            setTimeout(() => {
+              containerChild.scrollIntoView({
+                behavior: "smooth",
+                block: "end",
+              });
+
+              // Mark as fetching has ended
+              setFetching();
+            });
+          }
         });
       } catch {
         // Keep track of any failures (and allow retry / other actions)
@@ -551,10 +557,13 @@ export function Messages(props: Props) {
         (entry) => entry.t === 0 && entry.message.id === messageId,
       ); // use localeCompare
 
-      listRef!.children[index + (atStart() ? 1 : 0)].scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
+      const element = listRef?.children[index + (atStart() ? 1 : 0)];
+      if (element) {
+        element.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
     };
 
     if (messages().find((message) => message.id === messageId)) {

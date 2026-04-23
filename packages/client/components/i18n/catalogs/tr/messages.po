@@ -4204,3 +4204,15 @@ msgstr "{0} kullanıcısından gelen arama"
 
 msgid "Ringing..."
 msgstr "Aranıyor..."
+
+msgid "Leave Call"
+msgstr "Aramadan Ayrıl"
+
+msgid "Someone"
+msgstr "Biri"
+
+msgid "You are already in a call"
+msgstr "Zaten bir aramadasınız"
+
+msgid "{names} is in the call"
+msgstr "{names} aramada"

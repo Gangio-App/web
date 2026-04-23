@@ -49,6 +49,7 @@ export function VideoTrack({
   const updateVisibility = debounce((vis: boolean) => setMaintainedVisibility(vis), 3000)
   createEffect(() => updateVisibility(visible()))
 
+  /* Disable aggressive auto-unsubscription to prevent streams from going blank
   createEffect(() => {
     if (
       manageSubscription &&
@@ -59,6 +60,7 @@ export function VideoTrack({
       trackReference.publication.setSubscribed(false)
     }
   })
+  */
 
   createEffect(() => {
     if (
