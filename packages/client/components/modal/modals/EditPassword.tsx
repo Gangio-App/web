@@ -112,7 +112,7 @@ export function EditPasswordModal(
                 label={t`New Password`}
                 type="password"
                 placeholder={t`Enter a new password.`}
-                "toggle-password"
+                toggle-password
               />
               
               <Show when={group.controls.password.value}>
@@ -133,7 +133,7 @@ export function EditPasswordModal(
                 label={t`Current Password`}
                 type="password"
                 placeholder={t`Enter your current password...`}
-                "toggle-password"
+                toggle-password
               />
             </Column>
           </form>
