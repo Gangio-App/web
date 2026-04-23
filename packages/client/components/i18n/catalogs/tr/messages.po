@@ -4330,3 +4330,8 @@ msgstr "Güçlü"
 
 msgid "Password is too weak. Please use a stronger password."
 msgstr "Şifre çok zayıf. Lütfen daha güçlü bir şifre kullanın."
+msgid "Join Call"
+msgstr "Görüşmeye Katıl"
+
+msgid "Started a voice call."
+msgstr "Sesli görüşme başlattı."
