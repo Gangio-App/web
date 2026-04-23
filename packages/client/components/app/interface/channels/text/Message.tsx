@@ -264,9 +264,6 @@ export function Message(props: Props) {
         <Match when={props.editing}>
           <EditMessage message={props.message} />
         </Match>
-        <Match when={props.message.content === "[CALL_START_EVENT]"}>
-          <CallEventCard message={props.message} />
-        </Match>
         <Match when={props.message.content}>
           <BreakText>
             <Markdown content={props.message.content!} />
@@ -336,77 +333,4 @@ const BreakText = styled("div", {
   },
 });
 
-/**
- * Call event card
- */
-function CallEventCard(props: { message: MessageInterface }) {
-  const voice = useVoice();
-  const { t } = useLingui();
-  const inThisCall = () => voice.channel()?.id === props.message.channelId;
-  const isCallActive = () => props.message.channel!.voiceParticipants.size > 0;
-
-  return (
-    <div
-      class={css({
-        background: "var(--md-sys-color-surface-container)",
-        padding: "var(--gap-md)",
-        borderRadius: "var(--borderRadius-lg)",
-        marginTop: "var(--gap-sm)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "var(--gap-md)",
-        maxWidth: "320px",
-        border: "1px solid var(--md-sys-color-outline-variant)",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-      })}
-    >
-      <div class={css({ display: "flex", alignItems: "center", gap: "var(--gap-md)" })}>
-        <div
-          class={css({
-            background: "var(--md-sys-color-primary)",
-            color: "var(--md-sys-color-on-primary)",
-            padding: "10px",
-            borderRadius: "12px",
-            display: "flex",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-          })}
-        >
-          <Symbol size={24}>voice_chat</Symbol>
-        </div>
-        <div class={css({ display: "flex", flexDirection: "column" })}>
-          <div class={css({ fontWeight: "bold", fontSize: "14px" })}>{t`Voice Call`}</div>
-          <div class={css({ fontSize: "12px", opacity: 0.7 })}>
-            {isCallActive() ? t`Call in progress` : t`Call ended`}
-          </div>
-        </div>
-      </div>
-      <Show when={isCallActive()}>
-        <Show
-          when={!inThisCall()}
-          fallback={
-            <Button
-              variant="_error"
-              size="small"
-              onPress={() => voice.disconnect()}
-              class={css({ width: "100%", justifyContent: "center" })}
-            >
-              <Symbol size={18}>call_end</Symbol>
-              {t`Leave Call`}
-            </Button>
-          }
-        >
-          <Button
-            variant="tonal"
-            size="small"
-            onPress={() => voice.connect(props.message.channel!)}
-            class={css({ width: "100%", justifyContent: "center" })}
-          >
-            <Symbol size={18}>call</Symbol>
-            {t`Join Call`}
-          </Button>
-        </Show>
-      </Show>
-    </div>
-  );
-}
 
