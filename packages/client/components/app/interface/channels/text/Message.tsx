@@ -1,7 +1,7 @@
 import { For, Match, Show, Switch, createSignal, onMount } from "solid-js";
 
 import { useLingui } from "@lingui-solid/solid/macro";
-import { Message as MessageInterface, WebsiteEmbed } from "stoat.js";
+import { Message as MessageInterface, WebsiteEmbed, CallStartedSystemMessage } from "stoat.js";
 import { cva, css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 import { decodeTime } from "ulid";
@@ -97,13 +97,19 @@ export function Message(props: Props) {
       username={
         <div use:floating={floatingUserMenusFromMessage(props.message)}>
           <Username
-            username={
-              props.message.masquerade?.name ??
-              props.message.member?.nickname ??
-              props.message.author?.displayName ??
-              props.message.author?.username ??
-              props.message.username
-            }
+            username={(() => {
+              const author =
+                props.message.systemMessage?.type === "call_started"
+                  ? (props.message.systemMessage as CallStartedSystemMessage).by
+                  : props.message.author ?? props.message.member?.user;
+              return (
+                props.message.masquerade?.name ??
+                props.message.member?.nickname ??
+                author?.displayName ??
+                author?.username ??
+                props.message.username
+              );
+            })()}
             colour={props.message.roleColour!}
           />
         </div>
@@ -116,9 +122,13 @@ export function Message(props: Props) {
           <Avatar
             size={36}
             src={
-              isHovering()
-                ? props.message.animatedAvatarURL
-                : props.message.avatarURL
+                isHovering()
+                  ? (props.message.systemMessage?.type === "call_started" 
+                      ? (props.message.systemMessage as CallStartedSystemMessage).by?.animatedAvatarURL 
+                      : props.message.animatedAvatarURL)
+                  : (props.message.systemMessage?.type === "call_started" 
+                      ? (props.message.systemMessage as CallStartedSystemMessage).by?.avatarURL 
+                      : props.message.avatarURL)
             }
           />
         </div>
@@ -264,6 +274,9 @@ export function Message(props: Props) {
         <Match when={props.editing}>
           <EditMessage message={props.message} />
         </Match>
+        <Match when={props.message.content === "[CALL_START_EVENT]"}>
+          <CallEventCard message={props.message} />
+        </Match>
         <Match when={props.message.content}>
           <BreakText>
             <Markdown content={props.message.content!} />
@@ -332,5 +345,80 @@ const BreakText = styled("div", {
     },
   },
 });
+
+/**
+ * Call event card (for legacy messages)
+ */
+function CallEventCard(props: { message: MessageInterface }) {
+  const voice = useVoice();
+  const { t } = useLingui();
+  const inThisCall = () => voice.channel()?.id === props.message.channelId;
+  const isCallActive = () => props.message.channel!.voiceParticipants.size > 0;
+
+  return (
+    <div
+      class={css({
+        background: "var(--md-sys-color-surface-container)",
+        padding: "var(--gap-md)",
+        borderRadius: "var(--borderRadius-lg)",
+        marginTop: "var(--gap-sm)",
+        display: "flex",
+        flexDirection: "column",
+        gap: "var(--gap-md)",
+        maxWidth: "320px",
+        border: "1px solid var(--md-sys-color-outline-variant)",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+      })}
+    >
+      <div class={css({ display: "flex", alignItems: "center", gap: "var(--gap-md)" })}>
+        <div
+          class={css({
+            background: "var(--md-sys-color-primary)",
+            color: "var(--md-sys-color-on-primary)",
+            padding: "10px",
+            borderRadius: "12px",
+            display: "flex",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+          })}
+        >
+          <Symbol size={24}>voice_chat</Symbol>
+        </div>
+        <div class={css({ display: "flex", flexDirection: "column" })}>
+          <div class={css({ fontWeight: "bold", fontSize: "14px" })}>{t`Voice Call`}</div>
+          <div class={css({ fontSize: "12px", opacity: 0.7 })}>
+            {isCallActive() ? t`Call in progress` : t`Call ended`}
+          </div>
+        </div>
+      </div>
+      <Show when={isCallActive()}>
+        <Show
+          when={!inThisCall()}
+          fallback={
+            <Button
+              variant="_error"
+              size="small"
+              onPress={() => voice.disconnect()}
+              class={css({ width: "100%", justifyContent: "center" })}
+            >
+              <Symbol size={18}>call_end</Symbol>
+              {t`Leave Call`}
+            </Button>
+          }
+        >
+          <Button
+            variant="tonal"
+            size="small"
+            onPress={() => voice.connect(props.message.channel!)}
+            class={css({ width: "100%", justifyContent: "center" })}
+          >
+            <Symbol size={18}>call</Symbol>
+            {t`Join Call`}
+          </Button>
+        </Show>
+      </Show>
+    </div>
+  );
+}
+
 
 
