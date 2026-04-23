@@ -9,6 +9,9 @@ import {
   splitProps,
 } from "solid-js";
 
+import { useVoice } from "@revolt/rtc";
+import { css } from "styled-system/css";
+
 import { Trans, useLingui } from "@lingui-solid/solid/macro";
 import { VirtualContainer } from "@minht11/solid-virtual-container";
 import type { User } from "stoat.js";
@@ -29,9 +32,12 @@ import {
   NavigationRail,
   NavigationRailItem,
   OverflowingText,
+  Text,
   UserStatus,
   main,
+  typography,
 } from "@revolt/ui";
+import { Column } from "@revolt/ui/components/layout/Column";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
 import { HeaderIcon } from "./common/CommonHeader";
@@ -278,6 +284,60 @@ function Entry(
 ) {
   const { openModal } = useModals();
   const [local, remote] = splitProps(props, ["user"]);
+  const { t } = useLingui();
+  const client = useClient();
+  const voice = useVoice();
+
+  const voiceRoom = createMemo(() => {
+    const recipientId = local.user.id;
+    const cl = client();
+    if (!cl || !cl.channels) return;
+    
+    const vChannel = cl.channels.find((channel) => {
+      return channel.voiceParticipants.has(recipientId);
+    });
+
+    if (vChannel) {
+      const participant = vChannel.voiceParticipants.get(recipientId);
+      const isSharing = participant?.isScreensharing();
+
+      if (
+        (vChannel.type === "DirectMessage" || vChannel.type === "Group") &&
+        voice.channel()?.id === vChannel.id
+      ) {
+        return { type: "with_you" as const, isSharing };
+      }
+
+      if (vChannel.server) {
+        return {
+          type: "mutual" as const,
+          serverName: vChannel.server.name,
+          channelName: vChannel.name,
+          isSharing,
+        };
+      }
+      
+      return { type: "other" as const, isSharing };
+    }
+  });
+
+  const status = () => {
+    const vr = voiceRoom();
+    if (vr) {
+      if (vr.isSharing) {
+        if (vr.type === "with_you") return t`Sharing screen with you`;
+        if (vr.type === "mutual") return t`Sharing screen in ${vr.channelName} in ${vr.serverName}`;
+        return t`Sharing Screen`;
+      }
+
+      if (vr.type === "with_you") return t`In a voice chat with you`;
+      if (vr.type === "mutual") {
+        return t`In ${vr.channelName} in ${vr.serverName}`;
+      }
+    }
+
+    return local.user.status?.text;
+  };
 
   return (
     <a
@@ -293,17 +353,29 @@ function Entry(
           size={36}
           src={local.user.animatedAvatarURL}
           holepunch={
-            props.user.relationship === "Friend" ? "bottom-right" : "none"
+            local.user.relationship === "Friend" ? "bottom-right" : "none"
           }
           overlay={
-            <Show when={props.user.relationship === "Friend"}>
+            <Show when={local.user.relationship === "Friend"}>
               <UserStatus.Graphic
-                status={props.user.status?.presence ?? "Online"}
+                status={local.user.presence}
               />
             </Show>
           }
         />
-        <OverflowingText>{local.user.displayName}</OverflowingText>
+        <Column gap="none">
+          <OverflowingText>{local.user.displayName}</OverflowingText>
+          <Show when={status()}>
+            <div class={css({ display: "flex", alignItems: "center", gap: "4px", opacity: 0.7 })}>
+              <Show when={voiceRoom()?.isSharing}>
+                <Symbol size={12}>screen_share</Symbol>
+              </Show>
+              <Text size="small" class={typography({ class: "_status" })}>
+                {status()}
+              </Text>
+            </div>
+          </Show>
+        </Column>
       </ListItem>
     </a>
   );

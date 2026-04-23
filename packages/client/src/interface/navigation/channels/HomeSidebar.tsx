@@ -290,7 +290,6 @@ function Entry(
     const cl = client();
     if (!cl || !cl.channels) return;
     const vChannel = cl.channels.find((channel) => {
-      if (channel.type !== "VoiceChannel") return false;
       return channel.voiceParticipants.has(recipientId);
     });
 
