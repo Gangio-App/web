@@ -274,8 +274,16 @@ function Entry(
   /**
    * Determine user status if present
    */
-  const status = () =>
-    local.channel.recipient?.statusMessage((s) =>
+  const status = () => {
+    const isSharing = () =>
+      [...local.channel.voiceParticipants.values()].some(
+        (p) =>
+          p.userId === local.channel.recipient?.id && p.isScreensharing(),
+      );
+
+    if (isSharing()) return t`Sharing Screen`;
+
+    return local.channel.recipient?.statusMessage((s) =>
       s === "Online"
         ? t`Online`
         : s === "Busy"
@@ -286,6 +294,7 @@ function Entry(
               ? t`Idle`
               : t`Offline`,
     );
+  };
 
   return (
     <a {...remote} href={`/channel/${local.channel.id}`}>

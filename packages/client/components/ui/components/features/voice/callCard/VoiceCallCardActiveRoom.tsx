@@ -14,7 +14,7 @@ import {
 
 import { Track } from "livekit-client";
 import { isLocal } from "@livekit/components-core";
-import { cva } from "styled-system/css";
+import { css, cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 import { UserContextMenu } from "@revolt/app";
@@ -288,6 +288,36 @@ function ScreenshareTile() {
       onClick={toggleFullscreen}
       style={{ cursor: "pointer" }}
     >
+      <div
+        class={css({
+          position: "absolute",
+          top: "var(--gap-md)",
+          left: "var(--gap-md)",
+          background: "var(--md-sys-color-error)",
+          color: "var(--md-sys-color-on-error)",
+          padding: "2px 6px",
+          borderRadius: "4px",
+          fontSize: "10px",
+          fontWeight: "bold",
+          zIndex: 15,
+          display: "flex",
+          alignItems: "center",
+          gap: "4px",
+          textTransform: "uppercase",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+        })}
+      >
+        <div
+          class={css({
+            width: "6px",
+            height: "6px",
+            borderRadius: "50%",
+            background: "currentColor",
+            animation: "pulse 1.5s infinite",
+          })}
+        />
+        LIVE
+      </div>
       <VideoTrack
         style={{
           "grid-area": "1/1",

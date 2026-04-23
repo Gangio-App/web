@@ -8,8 +8,8 @@ import { SelectedTheme } from "@revolt/state/stores/Theme";
 export function createStoatWebVariables(theme: SelectedTheme) {
   return {
     // helper variables
-    "--unset-fg": "red",
-    "--unset-bg": "linear-gradient(to right, red, blue)",
+    "--unset-fg": "var(--md-sys-color-on-surface-variant)",
+    "--unset-bg": "var(--md-sys-color-surface-container-high)",
 
     // message size
     "--message-size": `${theme.messageSize}px`,

@@ -205,49 +205,42 @@ const button = cva({
        * @deprecated
        */
       success: {
-        fill: "var(--unset-fg)",
-        color: "var(--unset-fg)",
-        background: "var(--unset-bg)",
+        background: "var(--md-sys-color-primary)",
+        "--color": "var(--md-sys-color-on-primary)",
       },
       /**
        * @deprecated
        */
       warning: {
-        fill: "var(--unset-fg)",
-        color: "var(--unset-fg)",
-        background: "var(--unset-bg)",
+        background: "var(--md-sys-color-secondary-container)",
+        "--color": "var(--md-sys-color-on-secondary-container)",
       },
       /**
        * @deprecated
        */
       error: {
-        fill: "var(--unset-fg)",
-        color: "var(--unset-fg)",
-        background: "var(--unset-bg)",
+        background: "var(--md-sys-color-error)",
+        "--color": "var(--md-sys-color-on-error)",
       },
       /**
        * @deprecated use filled
        */
       primary: {
-        fill: "var(--unset-fg)",
-        color: "var(--unset-fg)",
-        background: "var(--unset-bg)",
+        background: "var(--md-sys-color-primary)",
+        "--color": "var(--md-sys-color-on-primary)",
       },
       /**
        * @deprecated use tonal
        */
       secondary: {
-        fill: "var(--unset-fg)",
-        color: "var(--unset-fg)",
-        background: "var(--unset-bg)",
+        background: "var(--md-sys-color-secondary-container)",
+        "--color": "var(--md-sys-color-on-secondary-container)",
       },
       /**
        * @deprecated use text instead
        */
       plain: {
-        fill: "var(--unset-fg)",
-        color: "var(--unset-fg)",
-        background: "var(--unset-bg)",
+        "--color": "var(--md-sys-color-primary)",
       },
     },
     /**

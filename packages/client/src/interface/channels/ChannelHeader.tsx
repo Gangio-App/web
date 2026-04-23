@@ -221,20 +221,11 @@ export function ChannelHeader(props: Props) {
             use:floating={{
               tooltip: {
                 placement: "bottom",
-                content: () => {
-                  if (voice.channel()?.id === props.channel.id) return t`Leave Call`;
-                  if (voice.active) return t`You are already in a call`;
-                  const participants = [
-                    ...props.channel.voiceParticipants.values(),
-                  ];
-                  if (participants.length > 0) {
-                    const names = participants
-                      .map((p) => props.channel.client.users.get(p.userId)?.username ?? t`Someone`)
-                      .join(", ");
-                    return t`${names} is in the call`;
-                  }
-                  return t`Start Voice Call`;
-                },
+                content: voice.channel()?.id === props.channel.id 
+                  ? t`Leave Call` 
+                  : (props.channel.voiceParticipants.size > 0 
+                    ? t`${[...props.channel.voiceParticipants.values()].map(p => props.channel.client.users.get(p.userId)?.username ?? t`Someone`).join(", ")} is in the call`
+                    : t`Start Voice Call`),
               },
             }}
           >
