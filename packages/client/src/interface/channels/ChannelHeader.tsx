@@ -214,10 +214,12 @@ export function ChannelHeader(props: Props) {
                 // Connect to the voice channel locally
                 voice.connect(props.channel);
 
-                // Send a notification message
-                await props.channel.sendMessage({
-                  content: t`Started a voice call.`,
-                });
+                // Only send message if no one is in it
+                if (props.channel.voiceParticipants.size === 0) {
+                  await props.channel.sendMessage({
+                    content: "[CALL_START_EVENT]",
+                  });
+                }
               } catch (err) {
                 console.error("Failed to start calling:", err);
                 // Fallback to direct connection if API fails

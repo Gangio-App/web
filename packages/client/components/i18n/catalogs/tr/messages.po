@@ -4335,3 +4335,15 @@ msgstr "Görüşmeye Katıl"
 
 msgid "Started a voice call."
 msgstr "Sesli görüşme başlattı."
+
+msgid "Voice Call"
+msgstr "Sesli Görüşme"
+
+msgid "Call in progress"
+msgstr "Görüşme devam ediyor"
+
+msgid "Call ended"
+msgstr "Görüşme sona erdi"
+
+msgid "Leave Call"
+msgstr "Görüşmeden Ayrıl"
