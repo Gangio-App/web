@@ -1,4 +1,4 @@
-import { createSignal, createMemo, Show, Switch, Match } from "solid-js";
+import { createSignal, createMemo, Show } from "solid-js";
 import { createFormControl, createFormGroup } from "solid-forms";
 
 import { Trans, useLingui } from "@lingui-solid/solid/macro";
@@ -95,7 +95,7 @@ export function EditPasswordModal(
         <Match when={isSuccess()}>
           <SuccessContainer>
             <Symbol size={64} class={css({ color: "var(--md-sys-color-primary)" })}>check_circle</Symbol>
-            <Text size="large">
+            <Text size="large" weight="bold">
               <Trans>Password updated successfully!</Trans>
             </Text>
             <Text size="small">
@@ -112,17 +112,15 @@ export function EditPasswordModal(
                 label={t`New Password`}
                 type="password"
                 placeholder={t`Enter a new password.`}
-                toggle-password
+                "toggle-password"
               />
               
               <Show when={group.controls.password.value}>
                 <StrengthMeter>
-                  <StrengthTrack>
-                    <StrengthBar style={{ 
-                      width: `${(passwordStrength() / 4) * 100}%`,
-                      background: strengthColor()
-                    }} />
-                  </StrengthTrack>
+                  <StrengthBar style={{ 
+                    width: `${(passwordStrength() / 4) * 100}%`,
+                    background: strengthColor()
+                  }} />
                   <StrengthText style={{ color: strengthColor() }}>
                     {strengthLabel()}
                   </StrengthText>
@@ -135,7 +133,7 @@ export function EditPasswordModal(
                 label={t`Current Password`}
                 type="password"
                 placeholder={t`Enter your current password...`}
-                toggle-password
+                "toggle-password"
               />
             </Column>
           </form>
@@ -160,38 +158,26 @@ const SuccessContainer = styled("div", {
 const StrengthMeter = styled("div", {
   base: {
     marginTop: "-12px",
-    marginBottom: "12px",
+    marginBottom: "8px",
     display: "flex",
     flexDirection: "column",
-    gap: "6px"
-  }
-});
-
-const StrengthTrack = styled("div", {
-  base: {
-    height: "6px",
-    width: "100%",
-    background: "var(--md-sys-color-surface-container-highest)",
-    borderRadius: "3px",
-    overflow: "hidden",
-    position: "relative"
+    gap: "4px"
   }
 });
 
 const StrengthBar = styled("div", {
   base: {
-    height: "100%",
-    borderRadius: "3px",
-    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
+    height: "4px",
+    borderRadius: "2px",
+    transition: "all 0.3s ease",
+    background: "var(--md-sys-color-surface-variant)"
   }
 });
 
 const StrengthText = styled("span", {
   base: {
-    fontSize: "11px",
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
+    fontSize: "12px",
+    fontWeight: "bold",
     alignSelf: "flex-end"
   }
 });

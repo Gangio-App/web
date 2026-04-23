@@ -4180,3 +4180,81 @@ msgstr "Sharing screen with you"
 
 msgid "Sharing screen in {channelName} in {serverName}"
 msgstr "Sharing screen in {channelName} in {serverName}"
+
+msgid "Date of Birth"
+msgstr "Date of Birth"
+
+msgid "Day"
+msgstr "Day"
+
+msgid "Month"
+msgstr "Month"
+
+msgid "Year"
+msgstr "Year"
+
+msgid "January"
+msgstr "January"
+
+msgid "February"
+msgstr "February"
+
+msgid "March"
+msgstr "March"
+
+msgid "April"
+msgstr "April"
+
+msgid "May"
+msgstr "May"
+
+msgid "June"
+msgstr "June"
+
+msgid "July"
+msgstr "July"
+
+msgid "August"
+msgstr "August"
+
+msgid "September"
+msgstr "September"
+
+msgid "October"
+msgstr "October"
+
+msgid "November"
+msgstr "November"
+
+msgid "December"
+msgstr "December"
+
+msgid "You must be at least 15 years old to join Stoat."
+msgstr "You must be at least 15 years old to join Stoat."
+
+msgid "In a voice chat with you"
+msgstr "In a voice chat with you"
+
+msgid "Sharing screen with you"
+msgstr "Sharing screen with you"
+
+msgid "In {channelName} in {serverName}"
+msgstr "In {channelName} in {serverName}"
+
+msgid "Sharing screen in {channelName} in {serverName}"
+msgstr "Sharing screen in {channelName} in {serverName}"
+
+msgid "Password updated successfully!"
+msgstr "Password updated successfully!"
+
+msgid "Closing this window shortly..."
+msgstr "Closing this window shortly..."
+
+msgid "Weak"
+msgstr "Weak"
+
+msgid "Medium"
+msgstr "Medium"
+
+msgid "Strong"
+msgstr "Strong"

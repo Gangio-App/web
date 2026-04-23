@@ -4249,3 +4249,81 @@ msgstr "Seninle ekran paylaşımında"
 
 msgid "Sharing screen in {channelName} in {serverName}"
 msgstr "{serverName} sunucusunda {channelName} kanalında ekran paylaşıyor"
+
+msgid "Date of Birth"
+msgstr "Doğum Tarihi"
+
+msgid "Day"
+msgstr "Gün"
+
+msgid "Month"
+msgstr "Ay"
+
+msgid "Year"
+msgstr "Yıl"
+
+msgid "January"
+msgstr "Ocak"
+
+msgid "February"
+msgstr "Şubat"
+
+msgid "March"
+msgstr "Mart"
+
+msgid "April"
+msgstr "Nisan"
+
+msgid "May"
+msgstr "Mayıs"
+
+msgid "June"
+msgstr "Haziran"
+
+msgid "July"
+msgstr "Temmuz"
+
+msgid "August"
+msgstr "Ağustos"
+
+msgid "September"
+msgstr "Eylül"
+
+msgid "October"
+msgstr "Ekim"
+
+msgid "November"
+msgstr "Kasım"
+
+msgid "December"
+msgstr "Aralık"
+
+msgid "You must be at least 15 years old to join Stoat."
+msgstr "Stoat'a katılmak için en az 15 yaşında olmalısınız."
+
+msgid "In a voice chat with you"
+msgstr "Seninle sesli sohbette"
+
+msgid "Sharing screen with you"
+msgstr "Seninle ekranını paylaşıyor"
+
+msgid "In {channelName} in {serverName}"
+msgstr "{serverName} sunucusunda {channelName} kanalında"
+
+msgid "Sharing screen in {channelName} in {serverName}"
+msgstr "{serverName} sunucusunda {channelName} kanalında ekran paylaşıyor"
+
+msgid "Password updated successfully!"
+msgstr "Şifre başarıyla güncellendi!"
+
+msgid "Closing this window shortly..."
+msgstr "Bu pencere kısa süre içinde kapanacak..."
+
+msgid "Weak"
+msgstr "Zayıf"
+
+msgid "Medium"
+msgstr "Orta"
+
+msgid "Strong"
+msgstr "Güçlü"

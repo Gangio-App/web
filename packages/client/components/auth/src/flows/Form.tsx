@@ -1,11 +1,10 @@
 import HCaptcha, { HCaptchaFunctions } from "solid-hcaptcha";
-import { For, JSX, Show, createSignal, createMemo } from "solid-js";
+import { For, JSX, Show, createSignal } from "solid-js";
 
-import { useLingui, Trans } from "@lingui-solid/solid/macro";
+import { useLingui } from "@lingui-solid/solid/macro";
 
 import { useError } from "@revolt/i18n";
-import { Checkbox2, Column, Text, TextField, Row } from "@revolt/ui";
-import { styled } from "styled-system/jsx";
+import { Checkbox2, Column, Text, TextField } from "@revolt/ui";
 
 /**
  * Available field types
@@ -16,8 +15,6 @@ type Field =
   | "new-password"
   | "log-out"
   | "username"
-  | "display-name"
-  | "birthday"
   | "invite";
 
 /**
@@ -58,17 +55,6 @@ const useFieldConfiguration = () => {
       name: () => t`Username`,
       placeholder: () => t`Enter your preferred username.`,
     },
-    "display-name": {
-      type: "text" as const,
-      autocomplete: "none",
-      name: () => t`Display Name`,
-      placeholder: () => t`How should we call you?`,
-    },
-    birthday: {
-      type: "date" as const,
-      name: () => t`Date of Birth`,
-      placeholder: () => t`Select your birth date.`,
-    },
     invite: {
       minLength: 1,
       type: "text" as const,
@@ -93,39 +79,11 @@ interface FieldPreset {
   disabled?: boolean;
 }
 
+/**
+ * Render a bunch of fields with preset values
+ */
 export function Fields(props: FieldProps) {
   const fieldConfiguration = useFieldConfiguration();
-  const { t } = useLingui();
-
-  const [password, setPassword] = createSignal("");
-
-  const passwordStrength = createMemo(() => {
-    const pwd = password();
-    if (!pwd) return 0;
-
-    let score = 0;
-    if (pwd.length >= 8) score++;
-    if (/[0-9]/.test(pwd)) score++;
-    if (/[^A-Za-z0-9]/.test(pwd)) score++;
-    if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) score++;
-
-    return score;
-  });
-
-  const strengthColor = () => {
-    const score = passwordStrength();
-    if (score <= 1) return "var(--md-sys-color-error)";
-    if (score <= 3) return "var(--md-sys-color-warning, #fbc02d)";
-    return "var(--md-sys-color-success, #4caf50)";
-  };
-
-  const strengthLabel = () => {
-    const score = passwordStrength();
-    if (score === 0) return "";
-    if (score <= 1) return t`Weak`;
-    if (score <= 3) return t`Medium`;
-    return t`Strong`;
-  };
 
   return (
     <For each={props.fields}>
@@ -135,30 +93,11 @@ export function Fields(props: FieldProps) {
           field = { field: field };
         }
         return (
-          <Column gap="sm">
+          <label>
             {field.field === "log-out" ? (
               <Checkbox2 name={field.field}>
                 {fieldConfiguration[field.field].name()}
               </Checkbox2>
-            ) : field.field === "birthday" ? (
-              <Column gap="xs">
-                <Text class="label" size="small">
-                  {fieldConfiguration[field.field].name()} *
-                </Text>
-                <BirthdaySelects />
-                <Text
-                  size="small"
-                  style={{
-                    opacity: 0.6,
-                    "font-size": "11px",
-                    "margin-top": "4px",
-                  }}
-                >
-                  <Trans>
-                    You must be at least 15 years old to join Stoat.
-                  </Trans>
-                </Text>
-              </Column>
             ) : (
               <TextField
                 required
@@ -168,147 +107,14 @@ export function Fields(props: FieldProps) {
                 placeholder={fieldConfiguration[field.field].placeholder()}
                 disabled={field.disabled}
                 value={field.value}
-                onInput={
-                  field.field === "password" || field.field === "new-password"
-                    ? (e: any) => setPassword(e.currentTarget.value)
-                    : undefined
-                }
               />
             )}
-
-            <Show
-              when={
-                (field.field === "password" ||
-                  field.field === "new-password") &&
-                password()
-              }
-            >
-              <StrengthMeter>
-                <StrengthTrack>
-                  <StrengthBar
-                    style={{
-                      width: `${(passwordStrength() / 4) * 100}%`,
-                      background: strengthColor(),
-                    }}
-                  />
-                </StrengthTrack>
-                <StrengthText style={{ color: strengthColor() }}>
-                  {strengthLabel()}
-                </StrengthText>
-              </StrengthMeter>
-            </Show>
-          </Column>
+          </label>
         );
       }}
     </For>
   );
 }
-
-/**
- * Birthday selection components
- */
-function BirthdaySelects() {
-  const days = Array.from({ length: 31 }, (_, i) => i + 1);
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-  const currentYear = 2026;
-  const years = Array.from({ length: 100 }, (_, i) => currentYear - i);
-
-  return (
-    <Row gap="sm">
-      <StyledSelect name="birth_day" required>
-        <option value="" disabled selected>
-          Day
-        </option>
-        <For each={days}>{(day) => <option value={day}>{day}</option>}</For>
-      </StyledSelect>
-      <StyledSelect name="birth_month" required>
-        <option value="" disabled selected>
-          Month
-        </option>
-        <For each={months}>
-          {(month, i) => <option value={i() + 1}>{month}</option>}
-        </For>
-      </StyledSelect>
-      <StyledSelect name="birth_year" required>
-        <option value="" disabled selected>
-          Year
-        </option>
-        <For each={years}>
-          {(year) => <option value={year}>{year}</option>}
-        </For>
-      </StyledSelect>
-    </Row>
-  );
-}
-
-const StyledSelect = styled("select", {
-  base: {
-    flex: 1,
-    background: "var(--md-sys-color-surface-container-high)",
-    color: "var(--md-sys-color-on-surface)",
-    border: "none",
-    borderRadius: "4px",
-    padding: "8px 12px",
-    fontSize: "14px",
-    outline: "none",
-    cursor: "pointer",
-    "&:focus": {
-      boxShadow: "0 0 0 2px var(--md-sys-color-primary)",
-    },
-  },
-});
-
-const StrengthMeter = styled("div", {
-  base: {
-    marginTop: "-8px",
-    marginBottom: "4px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  },
-});
-
-const StrengthTrack = styled("div", {
-  base: {
-    height: "6px",
-    width: "100%",
-    background: "var(--md-sys-color-surface-container-highest)",
-    borderRadius: "3px",
-    overflow: "hidden",
-    position: "relative",
-  },
-});
-
-const StrengthBar = styled("div", {
-  base: {
-    height: "100%",
-    borderRadius: "3px",
-    transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-  },
-});
-
-const StrengthText = styled("span", {
-  base: {
-    fontSize: "11px",
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: "0.05em",
-    alignSelf: "flex-end",
-  },
-});
 
 interface Props {
   /**

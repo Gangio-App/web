@@ -47,24 +47,21 @@ interface SettingsDefinition {
    * Visibility of bio content.
    */
   "privacy:bio_visibility": "Everyone" | "Friends" | "Nobody";
-  /**
-   * Whether to show voice activity on user cards.
-   */
-  "privacy:show_voice_activity": boolean;
 }
 
 /**
  * Map actual type to JavaScript type OR function to clean the value.
  */
 type ValueType<T extends keyof SettingsDefinition> =
-  | (SettingsDefinition[T] extends boolean
-      ? "boolean"
-      : SettingsDefinition[T] extends number
-        ? "number"
-        : SettingsDefinition[T] extends string
-          ? "string"
-          : never)
-  | ((v: any) => SettingsDefinition[T] | undefined);
+  SettingsDefinition[T] extends boolean
+    ? "boolean"
+    : SettingsDefinition[T] extends number
+      ? "number"
+      : SettingsDefinition[T] extends string
+        ? "string"
+        : (
+            v: Partial<SettingsDefinition[T]>,
+          ) => SettingsDefinition[T] | undefined;
 
 /**
  * Expected types of settings keys, enforce some sort of validation is present for all keys.
@@ -83,7 +80,6 @@ const EXPECTED_TYPES: { [K in keyof SettingsDefinition]: ValueType<K> } = {
       return v;
     }
   },
-  "privacy:show_voice_activity": "boolean",
 };
 
 /**
@@ -128,7 +124,6 @@ export class Settings extends AbstractStore<"settings", TypeSettings> {
       "changelog:last_index": 0,
       "privacy:streamer_mode": false,
       "privacy:bio_visibility": "Everyone",
-      "privacy:show_voice_activity": true,
     };
   }
 
