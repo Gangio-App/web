@@ -86,7 +86,7 @@ export function EditPasswordModal(
             onSubmit();
             return false;
           },
-          isDisabled: !Form2.canSubmit(group),
+          isDisabled: !Form2.canSubmit(group) || passwordStrength() <= 1,
         },
       ]}
       isDisabled={group.isPending || isSuccess()}
@@ -95,7 +95,7 @@ export function EditPasswordModal(
         <Match when={isSuccess()}>
           <SuccessContainer>
             <Symbol size={64} class={css({ color: "var(--md-sys-color-primary)" })}>check_circle</Symbol>
-            <Text size="large" weight="bold">
+            <Text size="large" class="title">
               <Trans>Password updated successfully!</Trans>
             </Text>
             <Text size="small">
@@ -112,7 +112,7 @@ export function EditPasswordModal(
                 label={t`New Password`}
                 type="password"
                 placeholder={t`Enter a new password.`}
-                "toggle-password"
+                toggle-password
               />
               
               <Show when={group.controls.password.value}>
@@ -127,13 +127,19 @@ export function EditPasswordModal(
                 </StrengthMeter>
               </Show>
 
+              <Show when={group.controls.password.value && passwordStrength() <= 1}>
+                <Text size="small" class={css({ color: "var(--md-sys-color-error)", marginTop: "-12px", marginBottom: "8px" })}>
+                  <Trans>Password is too weak. Please use a stronger password.</Trans>
+                </Text>
+              </Show>
+
               <Form2.TextField
                 name="currentPassword"
                 control={group.controls.currentPassword}
                 label={t`Current Password`}
                 type="password"
                 placeholder={t`Enter your current password...`}
-                "toggle-password"
+                toggle-password
               />
             </Column>
           </form>

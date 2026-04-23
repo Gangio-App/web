@@ -4258,3 +4258,6 @@ msgstr "Medium"
 
 msgid "Strong"
 msgstr "Strong"
+
+msgid "Password is too weak. Please use a stronger password."
+msgstr "Password is too weak. Please use a stronger password."

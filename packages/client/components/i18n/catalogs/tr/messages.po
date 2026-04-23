@@ -4327,3 +4327,6 @@ msgstr "Orta"
 
 msgid "Strong"
 msgstr "Güçlü"
+
+msgid "Password is too weak. Please use a stronger password."
+msgstr "Şifre çok zayıf. Lütfen daha güçlü bir şifre kullanın."
