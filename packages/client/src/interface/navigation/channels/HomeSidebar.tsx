@@ -284,28 +284,34 @@ function Entry(
     const recipientId = local.channel.recipient?.id;
     if (!recipientId) return;
 
-    // Check if in the same voice room as the current user
-    const currentVoiceChannel = voice.channel();
-    if (
-      currentVoiceChannel &&
-      currentVoiceChannel.voiceParticipants.has(recipientId)
-    ) {
-      return { type: "with_you" as const };
-    }
+    // We search across all channels to find where the recipient is
+    // We access voiceParticipants.size to ensure reactivity when people join/leave
+    const vChannel = client().channels.find((channel) => {
+      if (channel.type !== "VoiceChannel") return false;
+      return channel.voiceParticipants.has(recipientId);
+    });
 
-    // Check all channels for voice activity
-    const vChannel = client().channels.find(
-      (channel) =>
-        channel.type === "VoiceChannel" &&
-        channel.voiceParticipants.has(recipientId),
-    );
+    if (vChannel) {
+      const participant = vChannel.voiceParticipants.get(recipientId);
+      const isSharing = participant?.isScreensharing();
 
-    if (vChannel && vChannel.server) {
-      return {
-        type: "mutual" as const,
-        serverName: vChannel.server.name,
-        channelName: vChannel.name,
-      };
+      // If it's a DM or Group call that we are currently in
+      if (
+        (vChannel.type === "DirectMessage" || vChannel.type === "Group") &&
+        voice.channel()?.id === vChannel.id
+      ) {
+        return { type: "with_you" as const, isSharing };
+      }
+
+      // If it's a server channel (even if we are in it)
+      if (vChannel.server) {
+        return {
+          type: "mutual" as const,
+          serverName: vChannel.server.name,
+          channelName: vChannel.name,
+          isSharing,
+        };
+      }
     }
   });
 
@@ -314,11 +320,18 @@ function Entry(
    */
   const status = () => {
     const vr = voiceRoom();
-    if (vr?.type === "with_you") return t`In a voice chat with you`;
-    if (vr?.type === "mutual") {
-      const channelName = vr.channelName;
-      const serverName = vr.serverName;
-      return t`In ${channelName} in ${serverName}`;
+    if (vr) {
+      if (vr.isSharing) {
+        if (vr.type === "with_you") return t`Sharing screen with you`;
+        return t`Sharing screen in ${vr.channelName} in ${vr.serverName}`;
+      }
+
+      if (vr.type === "with_you") return t`In a voice chat with you`;
+      if (vr.type === "mutual") {
+        const channelName = vr.channelName;
+        const serverName = vr.serverName;
+        return t`In ${channelName} in ${serverName}`;
+      }
     }
 
     if (isSharing()) return t`Sharing Screen`;

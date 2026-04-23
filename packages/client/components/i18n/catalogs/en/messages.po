@@ -4159,3 +4159,24 @@ msgstr "In a voice chat with you"
 
 msgid "In {channelName} in {serverName}"
 msgstr "In {channelName} in {serverName}"
+
+msgid "Weak"
+msgstr "Weak"
+
+msgid "Medium"
+msgstr "Medium"
+
+msgid "Strong"
+msgstr "Strong"
+
+msgid "Password updated successfully!"
+msgstr "Password updated successfully!"
+
+msgid "Closing this window shortly..."
+msgstr "Closing this window shortly..."
+
+msgid "Sharing screen with you"
+msgstr "Sharing screen with you"
+
+msgid "Sharing screen in {channelName} in {serverName}"
+msgstr "Sharing screen in {channelName} in {serverName}"

@@ -4228,3 +4228,24 @@ msgstr "{serverName} sunucusunda {channelName} kanalında"
 
 msgid "Start Voice Call"
 msgstr "Sesli Arama Başlat"
+
+msgid "Weak"
+msgstr "Zayıf"
+
+msgid "Medium"
+msgstr "Orta"
+
+msgid "Strong"
+msgstr "Güçlü"
+
+msgid "Password updated successfully!"
+msgstr "Şifre başarıyla güncellendi!"
+
+msgid "Closing this window shortly..."
+msgstr "Pencere kısa süre içinde kapatılıyor..."
+
+msgid "Sharing screen with you"
+msgstr "Seninle ekran paylaşımında"
+
+msgid "Sharing screen in {channelName} in {serverName}"
+msgstr "{serverName} sunucusunda {channelName} kanalında ekran paylaşıyor"
