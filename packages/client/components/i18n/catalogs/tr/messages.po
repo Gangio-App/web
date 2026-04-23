@@ -4216,3 +4216,15 @@ msgstr "Zaten bir aramadasınız"
 
 msgid "{names} is in the call"
 msgstr "{names} aramada"
+
+msgid "Sharing Screen"
+msgstr "Ekran Paylaşılıyor"
+
+msgid "In a voice chat with you"
+msgstr "Seninle sesli sohbette"
+
+msgid "In {channelName} in {serverName}"
+msgstr "{serverName} sunucusunda {channelName} kanalında"
+
+msgid "Start Voice Call"
+msgstr "Sesli Arama Başlat"

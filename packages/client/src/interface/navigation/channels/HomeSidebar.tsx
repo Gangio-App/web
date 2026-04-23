@@ -271,15 +271,55 @@ function Entry(
   const { t } = useLingui();
   const { openModal } = useModals();
 
+  const isSharing = () =>
+    [...local.channel.voiceParticipants.values()].some(
+      (p) =>
+        p.userId === local.channel.recipient?.id && p.isScreensharing(),
+    );
+
+  const voiceRoom = createMemo(() => {
+    const recipientId = local.channel.recipient?.id;
+    if (!recipientId) return;
+
+    // Check if in the same voice room as the current user
+    const currentVoiceChannel = voice.channel();
+    if (
+      currentVoiceChannel &&
+      currentVoiceChannel.voiceParticipants.has(recipientId)
+    ) {
+      return { type: "with_you" as const };
+    }
+
+    // Check mutual servers for voice activity
+    for (const server of client().servers.values()) {
+      if (server.members.has(recipientId)) {
+        for (const channel of server.channels) {
+          if (
+            channel.type === "VoiceChannel" &&
+            channel.voiceParticipants.has(recipientId)
+          ) {
+            return {
+              type: "mutual" as const,
+              serverName: server.name,
+              channelName: channel.name,
+            };
+          }
+        }
+      }
+    }
+  });
+
   /**
    * Determine user status if present
    */
   const status = () => {
-    const isSharing = () =>
-      [...local.channel.voiceParticipants.values()].some(
-        (p) =>
-          p.userId === local.channel.recipient?.id && p.isScreensharing(),
-      );
+    const vr = voiceRoom();
+    if (vr?.type === "with_you") return t`In a voice chat with you`;
+    if (vr?.type === "mutual") {
+      const channelName = vr.channelName;
+      const serverName = vr.serverName;
+      return t`In ${channelName} in ${serverName}`;
+    }
 
     if (isSharing()) return t`Sharing Screen`;
 
@@ -391,7 +431,18 @@ function Entry(
                   aria={status()!}
                 >
                   <OverflowingText class={typography({ class: "_status" })}>
-                    <TextWithEmoji content={status()!} />
+                    <div
+                      class={css({
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "2px",
+                      })}
+                    >
+                      <Show when={isSharing()}>
+                        <Symbol size={12}>screen_share</Symbol>
+                      </Show>
+                      <TextWithEmoji content={status()!} />
+                    </div>
                   </OverflowingText>
                 </Tooltip>
               </Show>

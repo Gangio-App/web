@@ -1,4 +1,4 @@
-import { Accessor, Match, Setter, Show, Switch } from "solid-js";
+import { Accessor, Match, Setter, Show, Switch, createMemo } from "solid-js";
 
 import { Trans, useLingui } from "@lingui-solid/solid/macro";
 import { Channel } from "stoat.js";
@@ -17,6 +17,7 @@ import {
   OverflowingText,
   Spacer,
   UserStatus,
+  dismissFloatingElements,
   typography,
 } from "@revolt/ui";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
@@ -193,6 +194,7 @@ export function ChannelHeader(props: Props) {
         >
           <IconButton
             onPress={async () => {
+              dismissFloatingElements();
               if (voice.channel()?.id === props.channel.id) {
                 voice.disconnect();
                 return;
@@ -221,11 +223,16 @@ export function ChannelHeader(props: Props) {
             use:floating={{
               tooltip: {
                 placement: "bottom",
-                content: voice.channel()?.id === props.channel.id 
-                  ? t`Leave Call` 
-                  : (props.channel.voiceParticipants.size > 0 
-                    ? t`${[...props.channel.voiceParticipants.values()].map(p => props.channel.client.users.get(p.userId)?.username ?? t`Someone`).join(", ")} is in the call`
-                    : t`Start Voice Call`),
+                content: createMemo(() => {
+                  if (voice.channel()?.id === props.channel.id) return t`Leave Call`;
+                  if (props.channel.voiceParticipants.size > 0) {
+                    const names = [...props.channel.voiceParticipants.values()]
+                      .map((p) => props.channel.client.users.get(p.userId)?.username ?? t`Someone`)
+                      .join(", ");
+                    return t`${names} is in the call`;
+                  }
+                  return t`Start Voice Call`;
+                })() as string,
               },
             }}
           >
