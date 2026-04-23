@@ -138,6 +138,27 @@ export default function DataPrivacy() {
         >
           <Trans>Enable Streamer Mode</Trans>
         </CategoryButton>
+        <CategoryButton
+          icon={<MdPeople {...iconSize(22)} />}
+          action={
+            <Checkbox
+              checked={state.settings.getValue("privacy:show_voice_activity")}
+            />
+          }
+          onClick={() =>
+            state.settings.setValue(
+              "privacy:show_voice_activity",
+              !state.settings.getValue("privacy:show_voice_activity"),
+            )
+          }
+          description={
+            <Trans>
+              Show voice activity and screenshare status on user cards for friends.
+            </Trans>
+          }
+        >
+          <Trans>Show Voice Activity</Trans>
+        </CategoryButton>
       </CategoryButtonGroup>
 
       <CategoryCollapse

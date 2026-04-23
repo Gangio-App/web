@@ -1,8 +1,13 @@
-import { JSX, Show, createSignal, createMemo } from "solid-js";
+import { JSX, Show, Match, Switch, createSignal, createMemo } from "solid-js";
 import { userInformation } from "@revolt/markdown/users";
 import { useQuery } from "@tanstack/solid-query";
-import { cva } from "styled-system/css";
+import { cva, css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
+
+import { useLingui, Trans } from "@lingui-solid/solid/macro";
+import { useClient } from "@revolt/client";
+import { useVoice } from "@revolt/rtc";
+import { useState } from "@revolt/state";
 
 import { useModals } from "@revolt/modal";
 import { UserContextMenu } from "@revolt/app";
@@ -138,6 +143,10 @@ export function UserCard(
 ) {
   const { openModal } = useModals();
   const [message, setMessage] = createSignal("");
+  const client = useClient();
+  const voice = useVoice();
+  const state = useState();
+  const { t } = useLingui();
   
   const info = createMemo(() => userInformation(props.user, props.member));
 
@@ -266,14 +275,106 @@ export function UserCard(
 
       <ContentArea>
         <Column gap="sm">
-            <Column gap="none" style={{ padding: "0 4px" }}>
-              <NameText style={{ color: info().colour ?? "var(--md-sys-color-on-surface)" }}>
-                {info().username}
-              </NameText>
-              <UsernameText onClick={openFull}>
-                @{props.user.username}
-              </UsernameText>
-            </Column>
+        <Column gap="none" style={{ padding: "0 4px" }}>
+          <NameText
+            style={{
+              color: info().colour ?? "var(--md-sys-color-on-surface)",
+            }}
+          >
+            {info().username}
+          </NameText>
+          <UsernameText onClick={openFull}>@{props.user.username}</UsernameText>
+
+          <Show
+            when={
+              state.settings.getValue("privacy:show_voice_activity") &&
+              props.user.relationship === "Friend" &&
+              client().servers.some((s) => s.members.has(props.user.id))
+            }
+          >
+            {(() => {
+              const voiceRoom = createMemo(() => {
+                const recipientId = props.user.id;
+                const vChannel = client().channels.find((channel) => {
+                  if (channel.type !== "VoiceChannel") return false;
+                  return channel.voiceParticipants.has(recipientId);
+                });
+
+                if (vChannel) {
+                  const participant =
+                    vChannel.voiceParticipants.get(recipientId);
+                  const isSharing = participant?.isScreensharing();
+
+                  if (
+                    (vChannel.type === "DirectMessage" ||
+                      vChannel.type === "Group") &&
+                    voice.channel()?.id === vChannel.id
+                  ) {
+                    return { type: "with_you" as const, isSharing };
+                  }
+
+                  if (vChannel.server) {
+                    return {
+                      type: "mutual" as const,
+                      serverName: vChannel.server.name,
+                      channelName: vChannel.name,
+                      isSharing,
+                    };
+                  }
+                }
+              });
+
+              return (
+                <Show when={voiceRoom()}>
+                  {(vr) => (
+                    <div
+                      class={css({
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        marginTop: "4px",
+                        fontSize: "13px",
+                        color: "var(--md-sys-color-primary)",
+                        fontWeight: "600",
+                      })}
+                    >
+                      <Show when={vr().isSharing}>
+                        <IconSymbol size={16}>screen_share</IconSymbol>
+                      </Show>
+                      <Switch>
+                        <Match when={vr().isSharing}>
+                          <Switch>
+                            <Match when={vr().type === "with_you"}>
+                              <Trans>Sharing screen with you</Trans>
+                            </Match>
+                            <Match when={vr().type === "mutual"}>
+                              <Trans>
+                                Sharing screen in {vr().channelName} in{" "}
+                                {vr().serverName}
+                              </Trans>
+                            </Match>
+                          </Switch>
+                        </Match>
+                        <Match when={!vr().isSharing}>
+                          <Switch>
+                            <Match when={vr().type === "with_you"}>
+                              <Trans>In a voice chat with you</Trans>
+                            </Match>
+                            <Match when={vr().type === "mutual"}>
+                              <Trans>
+                                In {vr().channelName} in {vr().serverName}
+                              </Trans>
+                            </Match>
+                          </Switch>
+                        </Match>
+                      </Switch>
+                    </div>
+                  )}
+                </Show>
+              );
+            })()}
+          </Show>
+        </Column>
 
             <Divider />
 
