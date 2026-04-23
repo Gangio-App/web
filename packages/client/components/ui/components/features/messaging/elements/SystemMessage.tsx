@@ -20,7 +20,10 @@ import { time } from "@revolt/markdown/elements";
 import { RenderAnchor } from "@revolt/markdown/plugins/anchors";
 import { UserMention } from "@revolt/markdown/plugins/mentions";
 import { useSmartParams } from "@revolt/routing";
-import { formatTime, Time } from "@revolt/ui/components/utils";
+import { useVoice } from "@revolt/rtc";
+import { Button, formatTime, Time } from "@revolt/ui/components/utils";
+import { Button as UIButton } from "@revolt/ui";
+import { useClient } from "@revolt/client";
 
 interface Props {
   /**
@@ -45,6 +48,8 @@ interface Props {
 export function SystemMessage(props: Props) {
   const params = useSmartParams();
   const dayjs = useTime();
+  const voice = useVoice();
+  const client = useClient();
 
   return (
     <Base>
@@ -209,6 +214,20 @@ export function SystemMessage(props: Props) {
                   }
                 />{" "}
                 started a call
+                <div style={{ "margin-top": "8px" }}>
+                  <UIButton
+                    size="small"
+                    variant="tonal"
+                    onPress={() => {
+                      const channel = client().channels.get(params().channelId);
+                      if (channel) {
+                        voice.connect(channel);
+                      }
+                    }}
+                  >
+                    <Trans>Join Call</Trans>
+                  </UIButton>
+                </div>
               </Trans>
             }
           >
