@@ -226,8 +226,9 @@ export function ChannelHeader(props: Props) {
                 content: createMemo(() => {
                   if (voice.channel()?.id === props.channel.id) return t`Leave Call`;
                   if (props.channel.voiceParticipants.size > 0) {
+                    const cl = client();
                     const names = [...props.channel.voiceParticipants.values()]
-                      .map((p) => props.channel.client.users.get(p.userId)?.username ?? t`Someone`)
+                      .map((p) => cl.users.get(p.userId)?.username ?? t`Someone`)
                       .join(", ");
                     return t`${names} is in the call`;
                   }

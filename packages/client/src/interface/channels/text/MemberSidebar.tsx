@@ -197,7 +197,10 @@ export function ServerMemberSidebar(props: Props) {
       (role) => role.hoist,
     );
 
-    const members = client().serverMembers.filter(
+    const cl = client();
+    if (!cl || !cl.serverMembers) return [[], hoistedRoles] as const;
+
+    const members = cl.serverMembers.filter(
       (member) => member.id.server === props.channel.serverId,
     );
 
@@ -333,15 +336,16 @@ export function ServerMemberSidebar(props: Props) {
     return elements;
   });
 
-  const onlineMembers = createMemo(
-    () =>
-      client().serverMembers.filter(
-        (member) =>
-          (member.id.server === props.channel.serverId &&
-            member.user?.online) ||
-          false,
-      ).length,
-  );
+  const onlineMembers = createMemo(() => {
+    const cl = client();
+    if (!cl || !cl.serverMembers) return 0;
+    return cl.serverMembers.filter(
+      (member) =>
+        (member.id.server === props.channel.serverId &&
+          member.user?.online) ||
+        false,
+    ).length;
+  });
 
   return (
     <Container>
