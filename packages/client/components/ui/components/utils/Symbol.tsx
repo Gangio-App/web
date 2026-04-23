@@ -83,6 +83,8 @@ export function Symbol(rawProps: Props & HTMLStyledProps<"span">) {
       aria-hidden="true"
       {...restProps}
       // @codegen directives props=props include=floating
-    />
+    >
+      {restProps.children}
+    </styled.span>
   );
 }
