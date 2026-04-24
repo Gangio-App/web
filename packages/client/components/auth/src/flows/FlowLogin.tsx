@@ -10,12 +10,15 @@ import { useModals } from "@revolt/modal";
 import { Navigate } from "@revolt/routing";
 import {
   Button,
+  Checkbox,
   CircularProgress,
   Column,
   Row,
   Text,
   iconSize,
 } from "@revolt/ui";
+
+const Checkbox2 = Checkbox;
 
 import MdArrowBack from "@material-design-icons/svg/filled/arrow_back.svg?component-solid";
 
@@ -99,12 +102,17 @@ export default function FlowLogin() {
             </FlowTitle>
             <Form onSubmit={performLogin}>
               <Fields fields={["email", "password"]} />
-              <Column gap="md" align>
+              <Row align class={css({ marginTop: "-12px", justifyContent: "space-between" })}>
+                <Checkbox2 name="remember">
+                  <Trans>Remember me</Trans>
+                </Checkbox2>
                 <a href="/login/reset">
                   <Button variant="text" size="small">
-                    <Trans>Reset password</Trans>
+                    <Trans>Forgot password?</Trans>
                   </Button>
                 </a>
+              </Row>
+              <Column gap="md" align>
                 <a href="/login/resend">
                   <Button variant="text" size="small">
                     <Trans>Resend verification</Trans>
@@ -133,19 +141,22 @@ export default function FlowLogin() {
 
             <SteamError />
 
-            <Row gap="lg" justify>
-              <SocialButton onClick={() => {
+            <Column gap="md">
+              <SocialButton variant="steam" onClick={() => {
                 const apiUrl = import.meta.env.VITE_API_URL || "https://gangio.pro/api";
                 window.open(`${apiUrl}/steam/login`, "Steam Login", "width=600,height=800");
               }}>
                 <SocialIcon src="/assets/socials/steam.svg" />
-                <Trans>Steam</Trans>
+                <Trans>Continue with Steam</Trans>
               </SocialButton>
-              <SocialButton onClick={() => alert("Google login coming soon!")}>
+              <SocialButton variant="google" onClick={() => {
+                const apiUrl = import.meta.env.VITE_API_URL || "https://gangio.pro/api";
+                window.open(`${apiUrl}/google/login`, "Google Login", "width=600,height=800");
+              }}>
                 <SocialIcon src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" />
-                <Trans>Google</Trans>
+                <Trans>Continue with Google</Trans>
               </SocialButton>
-            </Row>
+            </Column>
           </>
         }
       >
@@ -217,27 +228,42 @@ const SocialButton = styled("button", {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: "10px",
-    flex: 1,
-    padding: "10px 16px",
-    borderRadius: "12px",
-    border: "1px solid var(--md-sys-color-outline-variant)",
-    background: "var(--md-sys-color-surface-container-low)",
-    color: "var(--md-sys-color-on-surface)",
-    fontSize: "14px",
+    gap: "12px",
+    width: "100%",
+    padding: "12px 24px",
+    borderRadius: "16px",
+    fontSize: "15px",
     fontWeight: 600,
     cursor: "pointer",
     transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+    border: "1px solid transparent",
 
     _hover: {
-      background: "var(--md-sys-color-surface-container-high)",
       transform: "translateY(-1px)",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
     },
 
     _active: {
       transform: "translateY(0)",
-      background: "var(--md-sys-color-surface-container-highest)",
+    },
+  },
+  variants: {
+    variant: {
+      steam: {
+        background: "#1b2838",
+        color: "#ffffff",
+        _hover: {
+          background: "#2a475e",
+        },
+      },
+      google: {
+        background: "var(--md-sys-color-surface-container-high)",
+        color: "var(--md-sys-color-on-surface)",
+        border: "1px solid var(--md-sys-color-outline-variant)",
+        _hover: {
+          background: "var(--md-sys-color-surface-container-highest)",
+        },
+      },
     },
   },
 });
