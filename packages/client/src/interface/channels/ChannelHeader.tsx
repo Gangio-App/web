@@ -216,9 +216,23 @@ export function ChannelHeader(props: Props) {
 
                 // Only send message if no one is in it
                 if (props.channel.voiceParticipants.size === 0) {
-                  await props.channel.sendMessage({
-                    content: "[CALL_START_EVENT]",
+                  const startTime = Date.now();
+                  const msg = await props.channel.sendMessage({
+                    content: `[CALL_START_EVENT:${startTime}]`,
                   });
+                  
+                  // Best-effort duration tracker: wait for call to start, then wait for it to empty
+                  let hasConnected = false;
+                  const checkInterval = setInterval(() => {
+                    const currentParticipants = props.channel.voiceParticipants.size;
+                    if (!hasConnected && currentParticipants > 0) {
+                      hasConnected = true;
+                    } else if (hasConnected && currentParticipants === 0) {
+                      clearInterval(checkInterval);
+                      const duration = Math.floor((Date.now() - startTime) / 1000);
+                      msg.edit({ content: `[CALL_END_EVENT:${startTime}:${duration}]` }).catch(() => {});
+                    }
+                  }, 3000);
                 }
               } catch (err) {
                 console.error("Failed to start calling:", err);

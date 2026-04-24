@@ -1,7 +1,7 @@
 import { For, Match, Show, Switch, createSignal, onMount } from "solid-js";
 
 import { useLingui } from "@lingui-solid/solid/macro";
-import { Message as MessageInterface, WebsiteEmbed, CallStartedSystemMessage } from "stoat.js";
+import { Message as MessageInterface, WebsiteEmbed } from "stoat.js";
 import { cva, css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 import { decodeTime } from "ulid";
@@ -97,19 +97,13 @@ export function Message(props: Props) {
       username={
         <div use:floating={floatingUserMenusFromMessage(props.message)}>
           <Username
-            username={(() => {
-              const author =
-                props.message.systemMessage?.type === "call_started"
-                  ? (props.message.systemMessage as CallStartedSystemMessage).by
-                  : props.message.author ?? props.message.member?.user;
-              return (
-                props.message.masquerade?.name ??
-                props.message.member?.nickname ??
-                author?.displayName ??
-                author?.username ??
-                props.message.username
-              );
-            })()}
+            username={
+              props.message.masquerade?.name ??
+              props.message.member?.nickname ??
+              props.message.author?.displayName ??
+              props.message.author?.username ??
+              props.message.username
+            }
             colour={props.message.roleColour!}
           />
         </div>
@@ -122,13 +116,9 @@ export function Message(props: Props) {
           <Avatar
             size={36}
             src={
-                isHovering()
-                  ? (props.message.systemMessage?.type === "call_started" 
-                      ? (props.message.systemMessage as CallStartedSystemMessage).by?.animatedAvatarURL 
-                      : props.message.animatedAvatarURL)
-                  : (props.message.systemMessage?.type === "call_started" 
-                      ? (props.message.systemMessage as CallStartedSystemMessage).by?.avatarURL 
-                      : props.message.avatarURL)
+              isHovering()
+                ? props.message.animatedAvatarURL
+                : props.message.avatarURL
             }
           />
         </div>
@@ -274,7 +264,7 @@ export function Message(props: Props) {
         <Match when={props.editing}>
           <EditMessage message={props.message} />
         </Match>
-        <Match when={props.message.content === "[CALL_START_EVENT]"}>
+        <Match when={props.message.content?.startsWith("[CALL_START_EVENT:") || props.message.content?.startsWith("[CALL_END_EVENT:") || props.message.content === "[CALL_START_EVENT]"}>
           <CallEventCard message={props.message} />
         </Match>
         <Match when={props.message.content}>
@@ -347,24 +337,60 @@ const BreakText = styled("div", {
 });
 
 /**
- * Call event card (for legacy messages)
+ * Call event card
  */
 function CallEventCard(props: { message: MessageInterface }) {
   const voice = useVoice();
   const { t } = useLingui();
-  const inThisCall = () => voice.channel()?.id === props.message.channelId;
-  const isCallActive = () => {
-    const participants = props.message.channel!.voiceParticipants.size > 0;
-    if (!participants) return false;
+  
+  const isEndEvent = () => props.message.content?.startsWith("[CALL_END_EVENT:");
+  
+  const getParts = () => props.message.content?.split(":") || [];
+  const sessionStart = () => {
+    // Fallback for old "[CALL_START_EVENT]" without timestamp
+    if (props.message.content === "[CALL_START_EVENT]") return props.message.createdAt.getTime();
+    return parseInt(getParts()[1]) || props.message.createdAt.getTime();
+  };
+  const finalDuration = () => isEndEvent() ? parseInt(getParts()[2]) : 0;
 
-    // Only show as active if it's the latest call start message we know about
-    const messages = props.message.channel!.messages;
-    const callStartMessages = messages.filter(
-      (m) => m.content === "[CALL_START_EVENT]",
-    );
-    return (
-      callStartMessages[callStartMessages.length - 1]?.id === props.message.id
-    );
+  const inThisCall = () => voice.channel()?.id === props.message.channelId;
+
+  const isThisCallActive = () => {
+    if (isEndEvent()) return false;
+    const start = sessionStart();
+    
+    const participants = [...(props.message.channel?.voiceParticipants.values() || [])];
+    if (participants.length === 0) return false;
+    
+    const currentCallStart = Math.min(...participants.map(p => p.joinedAt.getTime()));
+    return start >= currentCallStart - 10000; // 10 second grace period
+  };
+
+  const [liveDuration, setLiveDuration] = createSignal(0);
+
+  createEffect(() => {
+    if (isThisCallActive()) {
+      setLiveDuration(Math.floor((Date.now() - sessionStart()) / 1000));
+      const interval = setInterval(() => {
+        setLiveDuration(Math.floor((Date.now() - sessionStart()) / 1000));
+      }, 1000);
+      onCleanup(() => clearInterval(interval));
+    }
+  });
+
+  const formatDuration = (seconds: number) => {
+    if (!seconds || seconds < 0) return "";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const displayDuration = () => {
+    if (isThisCallActive()) return formatDuration(liveDuration());
+    if (isEndEvent()) return formatDuration(finalDuration());
+    return null;
   };
 
   return (
@@ -398,11 +424,14 @@ function CallEventCard(props: { message: MessageInterface }) {
         <div class={css({ display: "flex", flexDirection: "column" })}>
           <div class={css({ fontWeight: "bold", fontSize: "14px" })}>{t`Voice Call`}</div>
           <div class={css({ fontSize: "12px", opacity: 0.7 })}>
-            {isCallActive() ? t`Call in progress` : t`Call ended`}
+            {isThisCallActive() ? t`Call in progress` : t`Call ended`}
+            <Show when={displayDuration()}>
+              {" • " + displayDuration()}
+            </Show>
           </div>
         </div>
       </div>
-      <Show when={isCallActive()}>
+      <Show when={isThisCallActive()}>
         <Show
           when={!inThisCall()}
           fallback={
@@ -431,6 +460,4 @@ function CallEventCard(props: { message: MessageInterface }) {
     </div>
   );
 }
-
-
 

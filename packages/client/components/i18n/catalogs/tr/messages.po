@@ -4347,11 +4347,3 @@ msgstr "Görüşme sona erdi"
 
 msgid "Leave Call"
 msgstr "Görüşmeden Ayrıl"
-msgid "Mutual Friends"
-msgstr "Ortak Arkadaşlar"
-
-msgid "Mutual Servers"
-msgstr "Ortak Sunucular"
-
-msgid "Mutual Groups"
-msgstr "Ortak Gruplar"
