@@ -424,7 +424,13 @@ function CallEventCard(props: { message: MessageInterface }) {
         <div class={css({ display: "flex", flexDirection: "column" })}>
           <div class={css({ fontWeight: "bold", fontSize: "14px" })}>{t`Voice Call`}</div>
           <div class={css({ fontSize: "12px", opacity: 0.7 })}>
-            {isThisCallActive() ? t`Call in progress` : t`Call ended`}
+            {isThisCallActive()
+              ? inThisCall() && voice.state() === "CONNECTING"
+                ? t`Connecting...`
+                : inThisCall() && voice.state() === "RECONNECTING"
+                ? t`Reconnecting...`
+                : t`Call in progress`
+              : t`Call ended`}
             <Show when={displayDuration()}>
               {" • " + displayDuration()}
             </Show>

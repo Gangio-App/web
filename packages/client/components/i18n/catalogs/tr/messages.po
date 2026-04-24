@@ -4347,3 +4347,9 @@ msgstr "Görüşme sona erdi"
 
 msgid "Leave Call"
 msgstr "Görüşmeden Ayrıl"
+
+msgid "Connecting..."
+msgstr "Bağlanıyor..."
+
+msgid "Reconnecting..."
+msgstr "Yeniden Bağlanıyor..."
