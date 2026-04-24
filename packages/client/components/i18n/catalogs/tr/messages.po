@@ -4368,3 +4368,9 @@ msgstr "Steam"
 
 msgid "Google"
 msgstr "Google"
+
+msgid "Remember me for 30 days"
+msgstr "30 gün boyunca beni hatırla"
+
+msgid "Login with Steam"
+msgstr "Steam ile Giriş Yap"

@@ -110,10 +110,11 @@ export default function FlowLogin() {
               
               <Row align justify="space-between" style={{ margin: "4px 0" }}>
                 <Checkbox
-                  value={rememberMe()}
-                  onValueChange={setRememberMe}
-                  title={<Trans>Remember me for 30 days</Trans>}
-                />
+                  checked={rememberMe()}
+                  onChange={(e) => setRememberMe(e.currentTarget.checked)}
+                >
+                  <Trans>Remember me for 30 days</Trans>
+                </Checkbox>
               </Row>
 
               <Column gap="xs" align>
@@ -151,7 +152,7 @@ export default function FlowLogin() {
             <Row gap="lg" justify>
               <SocialButton onClick={loginWithSteam}>
                 <SocialIcon src="/assets/socials/steam.svg" />
-                <Trans>Login with Steam</Trans>
+                <span><Trans>Login with Steam</Trans></span>
               </SocialButton>
             </Row>
           </>
