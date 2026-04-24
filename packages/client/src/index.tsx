@@ -21,7 +21,6 @@ import FlowHome from "@revolt/auth/src/flows/FlowHome";
 import FlowLogin from "@revolt/auth/src/flows/FlowLogin";
 import FlowResend from "@revolt/auth/src/flows/FlowResend";
 import FlowReset from "@revolt/auth/src/flows/FlowReset";
-import FlowSteamToken from "@revolt/auth/src/flows/FlowSteamToken";
 import FlowVerify from "@revolt/auth/src/flows/FlowVerify";
 import { ClientContext, useClient } from "@revolt/client";
 import { I18nProvider } from "@revolt/i18n";
@@ -150,7 +149,6 @@ render(
           <Route path="/create" component={FlowCreate} />
           <Route path="/create/:code" component={FlowCreate} />
           <Route path="/auth" component={FlowLogin} />
-          <Route path="/steam-token" component={FlowSteamToken} />
           <Route path="/resend" component={FlowResend} />
           <Route path="/reset" component={FlowReset} />
           <Route path="/verify/:token" component={FlowVerify} />

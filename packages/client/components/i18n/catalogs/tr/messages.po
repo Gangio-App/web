@@ -4353,3 +4353,18 @@ msgstr "Bağlanıyor..."
 
 msgid "Reconnecting..."
 msgstr "Yeniden Bağlanıyor..."
+
+msgid "Remember me"
+msgstr "Beni hatırla"
+
+msgid "Forgot password?"
+msgstr "Şifreni mi unuttun?"
+
+msgid "OR CONTINUE WITH"
+msgstr "VEYA ŞUNUNLA DEVAM ET"
+
+msgid "Steam"
+msgstr "Steam"
+
+msgid "Google"
+msgstr "Google"

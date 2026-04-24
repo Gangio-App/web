@@ -1,4 +1,4 @@
-import { Match, Show, Switch, createSignal, onMount, onCleanup } from "solid-js";
+import { Match, Switch, createSignal, onCleanup } from "solid-js";
 
 import { Trans } from "@lingui-solid/solid/macro";
 import { css } from "styled-system/css";
@@ -10,15 +10,13 @@ import { useModals } from "@revolt/modal";
 import { Navigate } from "@revolt/routing";
 import {
   Button,
-  Checkbox,
   CircularProgress,
   Column,
   Row,
   Text,
   iconSize,
+  Checkbox,
 } from "@revolt/ui";
-
-const Checkbox2 = Checkbox;
 
 import MdArrowBack from "@material-design-icons/svg/filled/arrow_back.svg?component-solid";
 
@@ -33,38 +31,29 @@ export default function FlowLogin() {
   const state = useState();
   const modals = useModals();
   const { lifecycle, isLoggedIn, login, selectUsername } = useClientLifecycle();
+  const [rememberMe, setRememberMe] = createSignal(true);
 
-  onMount(() => {
-    const handleMessage = (event: MessageEvent) => {
-      // Security: verify origin if needed, but for now we check the data structure
-      if (event.origin !== window.location.origin) return;
+  /**
+   * Listen for Steam login messages
+   */
+  const handleMessage = (event: MessageEvent) => {
+    if (event.data?.type === "STEAM_LOGIN_SUCCESS") {
+      const { session } = event.data;
+      // Mark session as invalid initially so lifecycle can connect
+      const createdSession = {
+        ...session,
+        valid: false,
+      };
+      state.auth.setSession(createdSession);
+      lifecycle.transition({
+        type: TransitionType.LoginUncached,
+        session: createdSession,
+      });
+    }
+  };
 
-      if (event.data?.type === "steam-login") {
-        const { token, userId } = event.data;
-        const session = {
-          _id: "steam-session",
-          token,
-          userId,
-          valid: false,
-        };
-        state.auth.setSession(session);
-        lifecycle.transition({
-          type: TransitionType.LoginUncached,
-          session,
-        });
-      } else if (event.data?.type === "steam-login-error") {
-        // Handle error sent from popup
-        const params = new URLSearchParams(window.location.search);
-        params.set("error", event.data.error);
-        window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
-        // Manually trigger error display (re-run onMount logic of SteamError if possible, 
-        // or just rely on state if we shared it)
-        window.location.reload(); // Simplest way to re-trigger SteamError logic
-      }
-    };
-    window.addEventListener("message", handleMessage);
-    onCleanup(() => window.removeEventListener("message", handleMessage));
-  });
+  window.addEventListener("message", handleMessage);
+  onCleanup(() => window.removeEventListener("message", handleMessage));
 
   /**
    * Log into account
@@ -82,6 +71,22 @@ export default function FlowLogin() {
       modals,
     );
   }
+
+  /**
+   * Start Steam Login
+   */
+  const loginWithSteam = () => {
+    const width = 600;
+    const height = 800;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+
+    window.open(
+      "https://gangio.pro/api/steam/login",
+      "Steam Login",
+      `width=${width},height=${height},top=${top},left=${left},scrollbars=yes`,
+    );
+  };
 
   /**
    * Select a new username
@@ -102,17 +107,21 @@ export default function FlowLogin() {
             </FlowTitle>
             <Form onSubmit={performLogin}>
               <Fields fields={["email", "password"]} />
-              <Row align class={css({ marginTop: "-12px", justifyContent: "space-between" })}>
-                <Checkbox2 name="remember">
-                  <Trans>Remember me</Trans>
-                </Checkbox2>
+              
+              <Row align justify="space-between" style={{ margin: "4px 0" }}>
+                <Checkbox
+                  value={rememberMe()}
+                  onValueChange={setRememberMe}
+                  title={<Trans>Remember me for 30 days</Trans>}
+                />
+              </Row>
+
+              <Column gap="xs" align>
                 <a href="/login/reset">
                   <Button variant="text" size="small">
-                    <Trans>Forgot password?</Trans>
+                    <Trans>Reset password</Trans>
                   </Button>
                 </a>
-              </Row>
-              <Column gap="md" align>
                 <a href="/login/resend">
                   <Button variant="text" size="small">
                     <Trans>Resend verification</Trans>
@@ -133,30 +142,18 @@ export default function FlowLogin() {
 
             <DividerContainer>
               <Divider />
-              <span class={css({ fontSize: "12px", opacity: 0.5, whiteSpace: "nowrap" })}>
+              <Text size="small" style={{ opacity: 0.5 }}>
                 <Trans>OR CONTINUE WITH</Trans>
-              </span>
+              </Text>
               <Divider />
             </DividerContainer>
 
-            <SteamError />
-
-            <Column gap="md">
-              <SocialButton variant="steam" onClick={() => {
-                const apiUrl = import.meta.env.VITE_API_URL || "https://gangio.pro/api";
-                window.open(`${apiUrl}/steam/login`, "Steam Login", "width=600,height=800");
-              }}>
+            <Row gap="lg" justify>
+              <SocialButton onClick={loginWithSteam}>
                 <SocialIcon src="/assets/socials/steam.svg" />
-                <Trans>Continue with Steam</Trans>
+                <Trans>Login with Steam</Trans>
               </SocialButton>
-              <SocialButton variant="google" onClick={() => {
-                const apiUrl = import.meta.env.VITE_API_URL || "https://gangio.pro/api";
-                window.open(`${apiUrl}/google/login`, "Google Login", "width=600,height=800");
-              }}>
-                <SocialIcon src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" />
-                <Trans>Continue with Google</Trans>
-              </SocialButton>
-            </Column>
+            </Row>
           </>
         }
       >
@@ -228,50 +225,36 @@ const SocialButton = styled("button", {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    gap: "12px",
-    width: "100%",
-    padding: "12px 24px",
-    borderRadius: "16px",
+    gap: "10px",
+    flex: 1,
+    padding: "12px 16px",
+    borderRadius: "12px",
+    border: "1px solid var(--md-sys-color-outline-variant)",
+    background: "var(--md-sys-color-surface-container-low)",
+    color: "var(--md-sys-color-on-surface)",
     fontSize: "15px",
     fontWeight: 600,
     cursor: "pointer",
     transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-    border: "1px solid transparent",
 
     _hover: {
+      background: "var(--md-sys-color-surface-container-high)",
       transform: "translateY(-1px)",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+      borderColor: "var(--md-sys-color-primary)",
     },
 
     _active: {
       transform: "translateY(0)",
-    },
-  },
-  variants: {
-    variant: {
-      steam: {
-        background: "#1b2838",
-        color: "#ffffff",
-        _hover: {
-          background: "#2a475e",
-        },
-      },
-      google: {
-        background: "var(--md-sys-color-surface-container-high)",
-        color: "var(--md-sys-color-on-surface)",
-        border: "1px solid var(--md-sys-color-outline-variant)",
-        _hover: {
-          background: "var(--md-sys-color-surface-container-highest)",
-        },
-      },
+      background: "var(--md-sys-color-surface-container-highest)",
     },
   },
 });
 
 const SocialIcon = styled("img", {
   base: {
-    width: "20px",
-    height: "20px",
+    width: "22px",
+    height: "22px",
     objectFit: "contain",
   },
 });
@@ -301,50 +284,3 @@ const CenteredProgress = styled("div", {
     padding: "40px",
   },
 });
-
-/**
- * Reads ?error= from URL and shows a friendly message
- */
-function SteamError() {
-  const [errorMsg, setErrorMsg] = createSignal<string | null>(null);
-
-  onMount(() => {
-    const params = new URLSearchParams(window.location.search);
-    const error = params.get("error");
-    if (!error) return;
-    switch (error) {
-      case "steam_not_linked":
-        setErrorMsg("Your Steam account is not linked to any Gangio account. Please log in with email first and link Steam in Settings → Integrations.");
-        break;
-      case "steam_verify_failed":
-        setErrorMsg("Steam verification failed. Please try again.");
-        break;
-      case "steam_user_not_found":
-        setErrorMsg("No Gangio account found for this Steam account.");
-        break;
-      case "steam_internal_error":
-        setErrorMsg("An error occurred during Steam login. Please try again.");
-        break;
-      default:
-        setErrorMsg("An error occurred. Please try again.");
-    }
-    // Clean up the URL so the error doesn't persist on refresh
-    window.history.replaceState({}, "", "/login/auth");
-  });
-
-  return (
-    <Show when={errorMsg()}>
-      <div class={css({
-        background: "var(--md-sys-color-error-container, rgba(255,68,68,0.1))",
-        color: "var(--md-sys-color-on-error-container, #ff4444)",
-        padding: "12px 16px",
-        borderRadius: "12px",
-        fontSize: "13px",
-        lineHeight: 1.5,
-        border: "1px solid rgba(255,68,68,0.2)",
-      })}>
-        {errorMsg()}
-      </div>
-    </Show>
-  );
-}
