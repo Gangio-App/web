@@ -4043,3 +4043,12 @@ msgstr ""
 #: components/i18n/errors.ts
 msgid "Your user has already been created? Try logging in again or refreshing the app."
 msgstr ""
+
+msgid "Remember me for 30 days"
+msgstr "Remember me for 30 days"
+
+msgid "Login with Steam"
+msgstr "Login with Steam"
+
+msgid "OR CONTINUE WITH"
+msgstr "OR CONTINUE WITH"
