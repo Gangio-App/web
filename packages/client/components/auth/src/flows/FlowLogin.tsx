@@ -1,4 +1,5 @@
-import { Match, Switch, createSignal, onCleanup } from "solid-js";
+import { Match, Switch, createSignal, onCleanup, Show } from "solid-js";
+import { useSearchParams } from "@solidjs/router";
 
 import { Trans } from "@lingui-solid/solid/macro";
 import { css } from "styled-system/css";
@@ -32,6 +33,9 @@ export default function FlowLogin() {
   const modals = useModals();
   const { lifecycle, isLoggedIn, login, selectUsername } = useClientLifecycle();
   const [rememberMe, setRememberMe] = createSignal(true);
+  const [searchParams] = useSearchParams();
+
+  const steamError = () => searchParams.error === "steam_internal_error";
 
   /**
    * Listen for Steam login messages
@@ -107,19 +111,40 @@ export default function FlowLogin() {
             <FlowTitle subtitle={<Trans>Sign into Gangio</Trans>} emoji="wave">
               <Trans>Welcome!</Trans>
             </FlowTitle>
+            <Show when={steamError()}>
+              <Column
+                style={{
+                  background: "rgba(244, 67, 54, 0.1)",
+                  padding: "12px",
+                  "border-radius": "8px",
+                  border: "1px solid rgba(244, 67, 54, 0.3)",
+                  margin: "0 0 16px 0",
+                }}
+                gap="none"
+              >
+                <Text size="small" style={{ "font-weight": 600, color: "var(--md-sys-color-error)" }}>
+                  <Trans>Steam Login Failed</Trans>
+                </Text>
+                <Text size="small" style={{ color: "var(--md-sys-color-error)" }}>
+                  <Trans>An internal error occurred. Please try linking your account again in user settings if the problem persists.</Trans>
+                </Text>
+              </Column>
+            </Show>
             <Form onSubmit={performLogin}>
-              <Fields fields={["email", "password"]} />
-              
-              <Row align justify="space-between" style={{ margin: "4px 0" }}>
-                <Checkbox
-                  checked={rememberMe()}
-                  onChange={(e) => setRememberMe(e.currentTarget.checked)}
-                >
-                  <Trans>Remember me for 30 days</Trans>
-                </Checkbox>
-              </Row>
+              <Column gap="xs">
+                <Fields fields={["email", "password"]} />
+                
+                <Row align justify="space-between" style={{ margin: "4px 0" }}>
+                  <Checkbox
+                    checked={rememberMe()}
+                    onChange={(e) => setRememberMe(e.currentTarget.checked)}
+                  >
+                    <Trans>Remember me for 30 days</Trans>
+                  </Checkbox>
+                </Row>
+              </Column>
 
-              <Column gap="xs" align>
+              <Column gap="none" align>
                 <a href="/login/reset">
                   <Button variant="text" size="small">
                     <Trans>Reset password</Trans>
