@@ -6,6 +6,7 @@ import { styled } from "styled-system/jsx";
 import { Column, Row, Text } from "@revolt/ui";
 
 import envelope from "./envelope.svg";
+import lock from "./lock.svg";
 import wave from "./wave.svg";
 
 /**
@@ -92,12 +93,22 @@ const Mail = styled("img", {
 });
 
 /**
+ * Lock emoji
+ */
+const Lock = styled("img", {
+  base: {
+    height: "1.8em",
+    transform: "translateY(-2px)",
+  },
+});
+
+/**
  * Common flow title component
  */
 export function FlowTitle(props: {
   children: JSX.Element;
   subtitle?: JSX.Element;
-  emoji?: "wave" | "mail";
+  emoji?: "wave" | "mail" | "lock";
 }) {
   return (
     <Column>
@@ -107,6 +118,9 @@ export function FlowTitle(props: {
         </Show>
         <Show when={props.emoji === "mail"}>
           <Mail src={envelope} />
+        </Show>
+        <Show when={props.emoji === "lock"}>
+          <Lock src={lock} />
         </Show>
         <Text class="title" size="large">
           {props.children}

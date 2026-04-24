@@ -15,7 +15,9 @@ type Field =
   | "new-password"
   | "log-out"
   | "username"
-  | "invite";
+  | "invite"
+  | "totp_code"
+  | "recovery_code";
 
 /**
  * Properties to apply to fields
@@ -61,6 +63,18 @@ const useFieldConfiguration = () => {
       autocomplete: "none",
       name: () => t`Invite Code`,
       placeholder: () => t`Enter your invite code.`,
+    },
+    totp_code: {
+      type: "text" as const,
+      autocomplete: "one-time-code",
+      name: () => t`Authenticator Code`,
+      placeholder: () => t`Enter the code from your app.`,
+    },
+    recovery_code: {
+      type: "text" as const,
+      autocomplete: "off",
+      name: () => t`Recovery Code`,
+      placeholder: () => t`Enter a recovery code.`,
     },
   };
 };

@@ -26,7 +26,18 @@ export default function FlowSteamToken() {
 
     if (!token || !userId) {
       // Redirect back to login with an error if params are missing
-      window.location.replace("/login/auth?error=steam_internal_error");
+      if (window.opener) {
+        window.opener.postMessage({ type: "steam_error", error: "steam_internal_error" }, window.location.origin);
+        window.close();
+      } else {
+        window.location.replace("/login/auth?error=steam_internal_error");
+      }
+      return;
+    }
+
+    if (window.opener) {
+      window.opener.postMessage({ type: "steam_token", token, userId }, window.location.origin);
+      window.close();
       return;
     }
 
