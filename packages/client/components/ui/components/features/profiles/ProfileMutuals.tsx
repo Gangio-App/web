@@ -14,7 +14,7 @@ import { dismissFloatingElements } from "../../floating";
 import { ProfileCard } from "./ProfileCard";
 
 import { Trans } from "@lingui-solid/solid/macro";
-import { Tooltip } from "../floating/Tooltip";
+import { Tooltip } from "../../floating/Tooltip";
 
 export function ProfileMutuals(props: { user: User }) {
   const client = useClient();
