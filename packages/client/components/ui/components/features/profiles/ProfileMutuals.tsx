@@ -3,6 +3,7 @@ import { For, Show } from "solid-js";
 import { useQuery } from "@tanstack/solid-query";
 import { User } from "stoat.js";
 import { styled } from "styled-system/jsx";
+import { css } from "styled-system/css";
 
 import { useClient } from "@revolt/client";
 import { useModals } from "@revolt/modal";
@@ -11,6 +12,9 @@ import { Avatar, Ripple, Text } from "../../design";
 import { dismissFloatingElements } from "../../floating";
 
 import { ProfileCard } from "./ProfileCard";
+
+import { Trans } from "@lingui-solid/solid/macro";
+import { Tooltip } from "../floating/Tooltip";
 
 export function ProfileMutuals(props: { user: User }) {
   const client = useClient();
@@ -84,66 +88,78 @@ export function ProfileMutuals(props: { user: User }) {
 
   return (
     <Container>
-      <Show when={query.data?.users.length}>
-        <SectionHeader>
-          MUTUAL FRIENDS
-        </SectionHeader>
-        <ProfileCard isLink onClick={openFriends}>
-          <Ripple />
-          <Grid>
-            <For each={query.data?.users.slice(0, 5)}>
-              {(user) => (
-                <Avatar
-                  src={user?.avatarURL}
-                  fallback={user?.displayName}
-                  size={24}
-                />
-              )}
-            </For>
-            <Show when={query.data!.users.length > 5}>
-              <Count>+{query.data!.users.length - 5}</Count>
-            </Show>
-          </Grid>
-        </ProfileCard>
-      </Show>
+      <div class={css({ display: "flex", gap: "var(--gap-sm)" })}>
+        <Show when={query.data?.users.length}>
+          <div class={css({ flex: 1, minWidth: 0 })}>
+            <SectionHeader>
+              <Trans>Mutual Friends</Trans>
+            </SectionHeader>
+            <ProfileCard isLink onClick={openFriends}>
+              <Ripple />
+              <Grid>
+                <For each={query.data?.users.slice(0, 3)}>
+                  {(user) => (
+                    <Tooltip content={user?.displayName || user?.username}>
+                      <Avatar
+                        src={user?.avatarURL}
+                        fallback={user?.displayName}
+                        size={24}
+                      />
+                    </Tooltip>
+                  )}
+                </For>
+                <Show when={query.data!.users.length > 3}>
+                  <Count>+{query.data!.users.length - 3}</Count>
+                </Show>
+              </Grid>
+            </ProfileCard>
+          </div>
+        </Show>
 
-      <Show when={query.data?.servers.length}>
-        <SectionHeader>
-          MUTUAL SERVERS
-        </SectionHeader>
-        <ProfileCard isLink onClick={openServers}>
-          <Ripple />
-          <Grid>
-            <For each={query.data?.servers.slice(0, 5)}>
-              {(server) => (
-                <Avatar
-                  src={server.iconURL}
-                  fallback={server.name}
-                  size={24}
-                />
-              )}
-            </For>
-            <Show when={query.data!.servers.length > 5}>
-              <Count>+{query.data!.servers.length - 5}</Count>
-            </Show>
-          </Grid>
-        </ProfileCard>
-      </Show>
+        <Show when={query.data?.servers.length}>
+          <div class={css({ flex: 1, minWidth: 0 })}>
+            <SectionHeader>
+              <Trans>Mutual Servers</Trans>
+            </SectionHeader>
+            <ProfileCard isLink onClick={openServers}>
+              <Ripple />
+              <Grid>
+                <For each={query.data?.servers.slice(0, 3)}>
+                  {(server) => (
+                    <Tooltip content={server.name}>
+                      <Avatar
+                        src={server.iconURL}
+                        fallback={server.name}
+                        size={24}
+                      />
+                    </Tooltip>
+                  )}
+                </For>
+                <Show when={query.data!.servers.length > 3}>
+                  <Count>+{query.data!.servers.length - 3}</Count>
+                </Show>
+              </Grid>
+            </ProfileCard>
+          </div>
+        </Show>
+      </div>
 
       <Show when={query.data?.groups.length}>
         <SectionHeader>
-          MUTUAL GROUPS
+          <Trans>Mutual Groups</Trans>
         </SectionHeader>
         <ProfileCard isLink onClick={openGroups}>
           <Ripple />
           <Grid>
             <For each={query.data?.groups.slice(0, 5)}>
               {(group) => (
-                <Avatar
-                  src={group.iconURL}
-                  fallback={group.name}
-                  size={24}
-                />
+                <Tooltip content={group.name}>
+                  <Avatar
+                    src={group.iconURL}
+                    fallback={group.name}
+                    size={24}
+                  />
+                </Tooltip>
               )}
             </For>
             <Show when={query.data!.groups.length > 5}>
@@ -166,7 +182,7 @@ const Container = styled("div", {
 
 const SectionHeader = styled("div", {
   base: {
-    paddingTop: "var(--gap-md)",
+    paddingTop: "var(--gap-sm)",
     paddingBottom: "var(--gap-xs)",
     opacity: 0.6,
     textTransform: "uppercase",
@@ -174,6 +190,9 @@ const SectionHeader = styled("div", {
     fontSize: "11px",
     fontWeight: "bold",
     fontFamily: "var(--font-heading)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
 });
 
@@ -191,7 +210,7 @@ const Count = styled("div", {
     fontSize: "12px",
     fontWeight: "bold",
     opacity: 0.8,
-    marginLeft: "4px",
+    marginLeft: "2px",
   },
 });
 

@@ -120,8 +120,8 @@ export function DirectMessageSidebar(props: Props) {
 
             <Profile.Status user={user()} />
             <Profile.Badges user={user()} />
-            <Profile.Mutuals user={user()} />
             <Profile.Bio content={query.data?.content} full />
+            <Profile.Mutuals user={user()} />
           </DMSidebarContent>
         </DMSidebarProfile>
       </Show>
