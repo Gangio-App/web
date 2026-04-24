@@ -37,7 +37,9 @@ export default function FlowLogin() {
    * Listen for Steam login messages
    */
   const handleMessage = (event: MessageEvent) => {
+    console.debug("Received message from popup:", event.data);
     if (event.data?.type === "STEAM_LOGIN_SUCCESS") {
+      console.info("Steam login success, setting session:", event.data.session);
       const { session } = event.data;
       // Mark session as invalid initially so lifecycle can connect
       const createdSession = {
