@@ -1,4 +1,4 @@
-import { Match, Switch } from "solid-js";
+import { Match, Show, Switch, createSignal, onMount } from "solid-js";
 
 import { Trans } from "@lingui-solid/solid/macro";
 import { css } from "styled-system/css";
@@ -93,14 +93,19 @@ export default function FlowLogin() {
 
             <DividerContainer>
               <Divider />
-              <Text size="small" style={{ opacity: 0.5 }}>
+              <span class={css({ fontSize: "12px", opacity: 0.5, whiteSpace: "nowrap" })}>
                 <Trans>OR CONTINUE WITH</Trans>
-              </Text>
+              </span>
               <Divider />
             </DividerContainer>
 
+            <SteamError />
+
             <Row gap="lg" justify>
-              <SocialButton onClick={() => alert("Steam login coming soon!")}>
+              <SocialButton onClick={() => {
+                const apiUrl = import.meta.env.VITE_API_URL || "https://gangio.pro/api";
+                window.location.href = `${apiUrl}/steam/login`;
+              }}>
                 <SocialIcon src="/assets/socials/steam.svg" />
                 <Trans>Steam</Trans>
               </SocialButton>
@@ -238,3 +243,50 @@ const CenteredProgress = styled("div", {
     padding: "40px",
   },
 });
+
+/**
+ * Reads ?error= from URL and shows a friendly message
+ */
+function SteamError() {
+  const [errorMsg, setErrorMsg] = createSignal<string | null>(null);
+
+  onMount(() => {
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get("error");
+    if (!error) return;
+    switch (error) {
+      case "steam_not_linked":
+        setErrorMsg("Your Steam account is not linked to any Gangio account. Please log in with email first and link Steam in Settings → Integrations.");
+        break;
+      case "steam_verify_failed":
+        setErrorMsg("Steam verification failed. Please try again.");
+        break;
+      case "steam_user_not_found":
+        setErrorMsg("No Gangio account found for this Steam account.");
+        break;
+      case "steam_internal_error":
+        setErrorMsg("An error occurred during Steam login. Please try again.");
+        break;
+      default:
+        setErrorMsg("An error occurred. Please try again.");
+    }
+    // Clean up the URL so the error doesn't persist on refresh
+    window.history.replaceState({}, "", "/login/auth");
+  });
+
+  return (
+    <Show when={errorMsg()}>
+      <div class={css({
+        background: "var(--md-sys-color-error-container, rgba(255,68,68,0.1))",
+        color: "var(--md-sys-color-on-error-container, #ff4444)",
+        padding: "12px 16px",
+        borderRadius: "12px",
+        fontSize: "13px",
+        lineHeight: 1.5,
+        border: "1px solid rgba(255,68,68,0.2)",
+      })}>
+        {errorMsg()}
+      </div>
+    </Show>
+  );
+}
