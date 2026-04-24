@@ -27,7 +27,7 @@ export default function FlowSteamToken() {
     if (!token || !userId) {
       // Redirect back to login with an error if params are missing
       if (window.opener) {
-        window.opener.postMessage({ type: "steam_error", error: "steam_internal_error" }, window.location.origin);
+        window.opener.postMessage({ type: "steam-login-error", error: "steam_internal_error" }, window.location.origin);
         window.close();
       } else {
         window.location.replace("/login/auth?error=steam_internal_error");
@@ -36,11 +36,13 @@ export default function FlowSteamToken() {
     }
 
     if (window.opener) {
-      window.opener.postMessage({ type: "steam_token", token, userId }, window.location.origin);
+      // If we are in a popup, send the token to the parent window and close
+      window.opener.postMessage({ type: "steam-login", token, userId }, window.location.origin);
       window.close();
       return;
     }
 
+    // Fallback for same-tab redirect (if user somehow got here directly)
     const session = {
       _id: "steam-session",
       token,

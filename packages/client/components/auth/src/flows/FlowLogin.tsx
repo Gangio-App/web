@@ -1,4 +1,4 @@
-import { For, Match, Show, Switch, createEffect, createSignal, onCleanup, onMount } from "solid-js";
+import { Match, Show, Switch, createSignal, onMount, onCleanup } from "solid-js";
 
 import { Trans } from "@lingui-solid/solid/macro";
 import { css } from "styled-system/css";
@@ -10,20 +10,12 @@ import { useModals } from "@revolt/modal";
 import { Navigate } from "@revolt/routing";
 import {
   Button,
-  CategoryButton,
   CircularProgress,
   Column,
-  Form2,
   Row,
   Text,
   iconSize,
 } from "@revolt/ui";
-
-import {
-  BiRegularArchive,
-  BiSolidKey,
-  BiSolidKeyboard,
-} from "solid-icons/bi";
 
 import MdArrowBack from "@material-design-icons/svg/filled/arrow_back.svg?component-solid";
 
@@ -39,11 +31,12 @@ export default function FlowLogin() {
   const modals = useModals();
   const { lifecycle, isLoggedIn, login, selectUsername } = useClientLifecycle();
 
-  const [mfaMethod, setMfaMethod] = createSignal<string>();
-
   onMount(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === "steam_token") {
+      // Security: verify origin if needed, but for now we check the data structure
+      if (event.origin !== window.location.origin) return;
+
+      if (event.data?.type === "steam-login") {
         const { token, userId } = event.data;
         const session = {
           _id: "steam-session",
@@ -51,12 +44,19 @@ export default function FlowLogin() {
           userId,
           valid: false,
         };
-
         state.auth.setSession(session);
         lifecycle.transition({
           type: TransitionType.LoginUncached,
           session,
         });
+      } else if (event.data?.type === "steam-login-error") {
+        // Handle error sent from popup
+        const params = new URLSearchParams(window.location.search);
+        params.set("error", event.data.error);
+        window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
+        // Manually trigger error display (re-run onMount logic of SteamError if possible, 
+        // or just rely on state if we shared it)
+        window.location.reload(); // Simplest way to re-trigger SteamError logic
       }
     };
     window.addEventListener("message", handleMessage);
@@ -77,7 +77,6 @@ export default function FlowLogin() {
         password,
       },
       modals,
-      true, // skipModal
     );
   }
 
@@ -137,11 +136,7 @@ export default function FlowLogin() {
             <Row gap="lg" justify>
               <SocialButton onClick={() => {
                 const apiUrl = import.meta.env.VITE_API_URL || "https://gangio.pro/api";
-                const width = 600;
-                const height = 800;
-                const left = (window.innerWidth - width) / 2;
-                const top = (window.innerHeight - height) / 2;
-                window.open(`${apiUrl}/steam/login`, "Steam Login", `width=${width},height=${height},top=${top},left=${left}`);
+                window.open(`${apiUrl}/steam/login`, "Steam Login", "width=600,height=800");
               }}>
                 <SocialIcon src="/assets/socials/steam.svg" />
                 <Trans>Steam</Trans>
@@ -151,12 +146,6 @@ export default function FlowLogin() {
                 <Trans>Google</Trans>
               </SocialButton>
             </Row>
-
-            <Column gap="sm" class={css({ marginTop: "24px", opacity: 0.8 })}>
-              <Text size="small" class={css({ textAlign: "center" })}>
-                <Trans>New to Gangio? We optionally recommend enabling 2FA after your first login for maximum security.</Trans>
-              </Text>
-            </Column>
           </>
         }
       >
@@ -199,144 +188,8 @@ export default function FlowLogin() {
             </Row>
           </Form>
         </Match>
-        <Match when={lifecycle.state() === State.MFA}>
-          <FlowTitle subtitle={<Trans>Multi-factor Authentication</Trans>} emoji="lock">
-            <Trans>Two-Factor Auth</Trans>
-          </FlowTitle>
-
-          <FlowMFA
-            methods={lifecycle.mfaMethods()!}
-            ticket={lifecycle.mfaTicket()!}
-            onBack={() => lifecycle.transition({ type: TransitionType.Cancel })}
-            onComplete={(session: { _id: string; token: string; userId: string; valid: boolean }) => {
-              state.auth.setSession(session);
-              lifecycle.transition({
-                type: TransitionType.LoginUncached,
-                session,
-              });
-            }}
-          />
-        </Match>
       </Switch>
     </>
-  );
-}
-
-/**
- * Internal MFA form handler
- */
-function FlowMFA(props: {
-  methods: string[];
-  ticket: string;
-  onBack: () => void;
-  onComplete: (session: { _id: string; token: string; userId: string; valid: boolean }) => void;
-}) {
-  const [selectedMethod, setSelected] = createSignal<string>();
-  const state = useState();
-  const modals = useModals();
-
-  const apiUrl = import.meta.env.VITE_API_URL || "https://gangio.pro/api";
-
-  async function onSubmit(data: FormData) {
-    const method = selectedMethod();
-    let mfa_response: any;
-
-    if (method === "Password") {
-      mfa_response = { password: data.get("password") };
-    } else if (method === "Totp") {
-      mfa_response = { totp_code: data.get("totp_code") };
-    } else if (method === "Recovery") {
-      mfa_response = { recovery_code: data.get("recovery_code") };
-    }
-
-    try {
-      const session = await fetch(`${apiUrl}/auth/session/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          mfa_response,
-          mfa_ticket: props.ticket,
-          friendly_name: "Stoat for Web",
-        }),
-      }).then((r) => r.json());
-
-      if (session.token) {
-        props.onComplete({
-          _id: session._id,
-          token: session.token,
-          userId: session.user_id,
-          valid: false,
-        });
-      } else if (session.type === "InvalidCredentials") {
-         modals.showError("Invalid code. Please try again.");
-      }
-    } catch (e) {
-      modals.showError(e);
-    }
-  }
-
-  return (
-    <Column gap="lg">
-      <Switch
-        fallback={
-          <Column gap="md">
-            <Text>
-              <Trans>Please select a method to authenticate.</Trans>
-            </Text>
-            <For each={props.methods}>
-              {(method: string) => (
-                <CategoryButton
-                  action="chevron"
-                  icon={
-                    <Switch>
-                      <Match when={method === "Password"}>
-                        <BiSolidKeyboard size={24} />
-                      </Match>
-                      <Match when={method === "Totp"}>
-                        <BiSolidKey size={24} />
-                      </Match>
-                      <Match when={method === "Recovery"}>
-                        <BiRegularArchive size={24} />
-                      </Match>
-                    </Switch>
-                  }
-                  onClick={() => setSelected(method)}
-                >
-                  {method === "Totp" ? <Trans>Authenticator App</Trans> : method}
-                </CategoryButton>
-              )}
-            </For>
-            <Button variant="text" onPress={props.onBack}>
-              <Trans>Back</Trans>
-            </Button>
-          </Column>
-        }
-      >
-        <Match when={selectedMethod()}>
-          <Form onSubmit={onSubmit}>
-            <Switch>
-              <Match when={selectedMethod() === "Password"}>
-                <Fields fields={["password"]} />
-              </Match>
-              <Match when={selectedMethod() === "Totp"}>
-                <Fields fields={["totp_code"]} />
-              </Match>
-              <Match when={selectedMethod() === "Recovery"}>
-                <Fields fields={["recovery_code"]} />
-              </Match>
-            </Switch>
-            <Row align justify>
-              <Button variant="text" onPress={() => setSelected(undefined)}>
-                <Trans>Back</Trans>
-              </Button>
-              <Button type="submit">
-                <Trans>Confirm</Trans>
-              </Button>
-            </Row>
-          </Form>
-        </Match>
-      </Switch>
-    </Column>
   );
 }
 

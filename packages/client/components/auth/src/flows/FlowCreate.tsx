@@ -3,8 +3,7 @@ import { Trans } from "@lingui-solid/solid/macro";
 import { useApi, useClient } from "@revolt/client";
 import { CONFIGURATION } from "@revolt/common";
 import { useNavigate, useParams } from "@revolt/routing";
-import { Button, Column, Row, Text, iconSize } from "@revolt/ui";
-import { css } from "styled-system/css";
+import { Button, Row, iconSize } from "@revolt/ui";
 
 import MdArrowBack from "@material-design-icons/svg/filled/arrow_back.svg?component-solid";
 
@@ -81,12 +80,7 @@ export default function FlowCreate() {
           </Button>
         </Row>
       </Form>
-      <Column gap="sm" class={css({ marginTop: "24px", opacity: 0.8 })}>
-        <Text size="small" class={css({ textAlign: "center" })}>
-          <Trans>We optionally recommend enabling 2FA after signing up for maximum security.</Trans>
-        </Text>
-      </Column>
-{import.meta.env.DEV && (
+      {import.meta.env.DEV && (
         <div
           style={{
             position: "fixed",

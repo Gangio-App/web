@@ -13,7 +13,6 @@ export enum State {
   Ready = "Ready",
   LoggingIn = "Logging In",
   Onboarding = "Onboarding",
-  MFA = "MFA",
   Error = "Error",
   Dispose = "Dispose",
   Connecting = "Connecting",
@@ -40,7 +39,6 @@ export enum TransitionType {
   Ready = "ready",
   Retry = "retry",
   Logout = "logout",
-  MFA = "mfa",
 }
 
 export type Transition =
@@ -51,11 +49,6 @@ export type Transition =
   | {
       type: TransitionType.PermanentFailure;
       error: string;
-    }
-  | {
-      type: TransitionType.MFA;
-      methods: API.MFAMethod[];
-      ticket: string;
     }
   | {
       type:
@@ -95,12 +88,6 @@ class Lifecycle {
 
   client: Client;
 
-  readonly mfaMethods: Accessor<API.MFAMethod[] | undefined>;
-  #setMfaMethods: Setter<API.MFAMethod[] | undefined>;
-
-  readonly mfaTicket: Accessor<string | undefined>;
-  #setMfaTicket: Setter<string | undefined>;
-
   #connectionFailures = 0;
   #permanentError: string | undefined;
   #retryTimeout: number | undefined;
@@ -126,14 +113,6 @@ class Lifecycle {
 
     this.policyAttentionRequired = policyAttentionRequired;
     this.#policyAttentionRequired = setPolicyAttentionRequired;
-
-    const [mfaMethods, setMfaMethods] = createSignal<API.MFAMethod[] | undefined>();
-    this.mfaMethods = mfaMethods;
-    this.#setMfaMethods = setMfaMethods;
-
-    const [mfaTicket, setMfaTicket] = createSignal<string | undefined>();
-    this.mfaTicket = mfaTicket;
-    this.#setMfaTicket = setMfaTicket;
 
     this.client = null!;
     this.dispose();
@@ -301,23 +280,6 @@ class Lifecycle {
             // TODO: relay error
             this.#enter(State.Error);
             break;
-          case TransitionType.MFA:
-            this.#setMfaMethods(transition.methods);
-            this.#setMfaTicket(transition.ticket);
-            this.#enter(State.MFA);
-            break;
-        }
-        break;
-      case State.MFA:
-        if (transition.type === TransitionType.LoginUncached) {
-          this.client.useExistingSession({
-            ...transition.session,
-            user_id: transition.session.userId,
-          });
-
-          this.#enter(State.LoggingIn);
-        } else if (transition.type === TransitionType.Cancel) {
-          this.#enter(State.Dispose);
         }
         break;
       case State.Onboarding:
@@ -537,14 +499,8 @@ export default class ClientController {
   /**
    * Login given a set of credentials
    * @param credentials Credentials
-   * @param modals Modal controller
-   * @param skipModal Whether to skip the MFA modal and handle it in UI
    */
-  async login(
-    credentials: API.DataLogin,
-    modals: ModalControllerExtended,
-    skipModal = false,
-  ) {
+  async login(credentials: API.DataLogin, modals: ModalControllerExtended) {
     const browser = detect();
 
     // Generate a friendly name for this browser
@@ -574,15 +530,6 @@ export default class ClientController {
 
     // Prompt for MFA verification if necessary
     if (session.result === "MFA") {
-      if (skipModal) {
-        this.lifecycle.transition({
-          type: TransitionType.MFA,
-          methods: session.allowed_methods,
-          ticket: session.ticket,
-        });
-        return;
-      }
-
       const { allowed_methods } = session;
       while (session.result === "MFA") {
         const mfa_response: API.MFAResponse | undefined = await new Promise(
