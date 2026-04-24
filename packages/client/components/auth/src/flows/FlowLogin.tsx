@@ -122,11 +122,15 @@ export default function FlowLogin() {
                 }}
                 gap="none"
               >
-                <Text size="small" style={{ "font-weight": 600, color: "var(--md-sys-color-error)" }}>
-                  <Trans>Steam Login Failed</Trans>
+                <Text size="small">
+                  <span style={{ "font-weight": 600, color: "var(--md-sys-color-error)" }}>
+                    <Trans>Steam Login Failed</Trans>
+                  </span>
                 </Text>
-                <Text size="small" style={{ color: "var(--md-sys-color-error)" }}>
-                  <Trans>An internal error occurred. Please try linking your account again in user settings if the problem persists.</Trans>
+                <Text size="small">
+                  <span style={{ color: "var(--md-sys-color-error)" }}>
+                    <Trans>An internal error occurred. Please try linking your account again in user settings if the problem persists.</Trans>
+                  </span>
                 </Text>
               </Column>
             </Show>
