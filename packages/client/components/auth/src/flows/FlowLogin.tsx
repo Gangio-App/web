@@ -1,6 +1,8 @@
 import { Match, Switch } from "solid-js";
 
 import { Trans } from "@lingui-solid/solid/macro";
+import { css } from "styled-system/css";
+import { styled } from "styled-system/jsx";
 
 import { useClientLifecycle } from "@revolt/client";
 import { State, TransitionType } from "@revolt/client/Controller";
@@ -65,14 +67,14 @@ export default function FlowLogin() {
             </FlowTitle>
             <Form onSubmit={performLogin}>
               <Fields fields={["email", "password"]} />
-              <Column gap="xl" align>
+              <Column gap="md" align>
                 <a href="/login/reset">
-                  <Button variant="text">
+                  <Button variant="text" size="small">
                     <Trans>Reset password</Trans>
                   </Button>
                 </a>
                 <a href="/login/resend">
-                  <Button variant="text">
+                  <Button variant="text" size="small">
                     <Trans>Resend verification</Trans>
                   </Button>
                 </a>
@@ -83,11 +85,30 @@ export default function FlowLogin() {
                     <MdArrowBack {...iconSize("1.2em")} /> <Trans>Back</Trans>
                   </Button>
                 </a>
-                <Button type="submit">
+                <LoginButton type="submit">
                   <Trans>Login</Trans>
-                </Button>
+                </LoginButton>
               </Row>
             </Form>
+
+            <DividerContainer>
+              <Divider />
+              <Text size="small" style={{ opacity: 0.5 }}>
+                <Trans>OR CONTINUE WITH</Trans>
+              </Text>
+              <Divider />
+            </DividerContainer>
+
+            <Row gap="lg" justify>
+              <SocialButton onClick={() => alert("Steam login coming soon!")}>
+                <SocialIcon src="/assets/socials/steam.svg" />
+                <Trans>Steam</Trans>
+              </SocialButton>
+              <SocialButton onClick={() => alert("Google login coming soon!")}>
+                <SocialIcon src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" />
+                <Trans>Google</Trans>
+              </SocialButton>
+            </Row>
           </>
         }
       >
@@ -95,7 +116,9 @@ export default function FlowLogin() {
           <Navigate href={state.layout.popNextPath() ?? "/app"} />
         </Match>
         <Match when={lifecycle.state() === State.LoggingIn}>
-          <CircularProgress />
+          <CenteredProgress>
+            <CircularProgress />
+          </CenteredProgress>
         </Match>
         <Match when={lifecycle.state() === State.Onboarding}>
           <FlowTitle>
@@ -132,3 +155,86 @@ export default function FlowLogin() {
     </>
   );
 }
+
+const DividerContainer = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "16px",
+    margin: "24px 0",
+    width: "100%",
+  },
+});
+
+const Divider = styled("div", {
+  base: {
+    flex: 1,
+    height: "1px",
+    background: "var(--md-sys-color-outline-variant)",
+    opacity: 0.5,
+  },
+});
+
+const SocialButton = styled("button", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "10px",
+    flex: 1,
+    padding: "10px 16px",
+    borderRadius: "12px",
+    border: "1px solid var(--md-sys-color-outline-variant)",
+    background: "var(--md-sys-color-surface-container-low)",
+    color: "var(--md-sys-color-on-surface)",
+    fontSize: "14px",
+    fontWeight: 600,
+    cursor: "pointer",
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+
+    _hover: {
+      background: "var(--md-sys-color-surface-container-high)",
+      transform: "translateY(-1px)",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    },
+
+    _active: {
+      transform: "translateY(0)",
+      background: "var(--md-sys-color-surface-container-highest)",
+    },
+  },
+});
+
+const SocialIcon = styled("img", {
+  base: {
+    width: "20px",
+    height: "20px",
+    objectFit: "contain",
+  },
+});
+
+const LoginButton = styled(Button, {
+  base: {
+    padding: "10px 24px",
+    borderRadius: "12px",
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+
+    _hover: {
+      transform: "scale(1.02)",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+    },
+
+    _active: {
+      transform: "scale(0.98)",
+    },
+  },
+});
+
+const CenteredProgress = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "40px",
+  },
+});

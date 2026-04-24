@@ -879,7 +879,7 @@ msgstr "Sohbeti kapat"
 #. placeholder {0}: props.channel.recipient?.displayName
 #: components/modal/modals/DeleteChannel.tsx
 msgid "Close conversation with {0}?"
-msgstr "{0} ile olan konuşma kapatılsın mı?"
+msgstr "{0} ile olan Arama kapatılsın mı?"
 
 #: components/modal/modals/JoinServer.tsx
 msgid "Code"
@@ -975,7 +975,7 @@ msgstr "Size kimlerin doğrudan mesaj gönderebileceğini kontrol edin."
 
 #: src/interface/navigation/channels/HomeSidebar.tsx
 msgid "Conversations"
-msgstr "Konuşmalar"
+msgstr "Aramalar"
 
 #: components/app/menus/CategoryContextMenu.tsx
 msgid "Copy category ID"
@@ -3506,7 +3506,7 @@ msgstr "Bu zaten gönderildi."
 
 #: components/ui/components/features/messaging/elements/ConversationStart.tsx
 msgid "This is the start of your conversation."
-msgstr "Bu, konuşmanızın başlangıcıdır."
+msgstr "Bu, Aramanızın başlangıcıdır."
 
 #: components/ui/components/features/messaging/elements/ConversationStart.tsx
 msgid "This is the start of your notes."
@@ -4212,10 +4212,10 @@ msgid "Someone"
 msgstr "Biri"
 
 msgid "You are already in a call"
-msgstr "Zaten bir aramadasınız"
+msgstr "Zaten bir Aramadasınız"
 
 msgid "{names} is in the call"
-msgstr "{names} aramada"
+msgstr "{names} Aramada"
 
 msgid "Sharing Screen"
 msgstr "Ekran Paylaşılıyor"
@@ -4227,7 +4227,7 @@ msgid "In {channelName} in {serverName}"
 msgstr "{serverName} sunucusunda {channelName} kanalında"
 
 msgid "Start Voice Call"
-msgstr "Sesli Arama Başlat"
+msgstr "Arama Başlat"
 
 msgid "Weak"
 msgstr "Zayıf"
@@ -4298,8 +4298,8 @@ msgstr "Kasım"
 msgid "December"
 msgstr "Aralık"
 
-msgid "You must be at least 15 years old to join Stoat."
-msgstr "Stoat'a katılmak için en az 15 yaşında olmalısınız."
+msgid "You must be at least 15 years old to join Gangio."
+msgstr "Gangio'a katılmak için en az 15 yaşında olmalısınız."
 
 msgid "In a voice chat with you"
 msgstr "Seninle sesli sohbette"
@@ -4331,22 +4331,22 @@ msgstr "Güçlü"
 msgid "Password is too weak. Please use a stronger password."
 msgstr "Şifre çok zayıf. Lütfen daha güçlü bir şifre kullanın."
 msgid "Join Call"
-msgstr "Görüşmeye Katıl"
+msgstr "Aramaya Katıl"
 
 msgid "Started a voice call."
-msgstr "Sesli görüşme başlattı."
+msgstr "Arama başlattı."
 
 msgid "Voice Call"
-msgstr "Sesli Görüşme"
+msgstr "Arama"
 
 msgid "Call in progress"
-msgstr "Görüşme devam ediyor"
+msgstr "Arama devam ediyor"
 
 msgid "Call ended"
-msgstr "Görüşme sona erdi"
+msgstr "Arama sona erdi"
 
 msgid "Leave Call"
-msgstr "Görüşmeden Ayrıl"
+msgstr "Aramadan Ayrıl"
 
 msgid "Connecting..."
 msgstr "Bağlanıyor..."

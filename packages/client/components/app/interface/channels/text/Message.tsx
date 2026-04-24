@@ -125,7 +125,7 @@ export function Message(props: Props) {
       }
       contextMenu={() => <MessageContextMenu message={props.message} />}
       timestamp={props.message.createdAt}
-      edited={props.message.editedAt}
+      edited={props.message.content?.startsWith("[CALL_START_EVENT:") || props.message.content?.startsWith("[CALL_END_EVENT:") ? undefined : props.message.editedAt}
       mentioned={props.message.mentioned}
       highlight={props.highlight}
       editing={props.editing}

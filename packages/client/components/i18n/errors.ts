@@ -78,7 +78,7 @@ export function useError() {
         case "InternalError":
           return t`An internal error occurred. (${err.location})`;
         case "InvalidCredentials":
-          return t`Provided email or password is wrong.`;
+          return t`Email or password does not match our records. Please check and try again.`;
         case "InvalidSession":
           return t`Please log in again.`;
         case "InvalidUsername":
