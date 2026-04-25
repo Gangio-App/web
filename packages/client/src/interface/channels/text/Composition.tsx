@@ -119,24 +119,14 @@ export function MessageComposition(props: Props) {
    * Check if the user is exempt from slow mode
    */
   function isSlowModeExempt() {
-    /* Temporarily disabled admin exemption so you can test the UI! */
     return false;
-    
-    // Original logic:
-    // return (
-    //   props.channel.havePermission("ManageChannel") ||
-    //   props.channel.havePermission("ManageMessages") ||
-    //   props.channel.havePermission("ExcludeFromSlowmode" as any) ||
-    //   props.channel.server?.ownerId === client()?.user?.id
-    // );
   }
 
   /**
    * Get the current slow mode value for this channel
    */
   function getSlowModeSeconds(): number {
-    const data = client()?.channels.getUnderlyingObject(props.channel.id);
-    return (data as any)?.slowMode || 0;
+    return props.channel.slowMode || 0;
   }
 
   /**
@@ -164,8 +154,7 @@ export function MessageComposition(props: Props) {
   // Set up interval to tick down the cooldown
   createEffect(() => {
     // Access reactive properties to track changes
-    const data = client()?.channels.getUnderlyingObject(props.channel.id);
-    const slowMode = (data as any)?.slowMode;
+    const slowMode = props.channel.slowMode;
     const channelId = props.channel.id;
 
     if (slowModeInterval) {

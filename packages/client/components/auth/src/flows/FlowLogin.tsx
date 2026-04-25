@@ -122,23 +122,23 @@ export default function FlowLogin() {
                 }}
                 gap="none"
               >
-                <Text size="small">
+                <div style={{ "font-size": "0.875rem" }}>
                   <span style={{ "font-weight": 600, color: "var(--md-sys-color-error)" }}>
                     <Trans>Steam Login Failed</Trans>
                   </span>
-                </Text>
-                <Text size="small">
+                </div>
+                <div style={{ "font-size": "0.875rem" }}>
                   <span style={{ color: "var(--md-sys-color-error)" }}>
                     <Trans>An internal error occurred. Please try linking your account again in user settings if the problem persists.</Trans>
                   </span>
-                </Text>
+                </div>
               </Column>
             </Show>
             <Form onSubmit={performLogin}>
               <Column gap="xs">
                 <Fields fields={["email", "password"]} />
                 
-                <Row align justify="space-between" style={{ margin: "4px 0" }}>
+                <Row align justify style={{ margin: "4px 0" }}>
                   <Checkbox
                     checked={rememberMe()}
                     onChange={(e) => setRememberMe(e.currentTarget.checked)}

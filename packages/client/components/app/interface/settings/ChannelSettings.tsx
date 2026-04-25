@@ -2,6 +2,7 @@ import {
   BiRegularListUl,
   BiSolidCloud,
   BiSolidInfoCircle,
+  BiSolidTimer,
   BiSolidTrash,
 } from "solid-icons/bi";
 
@@ -76,6 +77,7 @@ const Config: SettingsConfiguration<Channel> = {
 
     switch (id) {
       case "overview":
+      case "slowmode":
         return <ChannelOverview channel={channel} />;
       case "permissions":
         switch (channel.type) {
@@ -111,6 +113,11 @@ const Config: SettingsConfiguration<Channel> = {
               id: "overview",
               icon: <BiSolidInfoCircle size={20} />,
               title: <Trans>Overview</Trans>,
+            },
+            {
+              id: "slowmode",
+              icon: <BiSolidTimer size={20} />,
+              title: <Trans>Slowmode</Trans>,
             },
             {
               hidden:

@@ -25,7 +25,7 @@ export default function ChannelOverview(props: ChannelSettingsProps) {
   const editGroup = createFormGroup({
     name: createFormControl(props.channel.name),
     description: createFormControl(props.channel.description || ""),
-    slowMode: createFormControl((props.channel as any).slowMode?.toString() || "0"),
+    slowMode: createFormControl(props.channel.slowMode?.toString() || "0"),
     icon: createFormControl<string | File[] | null>(
       props.channel.animatedIconURL,
     ),
@@ -35,7 +35,7 @@ export default function ChannelOverview(props: ChannelSettingsProps) {
   function onReset() {
     editGroup.controls.name.setValue(props.channel.name);
     editGroup.controls.description.setValue(props.channel.description || "");
-    editGroup.controls.slowMode.setValue((props.channel as any).slowMode?.toString() || "0");
+    editGroup.controls.slowMode.setValue(props.channel.slowMode?.toString() || "0");
     editGroup.controls.icon.setValue(props.channel.animatedIconURL ?? null);
   }
 

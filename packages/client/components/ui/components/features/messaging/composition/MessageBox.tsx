@@ -234,7 +234,9 @@ export function MessageBox(props: Props) {
           </Match>
           <Match when={props.slowModeCooldown !== undefined && props.slowModeCooldown > 0}>
             <Blocked align>
-              Slowmode is enabled. You can send another message in {props.slowModeCooldown} seconds.
+              <Trans>
+                Slowmode is enabled. You can send another message in {props.slowModeCooldown} seconds.
+              </Trans>
             </Blocked>
           </Match>
           <Match when={props.slowMode !== undefined && props.slowMode > 0}>
@@ -249,8 +251,8 @@ export function MessageBox(props: Props) {
               autoCompleteSearchSpace={props.autoCompleteSearchSpace}
             />
             <Show when={props.sendingAllowed && (!props.slowModeCooldown || props.slowModeCooldown <= 0)}>
-              <div style={{ alignContent: "center", marginLeft: "auto", paddingRight: "10px", fontSize: "12px", opacity: 0.6 }}>
-                Slowmode is active
+              <div style={{ "align-content": "center", "margin-left": "auto", "padding-right": "10px", "font-size": "12px", opacity: 0.6 }}>
+                <Trans>Slowmode is active</Trans>
               </div>
               {props.actionsEnd}
             </Show>

@@ -3241,8 +3241,9 @@ msgid "Silent"
 msgstr "Sessiz"
 
 #: components/app/interface/settings/channel/Overview.tsx
+#: components/ui/components/features/messaging/composition/MessageBox.tsx
 msgid "Slowmode"
-msgstr ""
+msgstr "Yavaş mod"
 
 #: components/app/interface/settings/user/Notifications.tsx
 msgid "Someone reacts to my messages"
@@ -4374,3 +4375,9 @@ msgstr "30 gün boyunca beni hatırla"
 
 msgid "Login with Steam"
 msgstr "Steam ile Giriş Yap"
+
+msgid "Slowmode is active"
+msgstr "Yavaş mod aktif"
+
+msgid "Slowmode is enabled. You can send another message in {0} seconds."
+msgstr "Yavaş mod etkin. {0} saniye içinde başka bir mesaj gönderebilirsiniz."

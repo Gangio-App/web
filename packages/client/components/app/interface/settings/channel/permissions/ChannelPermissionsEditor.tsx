@@ -228,7 +228,7 @@ export function ChannelPermissionsEditor(props: Props) {
       },
     },
     {
-      key: "ChangeAvavar",
+      key: "ChangeAvatar",
       value: 2n ** 12n,
       title: t`Change Avatar`,
       description: {
