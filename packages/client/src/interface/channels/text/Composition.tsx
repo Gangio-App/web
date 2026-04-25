@@ -126,7 +126,7 @@ export function MessageComposition(props: Props) {
    * Get the current slow mode value for this channel
    */
   function getSlowModeSeconds(): number {
-    return props.channel.slowMode || 0;
+    return props.channel.slowMode || (props.channel as any).slow_mode || (props.channel as any).slowmode || 0;
   }
 
   /**
@@ -154,7 +154,7 @@ export function MessageComposition(props: Props) {
   // Set up interval to tick down the cooldown
   createEffect(() => {
     // Access reactive properties to track changes
-    const slowMode = props.channel.slowMode;
+    const slowMode = getSlowModeSeconds();
     const channelId = props.channel.id;
 
     if (slowModeInterval) {

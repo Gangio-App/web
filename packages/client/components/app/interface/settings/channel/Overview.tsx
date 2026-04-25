@@ -62,6 +62,7 @@ export default function ChannelOverview(props: ChannelSettingsProps) {
       const slowMode = parseInt(editGroup.controls.slowMode.value, 10);
       if (!isNaN(slowMode)) {
         changes.slow_mode = slowMode;
+        (changes as any).slowmode = slowMode;
       }
     }
 

@@ -87,8 +87,7 @@ export const channelHydration: Hydrate<Merge<APIChannel>, HydratedChannel> = {
           }
         : undefined,
     slowMode: (channel: any) => {
-      console.log("Hydrating slowMode for", channel._id, channel.slow_mode);
-      return channel.slow_mode || undefined;
+      return channel.slow_mode || channel.slowmode || undefined;
     },
   },
   initialHydration: () => ({

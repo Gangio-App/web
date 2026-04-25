@@ -15,6 +15,7 @@ import type {
 
 export type DataEditChannel = import("stoat-api").DataEditChannel & {
   slow_mode?: number;
+  slowmode?: number;
 };
 import type { APIRoutes } from "stoat-api";
 import { decodeTime, ulid } from "ulid";
