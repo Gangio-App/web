@@ -13,6 +13,7 @@ import {
 import { useLingui } from "@lingui-solid/solid/macro";
 import { Channel } from "stoat.js";
 
+import { CompositionContextMenu } from "@revolt/app";
 import { useClient } from "@revolt/client";
 import { CONFIGURATION, debounce } from "@revolt/common";
 import { Keybind, KeybindAction, createKeybind } from "@revolt/keybinds";
@@ -349,6 +350,64 @@ export function MessageComposition(props: Props) {
     state.draft.removeFile(props.channel.id, fileId);
   }
 
+  /**
+   * Copy selection to clipboard
+   */
+  function onCopy() {
+    document.execCommand("copy");
+  }
+
+  /**
+   * Cut selection to clipboard
+   */
+  function onCut() {
+    document.execCommand("cut");
+  }
+
+  /**
+   * Select all text
+   */
+  function onSelectAll() {
+    document.execCommand("selectAll");
+  }
+
+  /**
+   * Paste text from clipboard
+   */
+  async function onPasteText() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        setNodeReplacement([text]);
+      }
+    } catch (err) {
+      console.error("Failed to read clipboard:", err);
+    }
+  }
+
+  /**
+   * Paste image from clipboard
+   */
+  async function onPasteImage() {
+    try {
+      const items = await navigator.clipboard.read();
+      const files: File[] = [];
+      for (const item of items) {
+        for (const type of item.types) {
+          if (type.startsWith("image/")) {
+            const blob = await item.getType(type);
+            files.push(new File([blob], "pasted_image.png", { type }));
+          }
+        }
+      }
+      if (files.length) {
+        onFiles(files);
+      }
+    } catch (err) {
+      console.error("Failed to read clipboard:", err);
+    }
+  }
+
   const searchSpace = useSearchSpace(() => props.channel, client);
 
   return (
@@ -394,80 +453,96 @@ export function MessageComposition(props: Props) {
           );
         }}
       </For>
-      <MessageBox
-        initialValue={initialValue()}
-        nodeReplacement={nodeReplacement()}
-        onSendMessage={() => sendMessage()}
-        onTyping={delayedStopTyping}
-        onEditLastMessage={() => state.draft.setEditingMessage(true)}
-        content={draft()?.content ?? ""}
-        setContent={setContent}
-        actionsStart={
-          <Switch fallback={<MessageBox.InlineIcon size="short" />}>
-            <Match when={props.channel.havePermission("UploadFiles")}>
-              <MessageBox.InlineIcon size="wide">
-                <IconButton onPress={addFile}>
-                  <Symbol>add</Symbol>
-                </IconButton>
-              </MessageBox.InlineIcon>
-            </Match>
-          </Switch>
-        }
-        actionsEnd={
-          <CompositionMediaPicker
-            onMessage={sendMessage}
-            onTextReplacement={(text) => setNodeReplacement([text])}
-          >
-            {(triggerProps) => (
-              <>
-                <MessageBox.InlineIcon size="normal">
-                  <IconButton onPress={triggerProps.onClickGif}>
-                    <Symbol>gif</Symbol>
+      <div
+        use:floating={{
+          contextMenu: () => (
+            <CompositionContextMenu
+              onPasteText={onPasteText}
+              onPasteImage={onPasteImage}
+              onCopy={onCopy}
+              onCut={onCut}
+              onSelectAll={onSelectAll}
+              hasClipboardImage={props.channel.havePermission("UploadFiles")}
+            />
+          ),
+        }}
+        style={{ display: "contents" }}
+      >
+        <MessageBox
+          initialValue={initialValue()}
+          nodeReplacement={nodeReplacement()}
+          onSendMessage={() => sendMessage()}
+          onTyping={delayedStopTyping}
+          onEditLastMessage={() => state.draft.setEditingMessage(true)}
+          content={draft()?.content ?? ""}
+          setContent={setContent}
+          actionsStart={
+            <Switch fallback={<MessageBox.InlineIcon size="short" />}>
+              <Match when={props.channel.havePermission("UploadFiles")}>
+                <MessageBox.InlineIcon size="wide">
+                  <IconButton onPress={addFile}>
+                    <Symbol>add</Symbol>
                   </IconButton>
                 </MessageBox.InlineIcon>
-                <MessageBox.InlineIcon size="normal">
-                  <IconButton onPress={triggerProps.onClickEmoji}>
-                    <Symbol>emoticon</Symbol>
-                  </IconButton>
-                </MessageBox.InlineIcon>
-
-                <div ref={triggerProps.ref} />
-              </>
-            )}
-          </CompositionMediaPicker>
-        }
-        placeholder={
-          props.channel.type === "SavedMessages"
-            ? t`Save to your notes`
-            : props.channel.type === "DirectMessage"
-              ? t`Message ${props.channel.recipient?.username}`
-              : t`Message ${props.channel.name}`
-        }
-        sendingAllowed={props.channel.havePermission("SendMessage")}
-        slowMode={getSlowModeSeconds()}
-        slowModeCooldown={slowModeCooldown()}
-        autoCompleteSearchSpace={searchSpace}
-        updateDraftSelection={(start, end) =>
-          state.draft.setSelection(props.channel.id, start, end)
-        }
-        hasActionsAppend={
-          state.settings.getValue("appearance:show_send_button") || false
-        }
-        actionsAppend={
-          <Show when={state.settings.getValue("appearance:show_send_button")}>
-            <IconButton
-              _compositionSendMessage
-              size="sm"
-              variant={canSend() ? "filled" : "tonal"}
-              shape="square"
-              isDisabled={!canSend()}
-              onPress={sendMessage}
+              </Match>
+            </Switch>
+          }
+          actionsEnd={
+            <CompositionMediaPicker
+              onMessage={sendMessage}
+              onTextReplacement={(text) => setNodeReplacement([text])}
             >
-              <Symbol fill={true}>send</Symbol>
-            </IconButton>
-          </Show>
-        }
-      />
+              {(triggerProps) => (
+                <>
+                  <MessageBox.InlineIcon size="normal">
+                    <IconButton onPress={triggerProps.onClickGif}>
+                      <Symbol>gif</Symbol>
+                    </IconButton>
+                  </MessageBox.InlineIcon>
+                  <MessageBox.InlineIcon size="normal">
+                    <IconButton onPress={triggerProps.onClickEmoji}>
+                      <Symbol>emoticon</Symbol>
+                    </IconButton>
+                  </MessageBox.InlineIcon>
+
+                  <div ref={triggerProps.ref} />
+                </>
+              )}
+            </CompositionMediaPicker>
+          }
+          placeholder={
+            props.channel.type === "SavedMessages"
+              ? t`Save to your notes`
+              : props.channel.type === "DirectMessage"
+                ? t`Message ${props.channel.recipient?.username}`
+                : t`Message ${props.channel.name}`
+          }
+          sendingAllowed={props.channel.havePermission("SendMessage")}
+          slowMode={getSlowModeSeconds()}
+          slowModeCooldown={slowModeCooldown()}
+          autoCompleteSearchSpace={searchSpace}
+          updateDraftSelection={(start, end) =>
+            state.draft.setSelection(props.channel.id, start, end)
+          }
+          hasActionsAppend={
+            state.settings.getValue("appearance:show_send_button") || false
+          }
+          actionsAppend={
+            <Show when={state.settings.getValue("appearance:show_send_button")}>
+              <IconButton
+                _compositionSendMessage
+                size="sm"
+                variant={canSend() ? "filled" : "tonal"}
+                shape="square"
+                isDisabled={!canSend()}
+                onPress={sendMessage}
+              >
+                <Symbol fill={true}>send</Symbol>
+              </IconButton>
+            </Show>
+          }
+        />
+      </div>
       <FilePasteCollector onFiles={onFiles} />
       <FileDropAnywhereCollector onFiles={onFiles} />
     </>

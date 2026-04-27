@@ -275,16 +275,23 @@ export function UserCard(
               </UsernameText>
             </Column>
 
-            <Divider />
-
             <Show when={query.data?.content}>
-                <SectionTitle>Bio</SectionTitle>
-                <BioSection>{query.data?.content}</BioSection>
+                <Divider />
+                <InfoSection>
+                    <SectionTitle>Bio</SectionTitle>
+                    <BioContent>{query.data?.content}</BioContent>
+                </InfoSection>
             </Show>
 
-            <Profile.Activity userId={props.user.id} />
+            <Show when={true}>
+                <Divider />
+                <Profile.Activity userId={props.user.id} />
+            </Show>
 
-            <Profile.Roles member={props.member} />
+            <Show when={props.member}>
+                <Divider />
+                <Profile.Roles member={props.member} />
+            </Show>
         </Column>
       </ContentArea>
 
@@ -382,37 +389,44 @@ const BadgesContainer = styled("div", {
 
 const ContentArea = styled("div", {
   base: {
-    padding: "0 16px 16px 16px", // Reduced top padding since Badges/Avatar handle overlap
+    padding: "0 16px 16px 16px",
     overflowY: "auto",
   },
 });
 
 const SectionTitle = styled("div", {
   base: {
-    fontSize: "10px",
-    fontWeight: "800",
+    fontSize: "11px",
+    fontWeight: "700",
     textTransform: "uppercase",
     color: "var(--md-sys-color-on-surface-variant)",
-    opacity: 0.8,
-    marginBottom: "4px",
-    letterSpacing: "0.03em",
+    letterSpacing: "0.04em",
   },
 });
 
 const Divider = styled("div", {
   base: {
     height: "1px",
-    background: "var(--md-sys-color-outline-variant)",
-    opacity: 0.2,
-    margin: "4px 0",
+    background: "color-mix(in srgb, var(--md-sys-color-outline-variant) 40%, transparent)",
+    margin: "2px 0",
   },
 });
 
-const BioSection = styled("div", {
+const InfoSection = styled("div", {
   base: {
-    fontSize: "14px",
-    lineHeight: "1.4",
-    opacity: 0.9,
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+    padding: "0 4px",
+  },
+});
+
+const BioContent = styled("div", {
+  base: {
+    fontSize: "13px",
+    lineHeight: "1.5",
+    color: "var(--md-sys-color-on-surface-variant)",
+    wordBreak: "break-word",
   },
 });
 

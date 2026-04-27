@@ -28,73 +28,94 @@ export function ProfileRoles(props: { member?: ServerMember }) {
 
   return (
     <Show when={visibleRoles().length}>
-      <RolesWrapper onClick={openRoles}>
-        <Ripple />
+      <RolesSection>
         <SectionTitle>
           <Trans>Roles</Trans>
         </SectionTitle>
-        <Column gap="xs">
+        <RolesGrid onClick={openRoles}>
+          <Ripple />
           <For each={visibleRoles().toReversed()}>
             {(role) => (
-              <Row align>
-                <Role>{role.name}</Role>
-                <RoleIcon
+              <RoleChip>
+                <RoleDot
                   style={{
                     background:
                       role.colour ?? "var(--md-sys-color-outline-variant)",
                   }}
                 />
-              </Row>
+                <RoleName>{role.name}</RoleName>
+              </RoleChip>
             )}
           </For>
-        </Column>
-      </RolesWrapper>
+        </RolesGrid>
+      </RolesSection>
     </Show>
   );
 }
 
-const RolesWrapper = styled("div", {
+const RolesSection = styled("div", {
   base: {
-    position: "relative",
-    cursor: "pointer",
-    padding: "0 4px",
     display: "flex",
     flexDirection: "column",
-    gap: "4px",
-    "&:hover": {
-        opacity: 0.8,
-    }
-  }
-});
-
-const Role = styled("span", {
-  base: {
-    flexGrow: 1,
-    overflow: "hidden",
-    whiteSpace: "nowrap",
-    textOverflow: "ellipsis",
-    fontSize: "12px",
-    opacity: 0.8,
+    gap: "6px",
+    padding: "0 4px",
   },
 });
 
-const RoleIcon = styled("div", {
+const RolesGrid = styled("div", {
   base: {
-    width: "8px",
-    height: "8px",
-    aspectRatio: "1/1",
-    borderRadius: "100%",
+    position: "relative",
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "6px",
+    cursor: "pointer",
+    overflow: "hidden",
+    borderRadius: "8px",
+  },
+});
+
+const RoleChip = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    padding: "4px 10px 4px 8px",
+    borderRadius: "6px",
+    background: "var(--md-sys-color-surface-container)",
+    border: "1px solid color-mix(in srgb, var(--md-sys-color-outline-variant) 50%, transparent)",
+    transition: "all 0.15s ease",
+    "&:hover": {
+      background: "var(--md-sys-color-surface-container-high)",
+      borderColor: "var(--md-sys-color-outline-variant)",
+    },
+  },
+});
+
+const RoleDot = styled("div", {
+  base: {
+    width: "10px",
+    height: "10px",
+    borderRadius: "50%",
+    flexShrink: 0,
+  },
+});
+
+const RoleName = styled("span", {
+  base: {
+    fontSize: "12px",
+    fontWeight: "500",
+    color: "var(--md-sys-color-on-surface)",
+    whiteSpace: "nowrap",
+    lineHeight: "1.3",
   },
 });
 
 const SectionTitle = styled("div", {
   base: {
-    fontSize: "10px",
-    fontWeight: "800",
+    fontSize: "11px",
+    fontWeight: "700",
     textTransform: "uppercase",
     color: "var(--md-sys-color-on-surface-variant)",
-    opacity: 0.8,
-    marginBottom: "4px",
-    letterSpacing: "0.03em",
+    letterSpacing: "0.04em",
   },
 });
