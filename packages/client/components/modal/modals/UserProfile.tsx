@@ -104,7 +104,7 @@ export function UserProfileModal(
               label: data.game,
               sublabel: "Playing now",
               icon: iconUrl,
-              color: "#66c0f4",
+              color: "var(--md-sys-color-primary)",
               url: data.appid ? `https://store.steampowered.com/app/${data.appid}` : undefined,
               timestamp: now,
             });
@@ -121,7 +121,7 @@ export function UserProfileModal(
                 label: game.name,
                 sublabel: "Recently played",
                 icon: game.iconUrl || (game.appid ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/capsule_sm_120.jpg` : "/assets/socials/steam.svg"),
-                color: "#4a90e2",
+                color: "var(--md-sys-color-primary)",
                 url: game.appid ? `https://store.steampowered.com/app/${game.appid}` : undefined,
                 timestamp: game.last_played ? new Date(game.last_played * 1000) : new Date(Date.now() - 1000 * 60 * 60 * 24),
                 isRecent: true
@@ -139,7 +139,7 @@ export function UserProfileModal(
               label: data.title,
               sublabel: `by ${data.artist || "Unknown"}`,
               icon: data.albumArt || "/assets/socials/spotify.svg",
-              color: "#2daa00ff",
+              color: "var(--md-sys-color-primary)",
               url: data.url,
               timestamp: now,
             });
@@ -155,7 +155,7 @@ export function UserProfileModal(
                 label: track.title,
                 sublabel: `Last played by ${track.artist || "Unknown"}`,
                 icon: track.albumArt || "/assets/socials/spotify.svg",
-                color: "#2daa00ff",
+                color: "var(--md-sys-color-primary)",
                 url: track.url,
                 timestamp: track.playedAt ? new Date(track.playedAt) : now,
                 isRecent: true
@@ -173,7 +173,7 @@ export function UserProfileModal(
               label: data.title,
               sublabel: `Watching Ep ${data.episode || "?"}`,
               icon: data.poster || "/assets/socials/anime.svg",
-              color: "#ff6400",
+              color: "var(--md-sys-color-primary)",
               url: data.url,
               timestamp: now,
             });
@@ -190,7 +190,7 @@ export function UserProfileModal(
                 label: anime.title,
                 sublabel: `Last watched Ep ${anime.episode || "?"}`,
                 icon: anime.poster || "/assets/socials/anime.svg",
-                color: "#ff6400",
+                color: "var(--md-sys-color-primary)",
                 url: anime.url,
                 timestamp: anime.updatedAt ? new Date(anime.updatedAt) : now,
                 isRecent: true
@@ -290,22 +290,35 @@ export function UserProfileModal(
           />
 
           <LeftContent>
+            <IdentitySection>
+              <DisplayName>{props.user.displayName || props.user.username}</DisplayName>
+              <UsernameRow>
+                <UsernameText>
+                  {props.user.username}
+                  <Show when={props.user.discriminator !== "0000"}>
+                    <span>#{props.user.discriminator}</span>
+                  </Show>
+                </UsernameText>
+                <BadgeList>
+                  <Profile.Badges user={props.user} />
+                </BadgeList>
+              </UsernameRow>
+            </IdentitySection>
+
             <Profile.Actions user={props.user} width={3} />
 
             <Show when={props.user.status?.text}>
-              <StatusSection>
+              <LeftSectionCard>
                 <SectionLabel>Custom Status</SectionLabel>
                 <StatusText>{props.user.status?.text}</StatusText>
-              </StatusSection>
+              </LeftSectionCard>
             </Show>
 
-            <Profile.Badges user={props.user} />
-
             <Show when={profileQuery.data?.content}>
-              <BioSection>
+              <LeftSectionCard>
                 <SectionLabel>About Me</SectionLabel>
                 <Profile.Bio content={profileQuery.data?.content} full />
-              </BioSection>
+              </LeftSectionCard>
             </Show>
           </LeftContent>
         </LeftPanel>
@@ -443,7 +456,7 @@ export function UserProfileModal(
                               <ActivityTitle title={item.label}>{item.label}</ActivityTitle>
                               <ActivitySub>{item.sublabel}</ActivitySub>
                             </ActivityInfo>
-                            <ActivityTime style={{ color: item.isRecent ? "rgba(0,0,0,0.4)" : item.color }}>
+                            <ActivityTime style={{ color: item.isRecent ? "var(--md-sys-color-on-surface-variant)" : "var(--md-sys-color-primary)" }}>
                               <TimeIcon>
                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                   {/* Steam: Controller */}
@@ -638,11 +651,90 @@ const LeftContent = styled("div", {
   base: {
     display: "flex",
     flexDirection: "column",
-    gap: "var(--gap-md)",
-    padding: "var(--gap-md)",
+    gap: "20px",
+    padding: "24px",
+    paddingTop: "40px", // Account for avatar overlap if needed
+    position: "relative",
 
     "& > *": {
       gridColumn: "unset !important",
+    },
+  },
+});
+
+const IdentitySection = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+    marginBottom: "4px",
+  },
+});
+
+const DisplayName = styled("h1", {
+  base: {
+    fontSize: "24px",
+    fontWeight: "900",
+    color: "var(--md-sys-color-on-surface)",
+    lineHeight: "1.2",
+    letterSpacing: "-0.02em",
+  },
+});
+
+const UsernameRow = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    flexWrap: "wrap",
+  },
+});
+
+const UsernameText = styled("div", {
+  base: {
+    fontSize: "14px",
+    fontWeight: "600",
+    color: "var(--md-sys-color-on-surface-variant)",
+    display: "flex",
+    alignItems: "center",
+
+    "& span": {
+      opacity: 0.5,
+      fontWeight: "400",
+    },
+  },
+});
+
+const BadgeList = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
+    
+    // Override some internal badge styling if possible
+    "& > div": {
+      display: "flex",
+      gap: "4px",
+      padding: "0",
+      background: "none",
+    }
+  },
+});
+
+const LeftSectionCard = styled("div", {
+  base: {
+    background: "var(--md-sys-color-surface-container-low)",
+    border: "1px solid var(--md-sys-color-outline-variant)",
+    borderRadius: "20px",
+    padding: "16px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+
+    _hover: {
+      background: "var(--md-sys-color-surface-container-high)",
+      borderColor: "var(--md-sys-color-outline)",
     },
   },
 });
@@ -709,17 +801,10 @@ const SectionLabel = styled("div", {
     fontSize: "11px",
     fontWeight: "800",
     textTransform: "uppercase",
-    letterSpacing: "0.06em",
+    letterSpacing: "0.1em",
     color: "var(--md-sys-color-on-surface-variant)",
-    opacity: 0.8,
-  },
-});
-
-const StatusSection = styled("div", {
-  base: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
+    opacity: 0.6,
+    marginBottom: "12px",
   },
 });
 
@@ -732,25 +817,6 @@ const StatusText = styled("span", {
   },
 });
 
-const BioSection = styled("div", {
-  base: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-
-    "& > div": {
-      padding: "0",
-      background: "none",
-      border: "none",
-      gridColumn: "unset",
-    },
-
-    "& .title": {
-      display: "none",
-    },
-  },
-});
-
 const ActivityList = styled("div", {
   base: {
     display: "flex",
@@ -759,24 +825,26 @@ const ActivityList = styled("div", {
   },
 });
 
-const ActivityCard = styled("a", {
+const ActivityCard = styled("div", {
   base: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-    padding: "12px 16px",
-    borderRadius: "12px",
-    background: "var(--md-sys-color-surface-container)",
+    background: "var(--md-sys-color-surface-container-low)",
     border: "1px solid var(--md-sys-color-outline-variant)",
+    borderRadius: "20px",
+    padding: "16px",
+    display: "flex",
+    gap: "16px",
+    alignItems: "center",
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+    position: "relative",
+    overflow: "hidden",
     textDecoration: "none",
     color: "inherit",
-    transition: "background 0.15s, border-color 0.15s, transform 0.1s",
-    cursor: "pointer",
 
     _hover: {
       background: "var(--md-sys-color-surface-container-high)",
-      borderColor: "var(--md-sys-color-outline)",
       transform: "translateY(-1px)",
+      boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+      borderColor: "var(--md-sys-color-outline)",
     },
 
     _active: {
@@ -840,10 +908,15 @@ const ActivityInfo = styled("div", {
 const ActivityTitle = styled("div", {
   base: {
     fontSize: "15px",
-    fontWeight: "800",
+    fontWeight: "700",
     color: "var(--md-sys-color-on-surface)",
-    lineClamp: 2,
     lineHeight: "1.2",
+    marginBottom: "2px",
+    display: "-webkit-box",
+    lineClamp: "2",
+    WebkitLineClamp: "2",
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
   },
 });
 
