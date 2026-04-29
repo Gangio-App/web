@@ -32,6 +32,8 @@ type SpotifyActivity = {
   url?: string;
   duration_ms?: number;
   progress_ms?: number;
+  isRecent?: boolean;
+  playedAt?: string;
 };
 
 type AnimeActivity = {
@@ -42,6 +44,8 @@ type AnimeActivity = {
   url?: string;
   progress?: number;
   duration?: number;
+  isRecent?: boolean;
+  updatedAt?: string;
 };
 
 type ActivityItem = {
@@ -77,8 +81,6 @@ export function UserProfileModal(
   const activityQuery = useQuery(() => ({
     queryKey: ["activity", props.user.id],
     queryFn: async () => {
-      const items: ActivityItem[] = [];
-      const now = new Date();
       try {
         const [steamRes, spotifyRes, animeRes] = await Promise.allSettled([
           fetch(`/api/steam/nowplaying/${props.user.id}`),
@@ -130,7 +132,7 @@ export function UserProfileModal(
 
         // Spotify
         if (spotifyRes.status === "fulfilled" && spotifyRes.value.ok) {
-          const data: SpotifyActivity = await spotifyRes.value.json();
+          const data = await spotifyRes.value.json();
           if (data.isPlaying && data.title) {
             items.push({
               type: "spotify",
@@ -141,23 +143,31 @@ export function UserProfileModal(
               url: data.url,
               timestamp: now,
             });
-          } else if (data.isRecent && data.title) {
-            items.push({
-              type: "spotify",
-              label: data.title,
-              sublabel: `Last played by ${data.artist || "Unknown"}`,
-              icon: data.albumArt || "/assets/socials/spotify.svg",
-              color: "#2daa00ff",
-              url: data.url,
-              timestamp: data.playedAt ? new Date(data.playedAt) : now,
-              isRecent: true
+          }
+
+          // History
+          if (data.recent && data.recent.length > 0) {
+            data.recent.forEach(track => {
+              // Don't show if it's the currently playing one
+              if (data.isPlaying && data.title === track.title) return;
+
+              items.push({
+                type: "spotify",
+                label: track.title,
+                sublabel: `Last played by ${track.artist || "Unknown"}`,
+                icon: track.albumArt || "/assets/socials/spotify.svg",
+                color: "#2daa00ff",
+                url: track.url,
+                timestamp: track.playedAt ? new Date(track.playedAt) : now,
+                isRecent: true
+              });
             });
           }
         }
 
         // Anime
         if (animeRes.status === "fulfilled" && animeRes.value.ok) {
-          const data: AnimeActivity = await animeRes.value.json();
+          const data = await animeRes.value.json();
           if (data.isWatching && data.title) {
             items.push({
               type: "anime",
@@ -168,16 +178,24 @@ export function UserProfileModal(
               url: data.url,
               timestamp: now,
             });
-          } else if (data.isRecent && data.title) {
-            items.push({
-              type: "anime",
-              label: data.title,
-              sublabel: `Last watched Ep ${data.episode || "?"}`,
-              icon: data.poster || "/assets/socials/anime.svg",
-              color: "#ff6400",
-              url: data.url,
-              timestamp: data.updatedAt ? new Date(data.updatedAt) : now,
-              isRecent: true
+          }
+
+          // History
+          if (data.recent && data.recent.length > 0) {
+            data.recent.forEach(anime => {
+              // Don't show if it's the currently watching one
+              if (data.isWatching && data.title === anime.title) return;
+
+              items.push({
+                type: "anime",
+                label: anime.title,
+                sublabel: `Last watched Ep ${anime.episode || "?"}`,
+                icon: anime.poster || "/assets/socials/anime.svg",
+                color: "#ff6400",
+                url: anime.url,
+                timestamp: anime.updatedAt ? new Date(anime.updatedAt) : now,
+                isRecent: true
+              });
             });
           }
         }
@@ -185,7 +203,9 @@ export function UserProfileModal(
         // Sort: Active items first, then history by timestamp (newest first)
         return items.sort((a, b) => {
            if (!!a.isRecent !== !!b.isRecent) return a.isRecent ? 1 : -1;
-           return b.timestamp.getTime() - a.timestamp.getTime();
+           const timeA = a.timestamp?.getTime() || 0;
+           const timeB = b.timestamp?.getTime() || 0;
+           return timeB - timeA;
         });
       } catch (e) {
         console.error("Activity fetch error:", e);
@@ -410,7 +430,7 @@ export function UserProfileModal(
                             style={{ cursor: item.url ? "pointer" : "default", opacity: 0.8 }}
                             onClick={item.url ? () => window.open(item.url, "_blank") : undefined}
                           >
-                            <ActivityIcon>
+                            <ActivityIcon size="small">
                               <img
                                 src={item.icon}
                                 alt={item.label}
@@ -738,6 +758,24 @@ const ActivityIcon = styled("div", {
   base: {
     position: "relative",
     flexShrink: 0,
+    borderRadius: "8px",
+    overflow: "hidden",
+    background: "var(--md-sys-color-surface-container-high)",
+  },
+  variants: {
+    size: {
+      normal: {
+        width: "80px",
+        height: "80px",
+      },
+      small: {
+        width: "48px",
+        height: "48px",
+      },
+    },
+  },
+  defaultVariants: {
+    size: "normal",
   },
 });
 
@@ -773,9 +811,7 @@ const ActivityTitle = styled("div", {
     fontSize: "15px",
     fontWeight: "800",
     color: "var(--md-sys-color-on-surface)",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
+    lineClamp: 2,
     lineHeight: "1.2",
   },
 });
@@ -784,9 +820,7 @@ const ActivitySub = styled("div", {
   base: {
     fontSize: "13px",
     color: "var(--md-sys-color-on-surface-variant)",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
+    lineHeight: "1.4",
     opacity: 0.8,
   },
 });
