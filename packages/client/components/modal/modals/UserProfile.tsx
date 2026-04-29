@@ -271,23 +271,30 @@ export function UserProfileModal(
 
         {/* LEFT PANEL */}
         <LeftPanel>
-          <Profile.Banner
-            width={3}
-            user={props.user}
-            bannerUrl={profileQuery.data?.animatedBannerURL}
+          <CustomBanner
+            style={{
+              "background-image": profileQuery.data?.animatedBannerURL ? `url('${profileQuery.data.animatedBannerURL}')` : "none",
+            }}
             onClick={
               profileQuery.data?.banner
-                ? () =>
-                  openModal({ type: "image_viewer", file: profileQuery.data!.banner! })
+                ? () => openModal({ type: "image_viewer", file: profileQuery.data!.banner! })
                 : undefined
             }
-            onClickAvatar={(e) => {
-              e.stopPropagation();
-              if (props.user.avatar) {
-                openModal({ type: "image_viewer", file: props.user.avatar });
-              }
-            }}
-          />
+          >
+            <CustomAvatarWrapper>
+              <Avatar
+                src={props.user.animatedAvatarURL}
+                size={92}
+                onClick={(e: Event) => {
+                  e.stopPropagation();
+                  if (props.user.avatar) {
+                    openModal({ type: "image_viewer", file: props.user.avatar });
+                  }
+                }}
+                interactive={props.user.avatar ? true : false}
+              />
+            </CustomAvatarWrapper>
+          </CustomBanner>
 
           <LeftContent>
             <IdentitySection>
@@ -300,7 +307,7 @@ export function UserProfileModal(
                   </Show>
                 </UsernameText>
                 <BadgeList>
-                  <Profile.Badges user={props.user} />
+                  <Profile.Badges user={props.user} compact />
                 </BadgeList>
               </UsernameRow>
             </IdentitySection>
@@ -653,12 +660,37 @@ const LeftContent = styled("div", {
     flexDirection: "column",
     gap: "20px",
     padding: "24px",
-    paddingTop: "40px", // Account for avatar overlap if needed
+    paddingTop: "56px", // Account for large avatar overlap
     position: "relative",
 
     "& > *": {
       gridColumn: "unset !important",
     },
+  },
+});
+
+const CustomBanner = styled("div", {
+  base: {
+    height: "160px",
+    width: "100%",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundColor: "var(--md-sys-color-surface-variant)",
+    position: "relative",
+    borderTopLeftRadius: "var(--borderRadius-xl)",
+    cursor: "pointer",
+  },
+});
+
+const CustomAvatarWrapper = styled("div", {
+  base: {
+    position: "absolute",
+    bottom: "-40px",
+    left: "20px",
+    borderRadius: "50%",
+    border: "6px solid var(--md-sys-color-surface-container)", // Matches LeftPanel background
+    background: "var(--md-sys-color-surface-container)",
+    zIndex: 10,
   },
 });
 
