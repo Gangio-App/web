@@ -544,7 +544,16 @@ export function MessageComposition(props: Props) {
         />
       </div>
       <FilePasteCollector onFiles={onFiles} />
-      <FileDropAnywhereCollector onFiles={onFiles} />
+      <FileDropAnywhereCollector
+        onFiles={onFiles}
+        targetName={
+          props.channel.type === "DirectMessage"
+            ? `@${props.channel.recipient?.username}`
+            : props.channel.type === "SavedMessages"
+              ? "Saved Messages"
+              : `#${props.channel.name}`
+        }
+      />
     </>
   );
 }
