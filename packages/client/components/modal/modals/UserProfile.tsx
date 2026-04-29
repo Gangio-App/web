@@ -293,10 +293,32 @@ export function UserProfileModal(
                 }}
                 interactive={props.user.avatar ? true : false}
               />
+              <Show when={props.user.status?.text}>
+                  <div style={{ 
+                      position: "absolute", 
+                      top: "-42px", 
+                      left: "90px", 
+                      display: "flex", 
+                      "flex-direction": "column",
+                      "align-items": "center"
+                  }}>
+                      <StatusBubble>
+                          {props.user.status?.text}
+                      </StatusBubble>
+                      <div style={{ position: "relative", width: "100%", height: "12px" }}>
+                          <ThinkingCircle style={{ width: "8px", height: "8px", bottom: "-4px", left: "10px" }} />
+                          <ThinkingCircle style={{ width: "4px", height: "4px", bottom: "-12px", left: "4px" }} />
+                      </div>
+                  </div>
+              </Show>
             </CustomAvatarWrapper>
           </CustomBanner>
 
           <LeftContent>
+            <ActionsWrapper>
+              <Profile.Actions user={props.user} width={3} />
+            </ActionsWrapper>
+
             <IdentitySection>
               <DisplayName>{props.user.displayName || props.user.username}</DisplayName>
               <UsernameRow>
@@ -311,15 +333,6 @@ export function UserProfileModal(
                 </BadgeList>
               </UsernameRow>
             </IdentitySection>
-
-            <Profile.Actions user={props.user} width={3} />
-
-            <Show when={props.user.status?.text}>
-              <LeftSectionCard>
-                <SectionLabel>Custom Status</SectionLabel>
-                <StatusText>{props.user.status?.text}</StatusText>
-              </LeftSectionCard>
-            </Show>
 
             <Show when={profileQuery.data?.content}>
               <LeftSectionCard>
@@ -669,6 +682,20 @@ const LeftContent = styled("div", {
   },
 });
 
+const ActionsWrapper = styled("div", {
+  base: {
+    position: "absolute",
+    top: "16px",
+    right: "24px",
+    zIndex: 10,
+    
+    // Override internal Profile.Actions flex to align nicely
+    "& > div": {
+      justifyContent: "flex-end",
+    }
+  },
+});
+
 const CustomBanner = styled("div", {
   base: {
     height: "160px",
@@ -768,7 +795,60 @@ const LeftSectionCard = styled("div", {
       background: "var(--md-sys-color-surface-container-high)",
       borderColor: "var(--md-sys-color-outline)",
     },
+
+    "& .title": {
+      display: "none",
+    },
+
+    "& > div": {
+      padding: "0",
+      background: "none",
+      border: "none",
+      gridColumn: "unset",
+    },
   },
+});
+
+const ThinkingCircle = styled("div", {
+    base: {
+        position: "absolute",
+        background: "rgba(255, 255, 255, 0.15)",
+        backdropFilter: "blur(12px)",
+        borderRadius: "100%",
+        boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
+        border: "1px solid rgba(255,255,255,0.1)",
+    }
+});
+
+const StatusBubble = styled("div", {
+  base: {
+    padding: "6px 12px",
+    background: "rgba(255, 255, 255, 0.15)",
+    backdropFilter: "blur(16px)",
+    borderRadius: "18px",
+    fontSize: "12px",
+    fontWeight: "500",
+    color: "#fff",
+    maxWidth: "140px",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    boxShadow: "0 8px 24px rgba(0,0,0,0.3), inset 0 0 0 1px rgba(255,255,255,0.1)",
+    position: "relative",
+    zIndex: 20,
+    textAlign: "center",
+    transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+    cursor: "help",
+
+    "&:hover": {
+        maxWidth: "240px",
+        whiteSpace: "normal",
+        overflow: "visible",
+        zIndex: 50,
+        background: "rgba(255, 255, 255, 0.25)",
+        transform: "scale(1.05) translateY(-2px)",
+    }
+  }
 });
 
 const RightPanel = styled("div", {
