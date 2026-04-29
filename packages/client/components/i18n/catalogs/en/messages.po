@@ -4270,3 +4270,183 @@ msgstr "Login with Steam"
 
 msgid "OR CONTINUE WITH"
 msgstr "OR CONTINUE WITH"
+
+msgid "Cut"
+msgstr "Cut"
+
+msgid "Copy"
+msgstr "Copy"
+
+msgid "Paste"
+msgstr "Paste"
+
+msgid "Paste Image"
+msgstr "Paste Image"
+
+msgid "Select All"
+msgstr "Select All"
+
+msgid "Start Voice Call"
+msgstr "Start Voice Call"
+
+msgid "Incoming Call"
+msgstr "Incoming Call"
+
+msgid "Calling..."
+msgstr "Calling..."
+
+msgid "Incoming call from <b>{0}</b>"
+msgstr "Incoming call from <b>{0}</b>"
+
+msgid "Calling <b>{0}</b>"
+msgstr "Calling <b>{0}</b>"
+
+msgid "Incoming call from {0}"
+msgstr "Incoming call from {0}"
+
+msgid "Ringing..."
+msgstr "Ringing..."
+
+msgid "Leave Call"
+msgstr "Leave Call"
+
+msgid "Someone"
+msgstr "Someone"
+
+msgid "You are already in a call"
+msgstr "You are already in a call"
+
+msgid "{names} is in the call"
+msgstr "{names} is in the call"
+
+msgid "Sharing Screen"
+msgstr "Sharing Screen"
+
+msgid "In a voice chat with you"
+msgstr "In a voice chat with you"
+
+msgid "In {channelName} in {serverName}"
+msgstr "In {channelName} in {serverName}"
+
+msgid "Weak"
+msgstr "Weak"
+
+msgid "Medium"
+msgstr "Medium"
+
+msgid "Strong"
+msgstr "Strong"
+
+msgid "Password updated successfully!"
+msgstr "Password updated successfully!"
+
+msgid "Closing this window shortly..."
+msgstr "Closing this window shortly..."
+
+msgid "Sharing screen with you"
+msgstr "Sharing screen with you"
+
+msgid "Sharing screen in {channelName} in {serverName}"
+msgstr "Sharing screen in {channelName} in {serverName}"
+
+msgid "Date of Birth"
+msgstr "Date of Birth"
+
+msgid "Day"
+msgstr "Day"
+
+msgid "Month"
+msgstr "Month"
+
+msgid "Year"
+msgstr "Year"
+
+msgid "January"
+msgstr "January"
+
+msgid "February"
+msgstr "February"
+
+msgid "March"
+msgstr "March"
+
+msgid "April"
+msgstr "April"
+
+msgid "May"
+msgstr "May"
+
+msgid "June"
+msgstr "June"
+
+msgid "July"
+msgstr "July"
+
+msgid "August"
+msgstr "August"
+
+msgid "September"
+msgstr "September"
+
+msgid "October"
+msgstr "October"
+
+msgid "November"
+msgstr "November"
+
+msgid "December"
+msgstr "December"
+
+msgid "You must be at least 15 years old to join Gangio."
+msgstr "You must be at least 15 years old to join Gangio."
+
+msgid "Password is too weak. Please use a stronger password."
+msgstr "Password is too weak. Please use a stronger password."
+
+msgid "Join Call"
+msgstr "Join Call"
+
+msgid "Started a voice call."
+msgstr "Started a voice call."
+
+msgid "Voice Call"
+msgstr "Voice Call"
+
+msgid "Call in progress"
+msgstr "Call in progress"
+
+msgid "Call ended"
+msgstr "Call ended"
+
+msgid "Connecting..."
+msgstr "Connecting..."
+
+msgid "Reconnecting..."
+msgstr "Reconnecting..."
+
+msgid "Remember me"
+msgstr "Remember me"
+
+msgid "Forgot password?"
+msgstr "Forgot password?"
+
+msgid "OR CONTINUE WITH"
+msgstr "OR CONTINUE WITH"
+
+msgid "Steam"
+msgstr "Steam"
+
+msgid "Google"
+msgstr "Google"
+
+msgid "Remember me for 30 days"
+msgstr "Remember me for 30 days"
+
+msgid "Login with Steam"
+msgstr "Login with Steam"
+
+msgid "Slowmode is active"
+msgstr "Slowmode is active"
+
+msgid "Slowmode is enabled. You can send another message in {0} seconds."
+msgstr "Slowmode is enabled. You can send another message in {0} seconds."

@@ -16,6 +16,12 @@ type SteamActivity = {
   game?: string;
   appid?: string;
   iconUrl?: string | null;
+  recent?: {
+    appid: string;
+    name: string;
+    iconUrl?: string;
+    last_played?: number;
+  }[];
 };
 
 type SpotifyActivity = {
@@ -73,13 +79,15 @@ export function UserProfileModal(
     queryFn: async () => {
       const items: ActivityItem[] = [];
       const now = new Date();
-
       try {
         const [steamRes, spotifyRes, animeRes] = await Promise.allSettled([
           fetch(`/api/steam/nowplaying/${props.user.id}`),
           fetch(`/api/spotify/nowplaying/${props.user.id}`),
           fetch(`/api/anime/watching/${props.user.id}`),
         ]);
+
+        const items: ActivityItem[] = [];
+        const now = new Date();
 
         // Steam
         if (steamRes.status === "fulfilled" && steamRes.value.ok) {
@@ -104,15 +112,15 @@ export function UserProfileModal(
           if (data.recent && data.recent.length > 0) {
             data.recent.slice(0, 5).forEach(game => {
               // Don't show if it's the currently playing one
-              if (data.isPlaying && data.appid == game.appid) return;
+              if (data.isPlaying && String(data.appid) == String(game.appid)) return;
 
               items.push({
                 type: "steam",
                 label: game.name,
                 sublabel: "Recently played",
-                icon: game.iconUrl || `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/capsule_sm_120.jpg`,
+                icon: game.iconUrl || (game.appid ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/capsule_sm_120.jpg` : "/assets/socials/steam.svg"),
                 color: "#66c0f4",
-                url: `https://store.steampowered.com/app/${game.appid}`,
+                url: game.appid ? `https://store.steampowered.com/app/${game.appid}` : undefined,
                 timestamp: game.last_played ? new Date(game.last_played * 1000) : new Date(Date.now() - 1000 * 60 * 60 * 24),
                 isRecent: true
               });
@@ -149,7 +157,7 @@ export function UserProfileModal(
 
         // Anime
         if (animeRes.status === "fulfilled" && animeRes.value.ok) {
-          const data: AnimeActivity & { isRecent?: boolean; updatedAt?: string } = await animeRes.value.json();
+          const data: AnimeActivity = await animeRes.value.json();
           if (data.isWatching && data.title) {
             items.push({
               type: "anime",
@@ -173,11 +181,16 @@ export function UserProfileModal(
             });
           }
         }
+        
+        // Sort: Active items first, then history by timestamp (newest first)
+        return items.sort((a, b) => {
+           if (!!a.isRecent !== !!b.isRecent) return a.isRecent ? 1 : -1;
+           return b.timestamp.getTime() - a.timestamp.getTime();
+        });
       } catch (e) {
-        // silently fail
+        console.error("Activity fetch error:", e);
+        return [];
       }
-
-      return items;
     },
     refetchInterval: 10000, // 10s is enough for history
     placeholderData: (prev: ActivityItem[] | undefined) => prev,
@@ -222,7 +235,7 @@ export function UserProfileModal(
     <Dialog
       show={props.show}
       onClose={props.onClose}
-      minWidth={740}
+      minWidth={800}
       padding={0}
     >
       <ModalContainer>
@@ -292,13 +305,13 @@ export function UserProfileModal(
                 active={activeTab() === "friends"}
                 onClick={() => setActiveTab("friends")}
               >
-                Mutual Friends ({friendCount()})
+                Friends ({friendCount()})
               </Tab>
               <Tab
                 active={activeTab() === "servers"}
                 onClick={() => setActiveTab("servers")}
               >
-                Mutual Servers ({serverCount()})
+                Servers ({serverCount()})
               </Tab>
             </Show>
           </TabBar>
@@ -321,49 +334,39 @@ export function UserProfileModal(
                     </EmptyState>
                   }
                 >
-                  <Show
-                    when={activityQuery.data && activityQuery.data.length > 0}
-                    fallback={
-                      <EmptyState>
-                        <EmptyIcon>
-                          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--md-sys-color-primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style={{ opacity: 0.6 }}>
-                            <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"></path>
-                            <path d="M12 18h.01"></path>
-                            <path d="M7 13c0-1.5 2-1.5 2-3s-1-2-2-2"></path>
-                          </svg>
-                        </EmptyIcon>
-                        <EmptyText>No recent activity</EmptyText>
-                        <EmptySubtext>
-                          When this user is playing a game, listening to music, or watching anime, it'll show up here.
-                        </EmptySubtext>
-                      </EmptyState>
-                    }
-                  >
-                    <SectionLabel style={{ "margin-bottom": "12px" }}>Activity History</SectionLabel>
-                    <ActivityList>
-                      <For each={activityQuery.data}>
-                        {(item: ActivityItem) => (
+                <Show
+                  when={activityQuery.data && activityQuery.data.length > 0}
+                  fallback={
+                    <EmptyState>
+                      <EmptyIcon>
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--md-sys-color-primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style={{ opacity: 0.6 }}>
+                          <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"></path>
+                          <path d="M12 18h.01"></path>
+                          <path d="M7 13c0-1.5 2-1.5 2-3s-1-2-2-2"></path>
+                        </svg>
+                      </EmptyIcon>
+                      <EmptyText>No recent activity</EmptyText>
+                      <EmptySubtext>
+                        When this user is playing a game, listening to music, or watching anime, it'll show up here.
+                      </EmptySubtext>
+                    </EmptyState>
+                  }
+                >
+                  {/* ACTIVE ACTIVITY */}
+                  <Show when={activityQuery.data!.some(i => !i.isRecent)}>
+                    <SectionLabel style={{ "margin-bottom": "12px" }}>Currently Active</SectionLabel>
+                    <ActivityList style={{ "margin-bottom": "24px" }}>
+                      <For each={activityQuery.data!.filter(i => !i.isRecent)}>
+                        {(item) => (
                           <ActivityCard
-                            as={item.url ? "a" : "div"}
-                            href={item.url}
-                            target={item.url ? "_blank" : undefined}
-                            rel={item.url ? "noopener noreferrer" : undefined}
-                            style={{
-                              "--activity-color": item.color,
-                              opacity: item.isRecent ? 0.7 : 1,
-                            }}
+                            style={{ cursor: item.url ? "pointer" : "default" }}
+                            onClick={item.url ? () => window.open(item.url, "_blank") : undefined}
                           >
                             <ActivityIcon>
                               <img
                                 src={item.icon}
-                                alt=""
-                                class={css({
-                                  width: "60px",
-                                  height: "60px",
-                                  borderRadius: "8px",
-                                  objectFit: "cover",
-                                  display: "block",
-                                })}
+                                alt={item.label}
+                                style={{ width: "100%", height: "100%", "object-fit": "cover" }}
                               />
                               <ActivityBadge style={{ background: item.color }}>
                                 <Show when={item.type === "steam"}>
@@ -377,15 +380,30 @@ export function UserProfileModal(
                                 </Show>
                               </ActivityBadge>
                             </ActivityIcon>
-
                             <ActivityInfo>
-                              <ActivityTitle>{item.label}</ActivityTitle>
-                              <ActivitySub>{item.sublabel}</ActivitySub>
+                              <ActivityLabel title={item.label}>{item.label}</ActivityLabel>
+                              <ActivitySublabel>
+                                {item.sublabel}
+                                <span style={{ color: item.color, "font-weight": "bold", "margin-left": "8px", "display": "inline-flex", "align-items": "center", gap: "4px" }}>
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 20v-6M12 10V4M4 12h16" style={{ display: item.type === 'steam' ? 'block' : 'none' }} />
+                                    <path d="M11 5L6 9H2v6h4l5 4V5z" style={{ display: item.type === 'spotify' ? 'block' : 'none' }} />
+                                    <circle cx="12" cy="12" r="10" style={{ display: item.type === 'anime' ? 'block' : 'none' }} />
+                                  </svg>
+                                  {item.type === 'steam' ? 'Playing' : item.type === 'spotify' ? 'Listening' : 'Watching'}
+                                </span>
+                              </ActivitySublabel>
                             </ActivityInfo>
+                          </ActivityCard>
+                        )}
+                      </For>
+                    </ActivityList>
+                  </Show>
 
-                            <ActivityTime style={{ color: item.color }}>
-                              <TimeIcon>
-                                <Show when={item.type === "spotify"}>♫</Show>
+                  {/* HISTORY SECTION */}
+                  <Show when={activityQuery.data!.some(i => i.isRecent)}>
+                    <SectionLabel style={{ "margin-bottom": "12px" }}>Activity History</SectionLabel>
+                    <ActivityList>
                                 <Show when={item.type === "steam"}>🎮</Show>
                                 <Show when={item.type === "anime"}>📺</Show>
                               </TimeIcon>
@@ -572,7 +590,7 @@ const TabBar = styled("div", {
     display: "flex",
     gap: "0",
     borderBottom: "1px solid var(--md-sys-color-outline-variant)",
-    padding: "0 24px",
+    padding: "0 60px 0 20px",
     flexShrink: 0,
     background: "var(--md-sys-color-surface-container)",
   },

@@ -4381,3 +4381,183 @@ msgstr "Yavaş mod aktif"
 
 msgid "Slowmode is enabled. You can send another message in {0} seconds."
 msgstr "Yavaş mod etkin. {0} saniye içinde başka bir mesaj gönderebilirsiniz."
+
+msgid "Cut"
+msgstr "Kes"
+
+msgid "Copy"
+msgstr "Kopyala"
+
+msgid "Paste"
+msgstr "Yapıştır"
+
+msgid "Paste Image"
+msgstr "Resmi Yapıştır"
+
+msgid "Select All"
+msgstr "Tümünü Seç"
+
+msgid "Start Voice Call"
+msgstr "Sesli Aramayı Başlat"
+
+msgid "Incoming Call"
+msgstr "Gelen Arama"
+
+msgid "Calling..."
+msgstr "Aranıyor..."
+
+msgid "Incoming call from <b>{0}</b>"
+msgstr "<b>{0}</b> kullanıcısından gelen arama"
+
+msgid "Calling <b>{0}</b>"
+msgstr "<b>{0}</b> aranıyor..."
+
+msgid "Incoming call from {0}"
+msgstr "{0} kullanıcısından gelen arama"
+
+msgid "Ringing..."
+msgstr "Aranıyor..."
+
+msgid "Leave Call"
+msgstr "Aramadan Ayrıl"
+
+msgid "Someone"
+msgstr "Biri"
+
+msgid "You are already in a call"
+msgstr "Zaten bir Aramadasınız"
+
+msgid "{names} is in the call"
+msgstr "{names} Aramada"
+
+msgid "Sharing Screen"
+msgstr "Ekran Paylaşılıyor"
+
+msgid "In a voice chat with you"
+msgstr "Seninle sesli sohbette"
+
+msgid "In {channelName} in {serverName}"
+msgstr "{serverName} sunucusunda {channelName} kanalında"
+
+msgid "Weak"
+msgstr "Zayıf"
+
+msgid "Medium"
+msgstr "Orta"
+
+msgid "Strong"
+msgstr "Güçlü"
+
+msgid "Password updated successfully!"
+msgstr "Şifre başarıyla güncellendi!"
+
+msgid "Closing this window shortly..."
+msgstr "Pencere kısa süre içinde kapatılıyor..."
+
+msgid "Sharing screen with you"
+msgstr "Seninle ekran paylaşımında"
+
+msgid "Sharing screen in {channelName} in {serverName}"
+msgstr "{serverName} sunucusunda {channelName} kanalında ekran paylaşıyor"
+
+msgid "Date of Birth"
+msgstr "Doğum Tarihi"
+
+msgid "Day"
+msgstr "Gün"
+
+msgid "Month"
+msgstr "Ay"
+
+msgid "Year"
+msgstr "Yıl"
+
+msgid "January"
+msgstr "Ocak"
+
+msgid "February"
+msgstr "Şubat"
+
+msgid "March"
+msgstr "Mart"
+
+msgid "April"
+msgstr "Nisan"
+
+msgid "May"
+msgstr "Mayıs"
+
+msgid "June"
+msgstr "Haziran"
+
+msgid "July"
+msgstr "Temmuz"
+
+msgid "August"
+msgstr "Ağustos"
+
+msgid "September"
+msgstr "Eylül"
+
+msgid "October"
+msgstr "Ekim"
+
+msgid "November"
+msgstr "Kasım"
+
+msgid "December"
+msgstr "Aralık"
+
+msgid "You must be at least 15 years old to join Gangio."
+msgstr "Gangio'a katılmak için en az 15 yaşında olmalısınız."
+
+msgid "Password is too weak. Please use a stronger password."
+msgstr "Şifre çok zayıf. Lütfen daha güçlü bir şifre kullanın."
+
+msgid "Join Call"
+msgstr "Aramaya Katıl"
+
+msgid "Started a voice call."
+msgstr "Arama başlattı."
+
+msgid "Voice Call"
+msgstr "Arama"
+
+msgid "Call in progress"
+msgstr "Arama devam ediyor"
+
+msgid "Call ended"
+msgstr "Arama sona erdi"
+
+msgid "Connecting..."
+msgstr "Bağlanıyor..."
+
+msgid "Reconnecting..."
+msgstr "Yeniden Bağlanıyor..."
+
+msgid "Remember me"
+msgstr "Beni hatırla"
+
+msgid "Forgot password?"
+msgstr "Şifreni mi unuttun?"
+
+msgid "OR CONTINUE WITH"
+msgstr "VEYA ŞUNUNLA DEVAM ET"
+
+msgid "Steam"
+msgstr "Steam"
+
+msgid "Google"
+msgstr "Google"
+
+msgid "Remember me for 30 days"
+msgstr "30 gün boyunca beni hatırla"
+
+msgid "Login with Steam"
+msgstr "Steam ile Giriş Yap"
+
+msgid "Slowmode is active"
+msgstr "Yavaş mod aktif"
+
+msgid "Slowmode is enabled. You can send another message in {0} seconds."
+msgstr "Yavaş mod etkin. {0} saniye içinde başka bir mesaj gönderebilirsiniz."
