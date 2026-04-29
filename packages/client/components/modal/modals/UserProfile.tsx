@@ -113,7 +113,7 @@ export function UserProfileModal(
                 icon: game.iconUrl || `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/capsule_sm_120.jpg`,
                 color: "#66c0f4",
                 url: `https://store.steampowered.com/app/${game.appid}`,
-                timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // Approx
+                timestamp: game.last_played ? new Date(game.last_played * 1000) : new Date(Date.now() - 1000 * 60 * 60 * 24),
                 isRecent: true
               });
             });
@@ -129,7 +129,7 @@ export function UserProfileModal(
               label: data.title,
               sublabel: `by ${data.artist || "Unknown"}`,
               icon: data.albumArt || "/assets/socials/spotify.svg",
-              color: "#363636ff",
+              color: "#2daa00ff",
               url: data.url,
               timestamp: now,
             });
@@ -139,7 +139,7 @@ export function UserProfileModal(
               label: data.title,
               sublabel: `Last played by ${data.artist || "Unknown"}`,
               icon: data.albumArt || "/assets/socials/spotify.svg",
-              color: "#363636ff",
+              color: "#2daa00ff",
               url: data.url,
               timestamp: data.playedAt ? new Date(data.playedAt) : now,
               isRecent: true
@@ -292,13 +292,13 @@ export function UserProfileModal(
                 active={activeTab() === "friends"}
                 onClick={() => setActiveTab("friends")}
               >
-                {friendCount()} Mutual Friend{friendCount() !== 1 ? "s" : ""}
+                Mutual Friends ({friendCount()})
               </Tab>
               <Tab
                 active={activeTab() === "servers"}
                 onClick={() => setActiveTab("servers")}
               >
-                {serverCount()} Mutual Server{serverCount() !== 1 ? "s" : ""}
+                Mutual Servers ({serverCount()})
               </Tab>
             </Show>
           </TabBar>
@@ -367,13 +367,13 @@ export function UserProfileModal(
                               />
                               <ActivityBadge style={{ background: item.color }}>
                                 <Show when={item.type === "steam"}>
-                                  <img src="/assets/socials/steam.svg" width={10} height={10} />
+                                  <img src="/assets/socials/steam.svg" width={16} height={16} />
                                 </Show>
                                 <Show when={item.type === "spotify"}>
-                                  <img src="/assets/socials/spotify.svg" width={10} height={10} />
+                                  <img src="/assets/socials/spotify.svg" width={16} height={16} />
                                 </Show>
                                 <Show when={item.type === "anime"}>
-                                  <span style={{ "font-size": "10px", color: "white" }}>📺</span>
+                                  <span style={{ "font-size": "12px", color: "white" }}>📺</span>
                                 </Show>
                               </ActivityBadge>
                             </ActivityIcon>
@@ -582,14 +582,14 @@ const Tab = styled("button", {
   base: {
     all: "unset",
     cursor: "pointer",
-    padding: "16px 20px",
-    fontSize: "12px",
+    padding: "12px 14px",
+    fontSize: "11px",
     fontWeight: "700",
     textTransform: "uppercase",
-    letterSpacing: "0.02em",
+    letterSpacing: "0.04em",
     color: "var(--md-sys-color-on-surface-variant)",
     borderBottom: "2px solid transparent",
-    transition: "color 0.2s, border-color 0.2s",
+    transition: "all 0.2s",
     whiteSpace: "nowrap",
 
     _hover: {
@@ -705,16 +705,17 @@ const ActivityIcon = styled("div", {
 const ActivityBadge = styled("div", {
   base: {
     position: "absolute",
-    bottom: "-4px",
-    right: "-4px",
-    width: "22px",
-    height: "22px",
+    bottom: "-6px",
+    right: "-6px",
+    width: "24px",
+    height: "24px",
     borderRadius: "50%",
     border: "2px solid var(--md-sys-color-surface-container)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+    zIndex: 1,
   },
 });
 
