@@ -381,8 +381,8 @@ export function UserProfileModal(
                               </ActivityBadge>
                             </ActivityIcon>
                             <ActivityInfo>
-                              <ActivityLabel title={item.label}>{item.label}</ActivityLabel>
-                              <ActivitySublabel>
+                              <ActivityTitle title={item.label}>{item.label}</ActivityTitle>
+                              <ActivitySub>
                                 {item.sublabel}
                                 <span style={{ color: item.color, "font-weight": "bold", "margin-left": "8px", "display": "inline-flex", "align-items": "center", gap: "4px" }}>
                                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -392,7 +392,7 @@ export function UserProfileModal(
                                   </svg>
                                   {item.type === 'steam' ? 'Playing' : item.type === 'spotify' ? 'Listening' : 'Watching'}
                                 </span>
-                              </ActivitySublabel>
+                              </ActivitySub>
                             </ActivityInfo>
                           </ActivityCard>
                         )}
@@ -404,10 +404,30 @@ export function UserProfileModal(
                   <Show when={activityQuery.data!.some(i => i.isRecent)}>
                     <SectionLabel style={{ "margin-bottom": "12px" }}>Activity History</SectionLabel>
                     <ActivityList>
+                      <For each={activityQuery.data!.filter(i => i.isRecent)}>
+                        {(item) => (
+                          <ActivityCard
+                            style={{ cursor: item.url ? "pointer" : "default", opacity: 0.8 }}
+                            onClick={item.url ? () => window.open(item.url, "_blank") : undefined}
+                          >
+                            <ActivityIcon>
+                              <img
+                                src={item.icon}
+                                alt={item.label}
+                                style={{ width: "100%", height: "100%", "object-fit": "cover", filter: "grayscale(0.4)" }}
+                              />
+                            </ActivityIcon>
+                            <ActivityInfo>
+                              <ActivityTitle title={item.label}>{item.label}</ActivityTitle>
+                              <ActivitySub>{item.sublabel}</ActivitySub>
+                            </ActivityInfo>
+                            <ActivityTime style={{ color: item.color }}>
+                              <TimeIcon>
                                 <Show when={item.type === "steam"}>🎮</Show>
                                 <Show when={item.type === "anime"}>📺</Show>
+                                <Show when={item.type === "spotify"}>🎵</Show>
                               </TimeIcon>
-                              {item.isRecent ? timeAgo(item.timestamp) : "Playing"}
+                              {timeAgo(item.timestamp)}
                             </ActivityTime>
                           </ActivityCard>
                         )}
@@ -415,7 +435,8 @@ export function UserProfileModal(
                     </ActivityList>
                   </Show>
                 </Show>
-              </Match>
+              </Show>
+            </Match>
 
               {/* MUTUAL FRIENDS TAB */}
               <Match when={activeTab() === "friends"}>
