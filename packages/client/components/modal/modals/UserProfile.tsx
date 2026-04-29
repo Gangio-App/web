@@ -139,6 +139,38 @@ export function UserProfileModal(
     refetchInterval: 5000, // Update every 5 seconds for "live" feel
   }));
 
+  const profileQuery = useQuery(() => ({
+    queryKey: ["profile", props.user.id],
+    queryFn: () => props.user.fetchProfile(),
+  }));
+
+  const mutualQuery = useQuery(() => ({
+    queryKey: ["mutual", props.user.id],
+    queryFn: async () => {
+      if (props.user.self || props.user.bot) {
+        return { users: [], groups: [] };
+      }
+      const clnt = client();
+      if (!clnt || !clnt.users) return { users: [], groups: [] };
+      const { users, servers } = await props.user.fetchMutual();
+      return {
+        users: (users as string[])
+          .map((userId: string) => clnt.users.get(userId)!)
+          .filter((user) => !!user),
+        groups: [
+          ...(servers as string[])
+            .map((serverId: string) => clnt.servers.get(serverId)!)
+            .filter((server) => !!server),
+          ...clnt.channels.filter(
+            (channel) =>
+              channel.type === "Group" &&
+              channel.recipientIds.has(props.user.id),
+          ),
+        ],
+      };
+    },
+  }));
+
   const friendCount = () => mutualQuery.data?.users.length ?? 0;
   const serverCount = () => mutualQuery.data?.groups.length ?? 0;
 
