@@ -121,7 +121,7 @@ export function UserProfileModal(
                 label: game.name,
                 sublabel: "Recently played",
                 icon: game.iconUrl || (game.appid ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/capsule_sm_120.jpg` : "/assets/socials/steam.svg"),
-                color: "#66c0f4",
+                color: "#4a90e2",
                 url: game.appid ? `https://store.steampowered.com/app/${game.appid}` : undefined,
                 timestamp: game.last_played ? new Date(game.last_played * 1000) : new Date(Date.now() - 1000 * 60 * 60 * 24),
                 isRecent: true
@@ -443,12 +443,18 @@ export function UserProfileModal(
                               <ActivityTitle title={item.label}>{item.label}</ActivityTitle>
                               <ActivitySub>{item.sublabel}</ActivitySub>
                             </ActivityInfo>
-                            <ActivityTime style={{ color: item.color }}>
+                            <ActivityTime style={{ color: item.isRecent ? "rgba(0,0,0,0.4)" : item.color }}>
                               <TimeIcon>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                  <path d="M12 20v-6M12 10V4M4 12h16" style={{ display: item.type === 'steam' ? 'block' : 'none' }} />
-                                  <path d="M11 5L6 9H2v6h4l5 4V5z" style={{ display: item.type === 'spotify' ? 'block' : 'none' }} />
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                  {/* Steam: Controller */}
+                                  <path d="M6 12h.01M9 12h.01M15 12h.01M18 12h.01M4 11v4a2 2 0 002 2h12a2 2 0 002-2v-4a5 5 0 00-5-5H9a5 5 0 00-5 5z" style={{ display: item.type === 'steam' ? 'block' : 'none' }} />
+                                  {/* Spotify: Music Note */}
+                                  <path d="M9 18V5l12-2v13" style={{ display: item.type === 'spotify' ? 'block' : 'none' }} />
+                                  <circle cx="6" cy="18" r="3" style={{ display: item.type === 'spotify' ? 'block' : 'none' }} />
+                                  <circle cx="18" cy="16" r="3" style={{ display: item.type === 'spotify' ? 'block' : 'none' }} />
+                                  {/* Anime: Play Circle */}
                                   <circle cx="12" cy="12" r="10" style={{ display: item.type === 'anime' ? 'block' : 'none' }} />
+                                  <path d="M10 8l6 4-6 4V8z" style={{ display: item.type === 'anime' ? 'block' : 'none' }} />
                                 </svg>
                               </TimeIcon>
                               {timeAgo(item.timestamp)}
