@@ -145,12 +145,11 @@ export function UserProfileModal(
             });
           }
 
-          // History
+          // History (Spotify: only last one)
           if (data.recent && data.recent.length > 0) {
-            data.recent.forEach(track => {
-              // Don't show if it's the currently playing one
-              if (data.isPlaying && data.title === track.title) return;
-
+            const track = data.recent[0];
+            // Don't show if it's the currently playing one
+            if (!(data.isPlaying && data.title === track.title)) {
               items.push({
                 type: "spotify",
                 label: track.title,
@@ -161,7 +160,7 @@ export function UserProfileModal(
                 timestamp: track.playedAt ? new Date(track.playedAt) : now,
                 isRecent: true
               });
-            });
+            }
           }
         }
 
@@ -182,7 +181,7 @@ export function UserProfileModal(
 
           // History
           if (data.recent && data.recent.length > 0) {
-            data.recent.forEach(anime => {
+            data.recent.forEach((anime: any) => {
               // Don't show if it's the currently watching one
               if (data.isWatching && data.title === anime.title) return;
 
@@ -260,12 +259,15 @@ export function UserProfileModal(
     >
       <ModalContainer>
         {/* CLOSE BUTTON */}
-        <CloseButton onClick={props.onClose}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </CloseButton>
+        <CloseWrapper>
+          <CloseButton onClick={props.onClose}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </CloseButton>
+          <EscHint>ESC</EscHint>
+        </CloseWrapper>
 
         {/* LEFT PANEL */}
         <LeftPanel>
@@ -373,11 +375,11 @@ export function UserProfileModal(
                   }
                 >
                   {/* ACTIVE ACTIVITY */}
-                  <Show when={activityQuery.data!.some(i => !i.isRecent)}>
-                    <SectionLabel style={{ "margin-bottom": "12px" }}>Currently Active</SectionLabel>
-                    <ActivityList style={{ "margin-bottom": "24px" }}>
-                      <For each={activityQuery.data!.filter(i => !i.isRecent)}>
-                        {(item) => (
+                  <Show when={activityQuery.data!.some((i: ActivityItem) => !i.isRecent)}>
+                    <SectionLabel>Currently Active</SectionLabel>
+                    <ActivityList>
+                      <For each={activityQuery.data!.filter((i: ActivityItem) => !i.isRecent)}>
+                        {(item: ActivityItem) => (
                           <ActivityCard
                             style={{ cursor: item.url ? "pointer" : "default" }}
                             onClick={item.url ? () => window.open(item.url, "_blank") : undefined}
@@ -388,7 +390,7 @@ export function UserProfileModal(
                                 alt={item.label}
                                 style={{ width: "100%", height: "100%", "object-fit": "cover" }}
                               />
-                              <ActivityBadge style={{ background: item.color }}>
+                              <ActivityBadge style={{ background: item.type === 'spotify' ? '#363636' : item.color }}>
                                 <Show when={item.type === "steam"}>
                                   <img src="/assets/socials/steam.svg" width={16} height={16} />
                                 </Show>
@@ -421,11 +423,11 @@ export function UserProfileModal(
                   </Show>
 
                   {/* HISTORY SECTION */}
-                  <Show when={activityQuery.data!.some(i => i.isRecent)}>
+                  <Show when={activityQuery.data!.some((i: ActivityItem) => i.isRecent)}>
                     <SectionLabel style={{ "margin-bottom": "12px" }}>Activity History</SectionLabel>
                     <ActivityList>
-                      <For each={activityQuery.data!.filter(i => i.isRecent)}>
-                        {(item) => (
+                      <For each={activityQuery.data!.filter((i: ActivityItem) => i.isRecent)}>
+                        {(item: ActivityItem) => (
                           <ActivityCard
                             style={{ cursor: item.url ? "pointer" : "default", opacity: 0.8 }}
                             onClick={item.url ? () => window.open(item.url, "_blank") : undefined}
@@ -443,9 +445,11 @@ export function UserProfileModal(
                             </ActivityInfo>
                             <ActivityTime style={{ color: item.color }}>
                               <TimeIcon>
-                                <Show when={item.type === "steam"}>🎮</Show>
-                                <Show when={item.type === "anime"}>📺</Show>
-                                <Show when={item.type === "spotify"}>🎵</Show>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M12 20v-6M12 10V4M4 12h16" style={{ display: item.type === 'steam' ? 'block' : 'none' }} />
+                                  <path d="M11 5L6 9H2v6h4l5 4V5z" style={{ display: item.type === 'spotify' ? 'block' : 'none' }} />
+                                  <circle cx="12" cy="12" r="10" style={{ display: item.type === 'anime' ? 'block' : 'none' }} />
+                                </svg>
                               </TimeIcon>
                               {timeAgo(item.timestamp)}
                             </ActivityTime>
@@ -555,33 +559,54 @@ const ModalContainer = styled("div", {
   },
 });
 
-const CloseButton = styled("button", {
+const CloseWrapper = styled("div", {
   base: {
     position: "absolute",
-    top: "16px",
-    right: "16px",
+    top: "20px",
+    right: "20px",
     zIndex: 10,
-    background: "rgba(0,0,0,0.3)",
-    color: "white",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "4px",
+  },
+});
+
+const CloseButton = styled("button", {
+  base: {
+    background: "rgba(0,0,0,0.15)",
+    color: "rgba(255,255,255,0.8)",
     border: "none",
-    borderRadius: "50%",
-    width: "32px",
-    height: "32px",
+    borderRadius: "12px",
+    width: "36px",
+    height: "36px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     cursor: "pointer",
-    transition: "background 0.2s, transform 0.2s",
-    backdropFilter: "blur(4px)",
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+    backdropFilter: "blur(8px)",
 
     _hover: {
-      background: "rgba(0,0,0,0.5)",
-      transform: "scale(1.1)",
+      background: "rgba(0,0,0,0.4)",
+      color: "white",
+      transform: "scale(1.05)",
     },
 
     _active: {
       transform: "scale(0.95)",
     },
+  },
+});
+
+const EscHint = styled("span", {
+  base: {
+    fontSize: "9px",
+    fontWeight: "800",
+    color: "white",
+    opacity: 0.4,
+    letterSpacing: "0.05em",
+    textShadow: "0 1px 2px rgba(0,0,0,0.5)",
   },
 });
 
