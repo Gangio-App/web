@@ -46,6 +46,7 @@ type ActivityItem = {
   color: string;
   url?: string;
   timestamp: Date;
+  isRecent?: boolean;
 };
 
 function timeAgo(date: Date): string {
@@ -83,10 +84,11 @@ export function UserProfileModal(
         // Steam
         if (steamRes.status === "fulfilled" && steamRes.value.ok) {
           const data: SteamActivity = await steamRes.value.json();
+          // Current game
           if (data.isPlaying && data.game) {
-            const iconUrl = data.appid
+            const iconUrl = data.iconUrl || (data.appid
               ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${data.appid}/capsule_sm_120.jpg`
-              : "/assets/socials/steam.svg";
+              : "/assets/socials/steam.svg");
             items.push({
               type: "steam",
               label: data.game,
@@ -95,6 +97,25 @@ export function UserProfileModal(
               color: "#66c0f4",
               url: data.appid ? `https://store.steampowered.com/app/${data.appid}` : undefined,
               timestamp: now,
+            });
+          }
+
+          // History (last 5)
+          if (data.recent && data.recent.length > 0) {
+            data.recent.slice(0, 5).forEach(game => {
+              // Don't show if it's the currently playing one
+              if (data.isPlaying && data.appid == game.appid) return;
+
+              items.push({
+                type: "steam",
+                label: game.name,
+                sublabel: "Recently played",
+                icon: game.iconUrl || `https://cdn.cloudflare.steamstatic.com/steam/apps/${game.appid}/capsule_sm_120.jpg`,
+                color: "#66c0f4",
+                url: `https://store.steampowered.com/app/${game.appid}`,
+                timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // Approx
+                isRecent: true
+              });
             });
           }
         }
@@ -108,16 +129,27 @@ export function UserProfileModal(
               label: data.title,
               sublabel: `by ${data.artist || "Unknown"}`,
               icon: data.albumArt || "/assets/socials/spotify.svg",
-              color: "#1db954",
+              color: "#363636ff",
               url: data.url,
               timestamp: now,
+            });
+          } else if (data.isRecent && data.title) {
+            items.push({
+              type: "spotify",
+              label: data.title,
+              sublabel: `Last played by ${data.artist || "Unknown"}`,
+              icon: data.albumArt || "/assets/socials/spotify.svg",
+              color: "#363636ff",
+              url: data.url,
+              timestamp: data.playedAt ? new Date(data.playedAt) : now,
+              isRecent: true
             });
           }
         }
 
         // Anime
         if (animeRes.status === "fulfilled" && animeRes.value.ok) {
-          const data: AnimeActivity = await animeRes.value.json();
+          const data: AnimeActivity & { isRecent?: boolean; updatedAt?: string } = await animeRes.value.json();
           if (data.isWatching && data.title) {
             items.push({
               type: "anime",
@@ -128,6 +160,17 @@ export function UserProfileModal(
               url: data.url,
               timestamp: now,
             });
+          } else if (data.isRecent && data.title) {
+            items.push({
+              type: "anime",
+              label: data.title,
+              sublabel: `Last watched Ep ${data.episode || "?"}`,
+              icon: data.poster || "/assets/socials/anime.svg",
+              color: "#ff6400",
+              url: data.url,
+              timestamp: data.updatedAt ? new Date(data.updatedAt) : now,
+              isRecent: true
+            });
           }
         }
       } catch (e) {
@@ -136,7 +179,8 @@ export function UserProfileModal(
 
       return items;
     },
-    refetchInterval: 5000, // Update every 5 seconds for "live" feel
+    refetchInterval: 10000, // 10s is enough for history
+    placeholderData: (prev: ActivityItem[] | undefined) => prev,
   }));
 
   const profileQuery = useQuery(() => ({
@@ -199,7 +243,7 @@ export function UserProfileModal(
             onClick={
               profileQuery.data?.banner
                 ? () =>
-                    openModal({ type: "image_viewer", file: profileQuery.data!.banner! })
+                  openModal({ type: "image_viewer", file: profileQuery.data!.banner! })
                 : undefined
             }
             onClickAvatar={(e) => {
@@ -264,10 +308,15 @@ export function UserProfileModal(
               {/* ACTIVITY TAB */}
               <Match when={activeTab() === "activity"}>
                 <Show
-                  when={!activityQuery.isFetching && !activityQuery.isLoading}
+                  when={!activityQuery.isLoading}
                   fallback={
                     <EmptyState>
-                      <EmptyIcon>⏳</EmptyIcon>
+                      <EmptyIcon>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style={{ opacity: 0.4 }}>
+                          <circle cx="12" cy="12" r="10"></circle>
+                          <path d="M12 6v6l4 2"></path>
+                        </svg>
+                      </EmptyIcon>
                       <EmptyText>Loading activity...</EmptyText>
                     </EmptyState>
                   }
@@ -276,7 +325,13 @@ export function UserProfileModal(
                     when={activityQuery.data && activityQuery.data.length > 0}
                     fallback={
                       <EmptyState>
-                        <EmptyIcon>🌙</EmptyIcon>
+                        <EmptyIcon>
+                          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--md-sys-color-primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style={{ opacity: 0.6 }}>
+                            <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"></path>
+                            <path d="M12 18h.01"></path>
+                            <path d="M7 13c0-1.5 2-1.5 2-3s-1-2-2-2"></path>
+                          </svg>
+                        </EmptyIcon>
                         <EmptyText>No recent activity</EmptyText>
                         <EmptySubtext>
                           When this user is playing a game, listening to music, or watching anime, it'll show up here.
@@ -284,7 +339,7 @@ export function UserProfileModal(
                       </EmptyState>
                     }
                   >
-                    <SectionLabel style={{ "margin-bottom": "12px" }}>Recent activity</SectionLabel>
+                    <SectionLabel style={{ "margin-bottom": "12px" }}>Activity History</SectionLabel>
                     <ActivityList>
                       <For each={activityQuery.data}>
                         {(item: ActivityItem) => (
@@ -295,6 +350,7 @@ export function UserProfileModal(
                             rel={item.url ? "noopener noreferrer" : undefined}
                             style={{
                               "--activity-color": item.color,
+                              opacity: item.isRecent ? 0.7 : 1,
                             }}
                           >
                             <ActivityIcon>
@@ -333,7 +389,7 @@ export function UserProfileModal(
                                 <Show when={item.type === "steam"}>🎮</Show>
                                 <Show when={item.type === "anime"}>📺</Show>
                               </TimeIcon>
-                              {timeAgo(item.timestamp)}
+                              {item.isRecent ? timeAgo(item.timestamp) : "Playing"}
                             </ActivityTime>
                           </ActivityCard>
                         )}
@@ -349,7 +405,14 @@ export function UserProfileModal(
                   when={mutualQuery.data && mutualQuery.data.users.length > 0}
                   fallback={
                     <EmptyState>
-                      <EmptyIcon>👥</EmptyIcon>
+                      <EmptyIcon>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style={{ opacity: 0.4 }}>
+                          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="9" cy="7" r="4"></circle>
+                          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                      </EmptyIcon>
                       <EmptyText>No mutual friends</EmptyText>
                     </EmptyState>
                   }
@@ -383,7 +446,12 @@ export function UserProfileModal(
                   when={mutualQuery.data && mutualQuery.data.groups.length > 0}
                   fallback={
                     <EmptyState>
-                      <EmptyIcon>🏠</EmptyIcon>
+                      <EmptyIcon>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style={{ opacity: 0.4 }}>
+                          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                        </svg>
+                      </EmptyIcon>
                       <EmptyText>No mutual servers</EmptyText>
                     </EmptyState>
                   }
@@ -515,8 +583,10 @@ const Tab = styled("button", {
     all: "unset",
     cursor: "pointer",
     padding: "16px 20px",
-    fontSize: "14px",
+    fontSize: "12px",
     fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: "0.02em",
     color: "var(--md-sys-color-on-surface-variant)",
     borderBottom: "2px solid transparent",
     transition: "color 0.2s, border-color 0.2s",
