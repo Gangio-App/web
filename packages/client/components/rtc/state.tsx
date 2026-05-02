@@ -102,8 +102,19 @@ class Voice {
       },
       screenShareCaptureDefaults: {
         resolution: { width: 1920, height: 1080, frameRate: 60 },
-        contentHint: "motion",
       },
+      videoCaptureDefaults: {
+        resolution: { width: 1280, height: 720, frameRate: 30 },
+      },
+      publishDefaults: {
+        screenShareEncoding: {
+          maxBitrate: 8_000_000,
+          maxFramerate: 60,
+        },
+        videoCodec: "vp9",
+      },
+      dynacast: true,
+      adaptiveStream: true,
     });
 
     batch(() => {
@@ -213,7 +224,13 @@ class Voice {
       !room.localParticipant.isScreenShareEnabled,
       {
         resolution: { width: 1920, height: 1080, frameRate: 60 },
-        contentHint: "motion",
+      },
+      {
+        videoEncoding: {
+          maxBitrate: 8_000_000,
+          maxFramerate: 60,
+        },
+        videoCodec: "vp9",
       },
     );
 
