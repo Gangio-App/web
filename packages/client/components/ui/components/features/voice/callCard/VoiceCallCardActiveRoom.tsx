@@ -1,4 +1,4 @@
-import { createEffect, Match, Show, Switch, createSignal, onCleanup } from "solid-js";
+import { createEffect, Match, Show, Switch, createSignal, onCleanup, For } from "solid-js";
 import {
   isTrackReference,
   TrackLoop,
@@ -18,9 +18,11 @@ import { css, cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 import { UserContextMenu } from "@revolt/app";
+import { useClient } from "@revolt/client";
+import { Markdown } from "@revolt/markdown";
 import { useUser } from "@revolt/markdown/users";
-import { InRoom } from "@revolt/rtc";
-import { Avatar } from "@revolt/ui/components/design";
+import { InRoom, useVoice } from "@revolt/rtc";
+import { Avatar, IconButton } from "@revolt/ui/components/design";
 import { OverflowingText } from "@revolt/ui/components/utils";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
@@ -29,7 +31,7 @@ import { VoiceStatefulUserIcons } from "../VoiceStatefulUserIcons";
 import { VoiceCallCardActions } from "./VoiceCallCardActions";
 import { VoiceCallCardStatus } from "./VoiceCallCardStatus";
 
-import { Channel } from "stoat.js";
+import { Channel, Message as MessageInterface } from "stoat.js";
 
 /**
  * Call card (active)
@@ -168,11 +170,167 @@ function useFullscreenAutoHide(containerRef: () => HTMLDivElement | undefined) {
 }
 
 /**
+ * Lightweight chat panel for fullscreen mode
+ */
+function FullscreenChat(props: { channel: Channel }) {
+  const client = useClient();
+  const [messages, setMessages] = createSignal<MessageInterface[]>([]);
+  const [content, setContent] = createSignal("");
+  let listRef: HTMLDivElement | undefined;
+
+  createEffect(() => {
+    // Fetch initial messages
+    props.channel.fetchMessagesWithUsers({ limit: 50 }).then((res: { messages: MessageInterface[] }) => {
+      setMessages(res.messages.reverse());
+      setTimeout(() => listRef?.scrollTo({ top: listRef.scrollHeight, behavior: "instant" }));
+    });
+
+    // Listen for new messages
+    const onMessage = (msg: MessageInterface) => {
+      if (msg.channelId === props.channel.id) {
+        setMessages((prev: MessageInterface[]) => [...prev, msg]);
+        setTimeout(() => listRef?.scrollTo({ top: listRef.scrollHeight, behavior: "smooth" }));
+      }
+    };
+
+    client().addListener("messageCreate", onMessage);
+    onCleanup(() => client().removeListener("messageCreate", onMessage));
+  });
+
+  const send = (e: SubmitEvent) => {
+    e.preventDefault();
+    if (!content().trim()) return;
+    props.channel.sendMessage(content().trim());
+    setContent("");
+  };
+
+  return (
+    <ChatContainer onClick={(e: MouseEvent) => e.stopPropagation()}>
+      <ChatHeader>
+        <Symbol size={20}>chat</Symbol>
+        <ChatTitle>{props.channel.name || "Channel Chat"}</ChatTitle>
+      </ChatHeader>
+      <MessageList ref={listRef}>
+        <For each={messages()}>
+          {(msg: MessageInterface) => (
+            <MessageItem>
+              <MessageAuthor>{msg.author?.username}: </MessageAuthor>
+              <MessageContent>
+                <Markdown content={msg.content || ""} />
+              </MessageContent>
+            </MessageItem>
+          )}
+        </For>
+      </MessageList>
+      <ChatInputForm onSubmit={send}>
+        <ChatInput
+          placeholder="Send a message..."
+          value={content()}
+          onInput={(e: InputEvent & { currentTarget: HTMLInputElement }) => setContent(e.currentTarget.value)}
+        />
+        <IconButton type="submit" variant="standard" size="sm">
+          <Symbol>send</Symbol>
+        </IconButton>
+      </ChatInputForm>
+    </ChatContainer>
+  );
+}
+
+const ChatContainer = styled("div", {
+  base: {
+    width: "320px",
+    height: "100%",
+    background: "rgba(0, 0, 0, 0.8)",
+    borderLeft: "1px solid rgba(255, 255, 255, 0.1)",
+    display: "flex",
+    flexDirection: "column",
+    zIndex: 30,
+    backdropFilter: "blur(10px)",
+  },
+});
+
+const ChatHeader = styled("div", {
+  base: {
+    padding: "var(--gap-md)",
+    borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--gap-sm)",
+    color: "rgba(255, 255, 255, 0.9)",
+  },
+});
+
+const ChatTitle = styled("div", {
+  base: {
+    fontWeight: 600,
+    fontSize: "14px",
+  },
+});
+
+const MessageList = styled("div", {
+  base: {
+    flexGrow: 1,
+    overflowY: "auto",
+    padding: "var(--gap-md)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--gap-sm)",
+  },
+});
+
+const MessageItem = styled("div", {
+  base: {
+    fontSize: "13px",
+    lineHeight: "1.4",
+  },
+});
+
+const MessageAuthor = styled("span", {
+  base: {
+    fontWeight: "bold",
+    color: "var(--md-sys-color-primary)",
+  },
+});
+
+const MessageContent = styled("span", {
+  base: {
+    color: "#eee",
+    "& p": { display: "inline" },
+  },
+});
+
+const ChatInputForm = styled("form", {
+  base: {
+    padding: "var(--gap-md)",
+    borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+    display: "flex",
+    gap: "var(--gap-sm)",
+  },
+});
+
+const ChatInput = styled("input", {
+  base: {
+    flexGrow: 1,
+    background: "rgba(255, 255, 255, 0.05)",
+    border: "none",
+    borderRadius: "var(--borderRadius-md)",
+    padding: "8px 12px",
+    color: "#fff",
+    fontSize: "13px",
+    outline: "none",
+    "&:focus": {
+      background: "rgba(255, 255, 255, 0.1)",
+    },
+  },
+});
+
+/**
  * Shown when the track source is a camera or placeholder
  */
 function UserTile() {
   const participant = useEnsureParticipant();
   const track = useMaybeTrackRefContext();
+  const voice = useVoice();
 
   const isMuted = useIsMuted({
     participant,
@@ -190,12 +348,15 @@ function UserTile() {
 
   let videoRef: HTMLDivElement | undefined;
   const [isFullscreen, setIsFullscreen] = createSignal(false);
+  const [isChatOpen, setIsChatOpen] = createSignal(false);
 
   const showOverlay = useFullscreenAutoHide(() => videoRef);
 
   createEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(document.fullscreenElement === videoRef);
+      const isFs = document.fullscreenElement === videoRef;
+      setIsFullscreen(isFs);
+      if (!isFs) setIsChatOpen(false);
     };
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     onCleanup(() => document.removeEventListener("fullscreenchange", handleFullscreenChange));
@@ -206,7 +367,7 @@ function UserTile() {
   });
 
   function toggleFullscreen(e: Event) {
-    if ((e.target as HTMLElement).closest('.controls-container')) return;
+    if ((e.target as HTMLElement).closest('.controls-container') || (e.target as HTMLElement).closest('.top-controls')) return;
 
     if (!videoRef || !isTrackReference(track) || isVideoMuted()) return;
     if (!document.fullscreenElement) {
@@ -224,7 +385,10 @@ function UserTile() {
         fullscreen: isFullscreen(),
       }) + " group"}
       onClick={toggleFullscreen}
-      style={{ cursor: isFullscreen() ? (showOverlay() ? "default" : "none") : "pointer" }}
+      style={{ 
+        cursor: isFullscreen() ? (showOverlay() ? "default" : "none") : "pointer",
+        display: isFullscreen() && isChatOpen() ? "flex" : "grid"
+      }}
       use:floating={{
         userCard: {
           user: user().user!,
@@ -235,73 +399,108 @@ function UserTile() {
         ),
       }}
     >
-      <Switch
-        fallback={
-          <AvatarOnly>
-            <Avatar
-              src={user().avatar}
-              fallback={user().username}
-              size={48}
-              interactive={false}
+      <div style={{ 
+        position: "relative", 
+        flex: isFullscreen() && isChatOpen() ? "1" : "unset",
+        display: "grid",
+        "grid-area": isFullscreen() && isChatOpen() ? "unset" : "1/1",
+        width: "100%",
+        height: "100%",
+        overflow: "hidden"
+      }}>
+        <Switch
+          fallback={
+            <AvatarOnly>
+              <Avatar
+                src={user().avatar}
+                fallback={user().username}
+                size={48}
+                interactive={false}
+              />
+            </AvatarOnly>
+          }
+        >
+          <Match when={isTrackReference(track) && !isVideoMuted()}>
+            <VideoTrack
+              style={{
+                "grid-area": "1/1",
+                "object-fit": "contain",
+                width: "100%",
+                height: "100%",
+                "will-change": "auto",
+                ...(isLocal(participant) && track.source === Track.Source.Camera
+                  ? { transform: "scaleX(-1)" }
+                  : {}),
+              }}
+              trackRef={track as TrackReference}
+              manageSubscription={true}
             />
-          </AvatarOnly>
-        }
-      >
-        <Match when={isTrackReference(track) && !isVideoMuted()}>
-          <VideoTrack
-            style={{
-              "grid-area": "1/1",
-              "object-fit": isFullscreen() ? "contain" : "contain",
-              width: "100%",
-              height: "100%",
-              "will-change": "auto",
-              ...(isLocal(participant) && track.source === Track.Source.Camera
-                ? { transform: "scaleX(-1)" }
-                : {}),
-            }}
-            trackRef={track as TrackReference}
-            manageSubscription={true}
-          />
-        </Match>
-      </Switch>
+          </Match>
+        </Switch>
 
-      <Overlay
-        showOnHover
-        style={{
-          opacity: isFullscreen() ? (showOverlay() ? 1 : 0) : undefined,
-          "pointer-events": isFullscreen() && !showOverlay() ? "none" : undefined,
-        }}
-      >
-        <OverlayInner>
-          <OverflowingText>{user().username}</OverflowingText>
-          <VoiceStatefulUserIcons
-            userId={participant.identity}
-            muted={isMuted()}
-          />
-          <Show when={isTrackReference(track) && !isVideoMuted()}>
-            <FullscreenButtonIcon>
-              <Symbol size={22}>{isFullscreen() ? "fullscreen_exit" : "fullscreen"}</Symbol>
-            </FullscreenButtonIcon>
-          </Show>
-        </OverlayInner>
-      </Overlay>
-      
-      <Show when={isFullscreen()}>
-        <div
-          class="controls-container"
+        <Overlay
+          showOnHover
           style={{
-            position: "absolute",
-            bottom: "60px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            "z-index": 20,
-            opacity: showOverlay() ? 1 : 0,
-            transition: "opacity 0.3s ease",
-            "pointer-events": showOverlay() ? "auto" : "none",
+            opacity: isFullscreen() ? (showOverlay() ? 1 : 0) : undefined,
+            "pointer-events": isFullscreen() && !showOverlay() ? "none" : undefined,
           }}
         >
-          <VoiceCallCardActions size="sm" />
-        </div>
+          <OverlayInner>
+            <OverflowingText>{user().username}</OverflowingText>
+            <VoiceStatefulUserIcons
+              userId={participant.identity}
+              muted={isMuted()}
+            />
+            <Show when={isTrackReference(track) && !isVideoMuted()}>
+              <FullscreenButtonIcon>
+                <Symbol size={22}>{isFullscreen() ? "fullscreen_exit" : "fullscreen"}</Symbol>
+              </FullscreenButtonIcon>
+            </Show>
+          </OverlayInner>
+        </Overlay>
+
+        <Show when={isFullscreen()}>
+          <div 
+            class="top-controls"
+            style={{
+              position: "absolute",
+              top: "var(--gap-md)",
+              right: "var(--gap-md)",
+              zIndex: 40,
+              opacity: showOverlay() ? 1 : 0,
+              transition: "opacity 0.3s ease",
+            }}
+          >
+            <IconButton 
+              variant="standard" 
+              size="sm" 
+              onPress={() => setIsChatOpen(!isChatOpen())}
+              style={{ background: isChatOpen() ? "var(--md-sys-color-primary)" : "rgba(0,0,0,0.5)", color: "#fff" }}
+            >
+              <Symbol>{isChatOpen() ? "chat_bubble" : "chat"}</Symbol>
+            </IconButton>
+          </div>
+          
+          <div
+            class="controls-container"
+            style={{
+              position: "absolute",
+              bottom: "60px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              "z-index": 20,
+              opacity: showOverlay() ? 1 : 0,
+              transition: "opacity 0.3s ease",
+              "pointer-events": showOverlay() ? "auto" : "none",
+            }}
+          >
+            <VoiceCallCardActions size="sm" />
+          </div>
+        </Show>
+      </div>
+
+      <Show when={isFullscreen() && isChatOpen() && voice.channel()}>
+        <FullscreenChat channel={voice.channel()!} />
       </Show>
     </div>
   );
@@ -322,6 +521,7 @@ function ScreenshareTile() {
   const participant = useEnsureParticipant();
   const track = useMaybeTrackRefContext();
   const user = useUser(participant.identity);
+  const voice = useVoice();
 
   const isMuted = useIsMuted({
     participant,
@@ -330,19 +530,22 @@ function ScreenshareTile() {
 
   let videoRef: HTMLDivElement | undefined;
   const [isFullscreen, setIsFullscreen] = createSignal(false);
+  const [isChatOpen, setIsChatOpen] = createSignal(false);
 
   const showOverlay = useFullscreenAutoHide(() => videoRef);
 
   createEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(document.fullscreenElement === videoRef);
+      const isFs = document.fullscreenElement === videoRef;
+      setIsFullscreen(isFs);
+      if (!isFs) setIsChatOpen(false);
     };
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     onCleanup(() => document.removeEventListener("fullscreenchange", handleFullscreenChange));
   });
 
   const toggleFullscreen = (e: Event) => {
-    if ((e.target as HTMLElement).closest('.controls-container')) return;
+    if ((e.target as HTMLElement).closest('.controls-container') || (e.target as HTMLElement).closest('.top-controls')) return;
     
     if (!videoRef) return;
     if (!isTrackReference(track)) return;
@@ -358,86 +561,124 @@ function ScreenshareTile() {
       ref={videoRef}
       class={tile({ fullscreen: isFullscreen() }) + " group"}
       onClick={toggleFullscreen}
-      style={{ cursor: isFullscreen() ? (showOverlay() ? "default" : "none") : "pointer" }}
+      style={{ 
+        cursor: isFullscreen() ? (showOverlay() ? "default" : "none") : "pointer",
+        display: isFullscreen() && isChatOpen() ? "flex" : "grid"
+      }}
     >
-      <div
-        class={css({
-          position: "absolute",
-          top: "var(--gap-md)",
-          left: "var(--gap-md)",
-          background: "var(--md-sys-color-error)",
-          color: "var(--md-sys-color-on-error)",
-          padding: "2px 6px",
-          borderRadius: "4px",
-          fontSize: "10px",
-          fontWeight: "bold",
-          zIndex: 15,
-          display: "flex",
-          alignItems: "center",
-          gap: "4px",
-          textTransform: "uppercase",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
-          opacity: isFullscreen() ? (showOverlay() ? 1 : 0) : 1,
-          transition: "opacity 0.3s ease",
-        })}
-      >
+      <div style={{ 
+        position: "relative", 
+        flex: isFullscreen() && isChatOpen() ? "1" : "unset",
+        display: "grid",
+        "grid-area": isFullscreen() && isChatOpen() ? "unset" : "1/1",
+        width: "100%",
+        height: "100%",
+        overflow: "hidden"
+      }}>
         <div
           class={css({
-            width: "6px",
-            height: "6px",
-            borderRadius: "50%",
-            background: "currentColor",
-            animation: "pulse 1.5s infinite",
-          })}
-        />
-        LIVE
-      </div>
-      <VideoTrack
-        style={{
-          "grid-area": "1/1",
-          "object-fit": "contain",
-          width: "100%",
-          height: "100%",
-          "will-change": "auto",
-        }}
-        trackRef={track as TrackReference}
-        manageSubscription={true}
-      />
-
-      <Overlay
-        showOnHover
-        style={{
-          opacity: isFullscreen() ? (showOverlay() ? 1 : 0) : undefined,
-          "pointer-events": isFullscreen() && !showOverlay() ? "none" : undefined,
-        }}
-      >
-        <OverlayInner>
-          <OverflowingText>{user().username}</OverflowingText>
-          <Show when={isMuted()}>
-            <Symbol size={18}>no_sound</Symbol>
-          </Show>
-          <FullscreenButtonIcon>
-            <Symbol size={22}>{isFullscreen() ? "fullscreen_exit" : "fullscreen"}</Symbol>
-          </FullscreenButtonIcon>
-        </OverlayInner>
-      </Overlay>
-
-      <Show when={isFullscreen()}>
-        <div
-          class="controls-container"
-          style={{
             position: "absolute",
-            bottom: "60px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            "z-index": 20,
-            opacity: showOverlay() ? 1 : 0,
+            top: "var(--gap-md)",
+            left: "var(--gap-md)",
+            background: "var(--md-sys-color-error)",
+            color: "var(--md-sys-color-on-error)",
+            padding: "2px 6px",
+            borderRadius: "4px",
+            fontSize: "10px",
+            fontWeight: "bold",
+            zIndex: 15,
+            display: "flex",
+            alignItems: "center",
+            gap: "4px",
+            textTransform: "uppercase",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+            opacity: isFullscreen() ? (showOverlay() ? 1 : 0) : 1,
             transition: "opacity 0.3s ease",
-            "pointer-events": showOverlay() ? "auto" : "none",
+          })}
+        >
+          <div
+            class={css({
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              background: "currentColor",
+              animation: "pulse 1.5s infinite",
+            })}
+          />
+          LIVE
+        </div>
+        <VideoTrack
+          style={{
+            "grid-area": "1/1",
+            "object-fit": "contain",
+            width: "100%",
+            height: "100%",
+            "will-change": "auto",
+          }}
+          trackRef={track as TrackReference}
+          manageSubscription={true}
+        />
+
+        <Overlay
+          showOnHover
+          style={{
+            opacity: isFullscreen() ? (showOverlay() ? 1 : 0) : undefined,
+            "pointer-events": isFullscreen() && !showOverlay() ? "none" : undefined,
           }}
         >
-          <VoiceCallCardActions size="sm" />
-        </div>
+          <OverlayInner>
+            <OverflowingText>{user().username}</OverflowingText>
+            <Show when={isMuted()}>
+              <Symbol size={18}>no_sound</Symbol>
+            </Show>
+            <FullscreenButtonIcon>
+              <Symbol size={22}>{isFullscreen() ? "fullscreen_exit" : "fullscreen"}</Symbol>
+            </FullscreenButtonIcon>
+          </OverlayInner>
+        </Overlay>
+
+        <Show when={isFullscreen()}>
+          <div 
+            class="top-controls"
+            style={{
+              position: "absolute",
+              top: "var(--gap-md)",
+              right: "var(--gap-md)",
+              zIndex: 40,
+              opacity: showOverlay() ? 1 : 0,
+              transition: "opacity 0.3s ease",
+            }}
+          >
+            <IconButton 
+              variant="standard" 
+              size="sm" 
+              onPress={() => setIsChatOpen(!isChatOpen())}
+              style={{ background: isChatOpen() ? "var(--md-sys-color-primary)" : "rgba(0,0,0,0.5)", color: "#fff" }}
+            >
+              <Symbol>{isChatOpen() ? "chat_bubble" : "chat"}</Symbol>
+            </IconButton>
+          </div>
+
+          <div
+            class="controls-container"
+            style={{
+              position: "absolute",
+              bottom: "60px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              "z-index": 20,
+              opacity: showOverlay() ? 1 : 0,
+              transition: "opacity 0.3s ease",
+              "pointer-events": showOverlay() ? "auto" : "none",
+            }}
+          >
+            <VoiceCallCardActions size="sm" />
+          </div>
+        </Show>
+      </div>
+
+      <Show when={isFullscreen() && isChatOpen() && voice.channel()}>
+        <FullscreenChat channel={voice.channel()!} />
       </Show>
     </div>
   );
