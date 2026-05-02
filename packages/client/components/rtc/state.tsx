@@ -279,19 +279,40 @@ export function VoiceContext(props: { children: JSX.Element }) {
                       
                       try {
                         const stream = await navigator.mediaDevices.getUserMedia({
-                            audio: false, // In the future, add system audio loopback here
-                            video: {
+                            audio: {
                                mandatory: {
                                   chromeMediaSource: "desktop",
                                   chromeMediaSourceId: sourceId,
-                                  maxFrameRate: 60,
-                                  minFrameRate: 30,
                                }
+                            } as any,
+                            video: {
+                                mandatory: {
+                                   chromeMediaSource: "desktop",
+                                   chromeMediaSourceId: sourceId,
+                                   maxFrameRate: 60,
+                                   minFrameRate: 30,
+                                   maxWidth: 2560,
+                                   maxHeight: 1440,
+                                }
                             }
                         } as any);
                         resolve(stream);
                       } catch (err) {
-                        reject(err);
+                        // fallback if audio fails
+                        const stream = await navigator.mediaDevices.getUserMedia({
+                            audio: false,
+                            video: {
+                                mandatory: {
+                                   chromeMediaSource: "desktop",
+                                   chromeMediaSourceId: sourceId,
+                                   maxFrameRate: 60,
+                                   minFrameRate: 30,
+                                   maxWidth: 2560,
+                                   maxHeight: 1440,
+                                }
+                            }
+                        } as any);
+                        resolve(stream);
                       }
                    }
                 });

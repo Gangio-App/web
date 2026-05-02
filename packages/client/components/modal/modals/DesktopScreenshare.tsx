@@ -83,6 +83,11 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
           </For>
         </TabsContainer>
 
+        <div style={{ padding: "0 var(--gap-md) var(--gap-sm)", color: "var(--md-sys-color-on-surface-variant)", "font-size": "0.85rem", display: "flex", "align-items": "center", gap: "var(--gap-xs)" }}>
+          <Symbol size={16}>info</Symbol>
+          <span>Tip: If a game is missing, try <b>Borderless Fullscreen</b> or share <b>Entire Screen</b>. Audio is supported on Desktop app.</span>
+        </div>
+
         <Show when={!sources.loading} fallback={<div style={{ padding: "var(--gap-xl)", "text-align": "center" }}>Loading sources...</div>}>
           <GridWrapper>
             <Grid>
