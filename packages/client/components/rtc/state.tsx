@@ -100,6 +100,10 @@ class Voice {
       audioOutput: {
         deviceId: this.#settings.preferredAudioOutputDevice,
       },
+      screenShareCaptureDefaults: {
+        resolution: { width: 1920, height: 1080, frameRate: 60 },
+        contentHint: "motion",
+      },
     });
 
     batch(() => {
@@ -207,6 +211,10 @@ class Voice {
     if (!room) throw "invalid state";
     await room.localParticipant.setScreenShareEnabled(
       !room.localParticipant.isScreenShareEnabled,
+      {
+        resolution: { width: 1920, height: 1080, frameRate: 60 },
+        contentHint: "motion",
+      },
     );
 
     this.#setScreenshare(room.localParticipant.isScreenShareEnabled);
@@ -258,7 +266,9 @@ export function VoiceContext(props: { children: JSX.Element }) {
                             video: {
                                mandatory: {
                                   chromeMediaSource: "desktop",
-                                  chromeMediaSourceId: sourceId
+                                  chromeMediaSourceId: sourceId,
+                                  maxFrameRate: 60,
+                                  minFrameRate: 30,
                                }
                             }
                         } as any);

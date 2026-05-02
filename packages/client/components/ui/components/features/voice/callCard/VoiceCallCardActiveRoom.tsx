@@ -67,7 +67,7 @@ const Call = styled("div", {
   base: {
     flexGrow: 1,
     minHeight: 0,
-    overflowY: "scroll",
+    overflowY: "auto",
   },
 });
 
@@ -86,11 +86,6 @@ function Participants() {
   return (
     <Grid>
       <TrackLoop tracks={tracks}>{() => <ParticipantTile />}</TrackLoop>
-      {/* <div class={tile()} />
-      <div class={tile()} />
-      <div class={tile()} />
-      <div class={tile()} />
-      <div class={tile()} /> */}
     </Grid>
   );
 }
@@ -101,6 +96,8 @@ const Grid = styled("div", {
     gap: "var(--gap-md)",
     padding: "var(--gap-md)",
     gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+    height: "100%",
+    alignContent: "center",
   },
 });
 
@@ -117,6 +114,57 @@ function ParticipantTile() {
       </Match>
     </Switch>
   );
+}
+
+/**
+ * Hook: auto-hide overlay after mouse idle (for fullscreen mode)
+ */
+function useFullscreenAutoHide(containerRef: () => HTMLDivElement | undefined) {
+  const [showOverlay, setShowOverlay] = createSignal(true);
+  let hideTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const HIDE_DELAY = 2500; // ms of inactivity before hiding
+
+  const resetTimer = () => {
+    setShowOverlay(true);
+    if (hideTimer) clearTimeout(hideTimer);
+    hideTimer = setTimeout(() => setShowOverlay(false), HIDE_DELAY);
+  };
+
+  createEffect(() => {
+    const el = containerRef();
+    if (!el) return;
+
+    const onMove = () => {
+      if (document.fullscreenElement === el) {
+        resetTimer();
+      }
+    };
+
+    const onFsChange = () => {
+      if (document.fullscreenElement === el) {
+        // Entered fullscreen — start auto-hide
+        resetTimer();
+      } else {
+        // Exited fullscreen — always show
+        if (hideTimer) clearTimeout(hideTimer);
+        setShowOverlay(true);
+      }
+    };
+
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mousedown", onMove);
+    document.addEventListener("fullscreenchange", onFsChange);
+
+    onCleanup(() => {
+      el.removeEventListener("mousemove", onMove);
+      el.removeEventListener("mousedown", onMove);
+      document.removeEventListener("fullscreenchange", onFsChange);
+      if (hideTimer) clearTimeout(hideTimer);
+    });
+  });
+
+  return showOverlay;
 }
 
 /**
@@ -142,6 +190,8 @@ function UserTile() {
 
   let videoRef: HTMLDivElement | undefined;
   const [isFullscreen, setIsFullscreen] = createSignal(false);
+
+  const showOverlay = useFullscreenAutoHide(() => videoRef);
 
   createEffect(() => {
     const handleFullscreenChange = () => {
@@ -171,9 +221,10 @@ function UserTile() {
       ref={videoRef}
       class={tile({
         speaking: isSpeaking(),
+        fullscreen: isFullscreen(),
       }) + " group"}
       onClick={toggleFullscreen}
-      style={{ cursor: "pointer" }}
+      style={{ cursor: isFullscreen() ? (showOverlay() ? "default" : "none") : "pointer" }}
       use:floating={{
         userCard: {
           user: user().user!,
@@ -200,9 +251,10 @@ function UserTile() {
           <VideoTrack
             style={{
               "grid-area": "1/1",
-              "object-fit": "contain",
+              "object-fit": isFullscreen() ? "contain" : "contain",
               width: "100%",
               height: "100%",
+              "will-change": "auto",
               ...(isLocal(participant) && track.source === Track.Source.Camera
                 ? { transform: "scaleX(-1)" }
                 : {}),
@@ -213,7 +265,13 @@ function UserTile() {
         </Match>
       </Switch>
 
-      <Overlay showOnHover>
+      <Overlay
+        showOnHover
+        style={{
+          opacity: isFullscreen() ? (showOverlay() ? 1 : 0) : undefined,
+          "pointer-events": isFullscreen() && !showOverlay() ? "none" : undefined,
+        }}
+      >
         <OverlayInner>
           <OverflowingText>{user().username}</OverflowingText>
           <VoiceStatefulUserIcons
@@ -229,7 +287,19 @@ function UserTile() {
       </Overlay>
       
       <Show when={isFullscreen()}>
-        <div class="controls-container" style={{ position: "absolute", bottom: "60px", left: "50%", transform: "translateX(-50%)", "z-index": 20 }}>
+        <div
+          class="controls-container"
+          style={{
+            position: "absolute",
+            bottom: "60px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            "z-index": 20,
+            opacity: showOverlay() ? 1 : 0,
+            transition: "opacity 0.3s ease",
+            "pointer-events": showOverlay() ? "auto" : "none",
+          }}
+        >
           <VoiceCallCardActions size="sm" />
         </div>
       </Show>
@@ -261,6 +331,8 @@ function ScreenshareTile() {
   let videoRef: HTMLDivElement | undefined;
   const [isFullscreen, setIsFullscreen] = createSignal(false);
 
+  const showOverlay = useFullscreenAutoHide(() => videoRef);
+
   createEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(document.fullscreenElement === videoRef);
@@ -284,9 +356,9 @@ function ScreenshareTile() {
   return (
     <div
       ref={videoRef}
-      class={tile() + " group"}
+      class={tile({ fullscreen: isFullscreen() }) + " group"}
       onClick={toggleFullscreen}
-      style={{ cursor: "pointer" }}
+      style={{ cursor: isFullscreen() ? (showOverlay() ? "default" : "none") : "pointer" }}
     >
       <div
         class={css({
@@ -305,6 +377,8 @@ function ScreenshareTile() {
           gap: "4px",
           textTransform: "uppercase",
           boxShadow: "0 2px 4px rgba(0,0,0,0.3)",
+          opacity: isFullscreen() ? (showOverlay() ? 1 : 0) : 1,
+          transition: "opacity 0.3s ease",
         })}
       >
         <div
@@ -324,12 +398,19 @@ function ScreenshareTile() {
           "object-fit": "contain",
           width: "100%",
           height: "100%",
+          "will-change": "auto",
         }}
         trackRef={track as TrackReference}
         manageSubscription={true}
       />
 
-      <Overlay showOnHover>
+      <Overlay
+        showOnHover
+        style={{
+          opacity: isFullscreen() ? (showOverlay() ? 1 : 0) : undefined,
+          "pointer-events": isFullscreen() && !showOverlay() ? "none" : undefined,
+        }}
+      >
         <OverlayInner>
           <OverflowingText>{user().username}</OverflowingText>
           <Show when={isMuted()}>
@@ -342,7 +423,19 @@ function ScreenshareTile() {
       </Overlay>
 
       <Show when={isFullscreen()}>
-        <div class="controls-container" style={{ position: "absolute", bottom: "60px", left: "50%", transform: "translateX(-50%)", "z-index": 20 }}>
+        <div
+          class="controls-container"
+          style={{
+            position: "absolute",
+            bottom: "60px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            "z-index": 20,
+            opacity: showOverlay() ? 1 : 0,
+            transition: "opacity 0.3s ease",
+            "pointer-events": showOverlay() ? "auto" : "none",
+          }}
+        >
           <VoiceCallCardActions size="sm" />
         </div>
       </Show>
@@ -354,7 +447,6 @@ const tile = cva({
   base: {
     display: "grid",
     aspectRatio: "16/9",
-    transition: ".3s ease all",
     borderRadius: "var(--borderRadius-lg)",
     position: "relative",
 
@@ -366,11 +458,21 @@ const tile = cva({
     outlineStyle: "solid",
     outlineOffset: "-3px",
     outlineColor: "transparent",
+    transition: "outline-color 0.3s ease",
   },
   variants: {
     speaking: {
       true: {
         outlineColor: "var(--md-sys-color-primary)",
+      },
+    },
+    fullscreen: {
+      true: {
+        borderRadius: 0,
+        aspectRatio: "unset",
+        width: "100%",
+        height: "100%",
+        background: "#000",
       },
     },
   },
@@ -392,7 +494,7 @@ const Overlay = styled("div", {
     alignItems: "end",
     flexDirection: "row",
 
-    transition: "var(--transitions-fast) all",
+    transition: "opacity 0.3s ease",
     transitionTimingFunction: "ease",
     pointerEvents: "none",
     zIndex: 10,
