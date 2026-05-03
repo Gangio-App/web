@@ -11,7 +11,7 @@ import {
 import { useModals } from "@revolt/modal";
 import { RoomContext } from "solid-livekit-components";
 
-import { Room } from "livekit-client";
+import { Room, Track } from "livekit-client";
 import { DenoiseTrackProcessor } from "livekit-rnnoise-processor";
 import { Channel } from "stoat.js";
 
@@ -235,6 +235,9 @@ class Voice {
           videoCodec: "vp9",
         },
       );
+
+      // We removed the 'ended' listener here for now to prevent accidental UI resets 
+      // when a window temporarily loses focus or drops frames in the background.
     } catch (e) {
       console.error("Failed to toggle screenshare", e);
     }
@@ -282,22 +285,49 @@ export function VoiceContext(props: { children: JSX.Element }) {
                         return reject(new DOMException("Canceled by user", "NotAllowedError"));
                       }
                       
+                      const isScreen = sourceId.startsWith("screen");
+
                       try {
-                        // ULTRA-SIMPLIFIED capture to debug disconnection
                         const stream = await navigator.mediaDevices.getUserMedia({
-                            audio: false, // Disable audio capture for a moment to stop disconnections
+                            audio: isScreen ? {
+                               mandatory: {
+                                  chromeMediaSource: "desktop",
+                                  chromeMediaSourceId: sourceId,
+                               }
+                            } : false as any,
                             video: {
                                 mandatory: {
                                    chromeMediaSource: "desktop",
                                    chromeMediaSourceId: sourceId,
                                    maxFrameRate: 60,
+                                   minFrameRate: 10, // Force a minimum framerate to prevent "freezes" from being treated as ends
+                                   maxWidth: 2560,
+                                   maxHeight: 1440,
                                 }
                             }
                         } as any);
                         resolve(stream);
                       } catch (err) {
-                        console.error("Capture failed", err);
-                        reject(err);
+                        console.error("Primary capture failed, trying fallback", err);
+                        try {
+                           const stream = await navigator.mediaDevices.getUserMedia({
+                               audio: false,
+                               video: {
+                                   mandatory: {
+                                      chromeMediaSource: "desktop",
+                                      chromeMediaSourceId: sourceId,
+                                      maxFrameRate: 60,
+                                      minFrameRate: 10,
+                                      maxWidth: 2560,
+                                      maxHeight: 1440,
+                                   }
+                               }
+                           } as any);
+                           resolve(stream);
+                        } catch (finalErr) {
+                           console.error("Screenshare capture failed completely", finalErr);
+                           reject(finalErr);
+                        }
                       }
                    }
                 });
