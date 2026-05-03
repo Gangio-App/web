@@ -282,52 +282,22 @@ export function VoiceContext(props: { children: JSX.Element }) {
                         return reject(new DOMException("Canceled by user", "NotAllowedError"));
                       }
                       
-                      // For windows, audio capture is often unreliable or unsupported in Electron
-                      // We only attempt it for screens (where it's more standard) or if it's explicitly supported
-                      const isScreen = sourceId.startsWith("screen");
-
                       try {
+                        // ULTRA-SIMPLIFIED capture to debug disconnection
                         const stream = await navigator.mediaDevices.getUserMedia({
-                            audio: isScreen ? {
-                               mandatory: {
-                                  chromeMediaSource: "desktop",
-                                  chromeMediaSourceId: sourceId,
-                               }
-                            } : false as any,
+                            audio: false, // Disable audio capture for a moment to stop disconnections
                             video: {
                                 mandatory: {
                                    chromeMediaSource: "desktop",
                                    chromeMediaSourceId: sourceId,
                                    maxFrameRate: 60,
-                                   minFrameRate: 30,
-                                   maxWidth: 2560,
-                                   maxHeight: 1440,
                                 }
                             }
                         } as any);
                         resolve(stream);
                       } catch (err) {
-                        console.error("Primary capture failed, trying fallback", err);
-                        try {
-                           // Robust fallback: Always try video-only if anything fails
-                           const stream = await navigator.mediaDevices.getUserMedia({
-                               audio: false,
-                               video: {
-                                   mandatory: {
-                                      chromeMediaSource: "desktop",
-                                      chromeMediaSourceId: sourceId,
-                                      maxFrameRate: 60,
-                                      minFrameRate: 30,
-                                      maxWidth: 2560,
-                                      maxHeight: 1440,
-                                   }
-                               }
-                           } as any);
-                           resolve(stream);
-                        } catch (finalErr) {
-                           console.error("Screenshare capture failed completely", finalErr);
-                           reject(finalErr);
-                        }
+                        console.error("Capture failed", err);
+                        reject(err);
                       }
                    }
                 });
