@@ -219,11 +219,13 @@ class Voice {
 
   async toggleScreenshare() {
     const room = this.room();
-    if (!room) throw "invalid state";
+    if (!room || this.state() !== "CONNECTED") return;
+    
+    const isEnabled = room.localParticipant.isScreenShareEnabled;
     
     try {
       await room.localParticipant.setScreenShareEnabled(
-        !room.localParticipant.isScreenShareEnabled,
+        !isEnabled,
         {
           resolution: { width: 1920, height: 1080, frameRate: 60 },
         },
@@ -302,6 +304,11 @@ export function VoiceContext(props: { children: JSX.Element }) {
                                 }
                             }
                         } as any);
+                        
+                        if (!stream || stream.getTracks().length === 0) {
+                           throw new Error("Captured stream is empty");
+                        }
+                        
                         resolve(stream);
                       } catch (err) {
                         console.error("Primary capture failed, trying fallback", err);
