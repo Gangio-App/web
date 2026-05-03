@@ -235,9 +235,6 @@ class Voice {
           videoCodec: "vp9",
         },
       );
-
-      // We removed the 'ended' listener here for now to prevent accidental UI resets 
-      // when a window temporarily loses focus or drops frames in the background.
     } catch (e) {
       console.error("Failed to toggle screenshare", e);
     }
@@ -299,10 +296,9 @@ export function VoiceContext(props: { children: JSX.Element }) {
                                 mandatory: {
                                    chromeMediaSource: "desktop",
                                    chromeMediaSourceId: sourceId,
+                                   maxWidth: 1920,
+                                   maxHeight: 1080,
                                    maxFrameRate: 60,
-                                   minFrameRate: 10, // Force a minimum framerate to prevent "freezes" from being treated as ends
-                                   maxWidth: 2560,
-                                   maxHeight: 1440,
                                 }
                             }
                         } as any);
@@ -316,10 +312,9 @@ export function VoiceContext(props: { children: JSX.Element }) {
                                    mandatory: {
                                       chromeMediaSource: "desktop",
                                       chromeMediaSourceId: sourceId,
+                                      maxWidth: 1920,
+                                      maxHeight: 1080,
                                       maxFrameRate: 60,
-                                      minFrameRate: 10,
-                                      maxWidth: 2560,
-                                      maxHeight: 1440,
                                    }
                                }
                            } as any);
