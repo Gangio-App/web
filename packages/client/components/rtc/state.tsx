@@ -220,19 +220,24 @@ class Voice {
   async toggleScreenshare() {
     const room = this.room();
     if (!room) throw "invalid state";
-    await room.localParticipant.setScreenShareEnabled(
-      !room.localParticipant.isScreenShareEnabled,
-      {
-        resolution: { width: 1920, height: 1080, frameRate: 60 },
-      },
-      {
-        videoEncoding: {
-          maxBitrate: 8_000_000,
-          maxFramerate: 60,
+    
+    try {
+      await room.localParticipant.setScreenShareEnabled(
+        !room.localParticipant.isScreenShareEnabled,
+        {
+          resolution: { width: 1920, height: 1080, frameRate: 60 },
         },
-        videoCodec: "vp9",
-      },
-    );
+        {
+          videoEncoding: {
+            maxBitrate: 8_000_000,
+            maxFramerate: 60,
+          },
+          videoCodec: "vp9",
+        },
+      );
+    } catch (e) {
+      console.error("Failed to toggle screenshare", e);
+    }
 
     this.#setScreenshare(room.localParticipant.isScreenShareEnabled);
   }
@@ -277,14 +282,18 @@ export function VoiceContext(props: { children: JSX.Element }) {
                         return reject(new DOMException("Canceled by user", "NotAllowedError"));
                       }
                       
+                      // For windows, audio capture is often unreliable or unsupported in Electron
+                      // We only attempt it for screens (where it's more standard) or if it's explicitly supported
+                      const isScreen = sourceId.startsWith("screen");
+
                       try {
                         const stream = await navigator.mediaDevices.getUserMedia({
-                            audio: {
+                            audio: isScreen ? {
                                mandatory: {
                                   chromeMediaSource: "desktop",
                                   chromeMediaSourceId: sourceId,
                                }
-                            } as any,
+                            } : false as any,
                             video: {
                                 mandatory: {
                                    chromeMediaSource: "desktop",
@@ -298,21 +307,27 @@ export function VoiceContext(props: { children: JSX.Element }) {
                         } as any);
                         resolve(stream);
                       } catch (err) {
-                        // fallback if audio fails
-                        const stream = await navigator.mediaDevices.getUserMedia({
-                            audio: false,
-                            video: {
-                                mandatory: {
-                                   chromeMediaSource: "desktop",
-                                   chromeMediaSourceId: sourceId,
-                                   maxFrameRate: 60,
-                                   minFrameRate: 30,
-                                   maxWidth: 2560,
-                                   maxHeight: 1440,
-                                }
-                            }
-                        } as any);
-                        resolve(stream);
+                        console.error("Primary capture failed, trying fallback", err);
+                        try {
+                           // Robust fallback: Always try video-only if anything fails
+                           const stream = await navigator.mediaDevices.getUserMedia({
+                               audio: false,
+                               video: {
+                                   mandatory: {
+                                      chromeMediaSource: "desktop",
+                                      chromeMediaSourceId: sourceId,
+                                      maxFrameRate: 60,
+                                      minFrameRate: 30,
+                                      maxWidth: 2560,
+                                      maxHeight: 1440,
+                                   }
+                               }
+                           } as any);
+                           resolve(stream);
+                        } catch (finalErr) {
+                           console.error("Screenshare capture failed completely", finalErr);
+                           reject(finalErr);
+                        }
                       }
                    }
                 });

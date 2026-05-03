@@ -1,4 +1,4 @@
-import { createResource, createSignal, For, Show } from "solid-js";
+import { createResource, createSignal, For, Show, createEffect, onCleanup } from "solid-js";
 import { styled } from "styled-system/jsx";
 import { Dialog, DialogProps, Button } from "@revolt/ui";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
@@ -18,16 +18,29 @@ type DesktopSource = {
 export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "desktop_screenshare" }) {
   const [tab, setTab] = createSignal<TabType>("Applications");
 
-  const [sources] = createResource<DesktopSource[]>(async () => {
+  const fetchSources = async () => {
     if ((window as any).native?.getDesktopSources) {
-      return await (window as any).native.getDesktopSources({ types: ["window", "screen"], thumbnailSize: { width: 300, height: 300 }, fetchWindowIcons: true });
+      return await (window as any).native.getDesktopSources({ 
+        types: ["window", "screen"], 
+        thumbnailSize: { width: 400, height: 400 }, 
+        fetchWindowIcons: true 
+      });
     }
     return [];
+  };
+
+  const [sources, { refetch }] = createResource<DesktopSource[]>(fetchSources);
+
+  // Auto-refresh sources every 3 seconds while modal is open
+  createEffect(() => {
+    const interval = setInterval(() => refetch(), 3000);
+    onCleanup(() => clearInterval(interval));
   });
 
   const filteredSources = () => {
     if (!sources()) return [];
     if (tab() === "Applications") {
+      // Filter for windows, making sure we don't accidentally hide anything
       return sources()!.filter(s => s.id.startsWith("window"));
     } else {
       return sources()!.filter(s => s.id.startsWith("screen"));
