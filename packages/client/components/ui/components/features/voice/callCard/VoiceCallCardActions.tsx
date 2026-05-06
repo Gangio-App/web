@@ -10,6 +10,9 @@ import { Button, IconButton } from "@revolt/ui/components/design";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 import { ContextMenu, ContextMenuButton } from "../../../../../app/menus/ContextMenu";
 import { useMediaDeviceSelect } from "solid-livekit-components";
+import { floating } from "../../../directives/floating";
+
+(void floating);
 
 export function VoiceCallCardActions(props: { size: "xs" | "sm" }) {
   const voice = useVoice();
@@ -208,28 +211,29 @@ function SpeakerMenu() {
 }
 
 function ScreenshareMenu() {
-  const voice = useVoice();
+  const state = useState();
+  const { t } = useLingui();
   
   const resolutions: { label: string; value: ScreenShareResolution }[] = [
-    { label: "4K (2160p)", value: "4k" },
-    { label: "Ultra (1440p)", value: "ultra" },
-    { label: "High (1080p)", value: "high" },
-    { label: "Medium (720p)", value: "medium" },
-    { label: "Low (360p)", value: "low" },
+    { label: t`4K (2160p)`, value: "4k" },
+    { label: t`Ultra (1440p)`, value: "ultra" },
+    { label: t`High (1080p)`, value: "high" },
+    { label: t`Medium (720p)`, value: "medium" },
+    { label: t`Low (360p)`, value: "low" },
   ];
 
   const frameRates: { label: string; value: ScreenShareFrameRate }[] = [
-    { label: "60 FPS", value: 60 },
-    { label: "30 FPS", value: 30 },
-    { label: "24 FPS", value: 24 },
-    { label: "15 FPS", value: 15 },
+    { label: t`60 FPS`, value: 60 },
+    { label: t`30 FPS`, value: 30 },
+    { label: t`24 FPS`, value: 24 },
+    { label: t`15 FPS`, value: 15 },
   ];
 
   const update = (res?: ScreenShareResolution, fps?: ScreenShareFrameRate, audio?: boolean) => {
-    voice.updateScreenShareSettings(
-      res ?? voice.screenshareResolution(),
-      fps ?? voice.screenshareFrameRate(),
-      audio ?? voice.screenshareAudio()
+    state.voice.updateScreenShareSettings(
+      res ?? state.voice.screenshareResolution(),
+      fps ?? state.voice.screenshareFrameRate(),
+      audio ?? state.voice.screenshareAudio()
     );
   };
 
@@ -239,7 +243,7 @@ function ScreenshareMenu() {
       <For each={resolutions}>
         {(res) => (
           <ContextMenuButton 
-            icon={() => <Symbol>{res.value === voice.screenshareResolution() ? "radio_button_checked" : "radio_button_unchecked"}</Symbol>}
+            icon={() => <Symbol>{res.value === state.voice.screenshareResolution() ? "radio_button_checked" : "radio_button_unchecked"}</Symbol>}
             onClick={() => update(res.value)}
           >
             {res.label}
@@ -251,7 +255,7 @@ function ScreenshareMenu() {
       <For each={frameRates}>
         {(fps) => (
           <ContextMenuButton 
-            icon={() => <Symbol>{fps.value === voice.screenshareFrameRate() ? "radio_button_checked" : "radio_button_unchecked"}</Symbol>}
+            icon={() => <Symbol>{fps.value === state.voice.screenshareFrameRate() ? "radio_button_checked" : "radio_button_unchecked"}</Symbol>}
             onClick={() => update(undefined, fps.value)}
           >
             {fps.label}
@@ -260,17 +264,17 @@ function ScreenshareMenu() {
       </For>
       <div style={{ "border-top": "1px solid var(--md-sys-color-outline-variant)", "margin-top": "4px", "padding-top": "4px" }} />
       <ContextMenuButton 
-        icon={() => <Symbol>{voice.screenshareAudio() ? "check_box" : "check_box_outline_blank"}</Symbol>}
-        onClick={() => update(undefined, undefined, !voice.screenshareAudio())}
+        icon={() => <Symbol>{state.voice.screenshareAudio() ? "check_box" : "check_box_outline_blank"}</Symbol>}
+        onClick={() => update(undefined, undefined, !state.voice.screenshareAudio())}
       >
         {t`Include System Audio`}
       </ContextMenuButton>
       <div style={{ "border-top": "1px solid var(--md-sys-color-outline-variant)", "margin-top": "4px", "padding-top": "4px" }} />
       <ContextMenuButton 
-        icon={() => <Symbol>{voice.previewPaused() ? "play_circle" : "pause_circle"}</Symbol>}
-        onClick={() => voice.togglePreviewPause()}
+        icon={() => <Symbol>{state.voice.previewPaused() ? "play_circle" : "pause_circle"}</Symbol>}
+        onClick={() => state.voice.togglePreviewPause()}
       >
-        {voice.previewPaused() ? t`Resume Preview` : t`Pause Preview`}
+        {state.voice.previewPaused() ? t`Resume Preview` : t`Pause Preview`}
       </ContextMenuButton>
     </ContextMenu>
   );
