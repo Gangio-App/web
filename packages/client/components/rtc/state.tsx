@@ -203,6 +203,25 @@ class Voice {
     const [previewPaused, setPreviewPaused] = createSignal(false);
     this.previewPaused = previewPaused;
     this.#setPreviewPaused = setPreviewPaused;
+
+    // Auto-pause when window is hidden (e.g. minimized)
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") {
+          // Only auto-pause if not already paused
+          if (!this.previewPaused()) {
+            this.#setPreviewPaused(true);
+            (this as any)._autoPaused = true;
+          }
+        } else if (document.visibilityState === "visible") {
+          // Only auto-resume if it was paused by this auto-logic
+          if ((this as any)._autoPaused) {
+            this.#setPreviewPaused(false);
+            (this as any)._autoPaused = false;
+          }
+        }
+      });
+    }
   }
 
   async connect(channel: Channel, auth?: { url: string; token: string }) {
