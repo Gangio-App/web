@@ -4561,3 +4561,24 @@ msgstr "Yavaş mod aktif"
 
 msgid "Slowmode is enabled. You can send another message in {0} seconds."
 msgstr "Yavaş mod etkin. {0} saniye içinde başka bir mesaj gönderebilirsiniz."
+
+msgid "Resolution"
+msgstr "Çözünürlük"
+
+msgid "Frame Rate"
+msgstr "Kare Hızı"
+
+msgid "Include System Audio"
+msgstr "Sistem Sesini Dahil Et"
+
+msgid "Pause Preview"
+msgstr "Önizlemeyi Duraklat"
+
+msgid "Resume Preview"
+msgstr "Önizlemeyi Devam Ettir"
+
+msgid "Preview Paused"
+msgstr "Önizleme Duraklatıldı"
+
+msgid "Saving resources"
+msgstr "Kaynak tasarrufu yapılıyor"

@@ -1,4 +1,5 @@
 import { createEffect, Match, Show, Switch, createSignal, onCleanup, For } from "solid-js";
+import { t } from "@lingui-solid/solid/macro";
 import {
   isTrackReference,
   TrackLoop,
@@ -275,6 +276,7 @@ const MessageList = styled("div", {
     display: "flex",
     flexDirection: "column",
     gap: "var(--gap-sm)",
+    paddingBottom: "80px",
   },
 });
 
@@ -366,6 +368,19 @@ function UserTile() {
     }
   });
 
+  createEffect(() => {
+    if (isLocal(participant)) {
+      const video = videoRef?.querySelector("video");
+      if (video) {
+        if (voice.previewPaused()) {
+          video.pause();
+        } else {
+          video.play().catch(() => {});
+        }
+      }
+    }
+  });
+
   function toggleFullscreen(e: Event) {
     if ((e.target as HTMLElement).closest('.controls-container') || (e.target as HTMLElement).closest('.top-controls')) return;
 
@@ -431,10 +446,21 @@ function UserTile() {
                 ...(isLocal(participant) && track.source === Track.Source.Camera
                   ? { transform: "scaleX(-1)" }
                   : {}),
+                opacity: isLocal(participant) && voice.previewPaused() ? 0.3 : 1,
+                transition: "opacity 0.3s ease",
               }}
               trackRef={track as TrackReference}
               manageSubscription={true}
             />
+            <Show when={isLocal(participant) && voice.previewPaused()}>
+              <PausedOverlay>
+                <PausedIcon>
+                  <Symbol size={48}>pause</Symbol>
+                </PausedIcon>
+                <PausedText>{t`Preview Paused`}</PausedText>
+                <PausedSubtext>{t`Saving resources`}</PausedSubtext>
+              </PausedOverlay>
+            </Show>
           </Match>
         </Switch>
 
@@ -544,6 +570,19 @@ function ScreenshareTile() {
     onCleanup(() => document.removeEventListener("fullscreenchange", handleFullscreenChange));
   });
 
+  createEffect(() => {
+    if (isLocal(participant)) {
+      const video = videoRef?.querySelector("video");
+      if (video) {
+        if (voice.previewPaused()) {
+          video.pause();
+        } else {
+          video.play().catch(() => {});
+        }
+      }
+    }
+  });
+
   const toggleFullscreen = (e: Event) => {
     if ((e.target as HTMLElement).closest('.controls-container') || (e.target as HTMLElement).closest('.top-controls')) return;
     
@@ -614,10 +653,21 @@ function ScreenshareTile() {
             width: "100%",
             height: "100%",
             "will-change": "auto",
+            opacity: isLocal(participant) && voice.previewPaused() ? 0.3 : 1,
+            transition: "opacity 0.3s ease",
           }}
           trackRef={track as TrackReference}
           manageSubscription={true}
         />
+        <Show when={isLocal(participant) && voice.previewPaused()}>
+          <PausedOverlay>
+            <PausedIcon>
+              <Symbol size={48}>pause</Symbol>
+            </PausedIcon>
+            <PausedText>{t`Preview Paused`}</PausedText>
+            <PausedSubtext>{t`Saving resources`}</PausedSubtext>
+          </PausedOverlay>
+        </Show>
 
         <Overlay
           showOnHover
@@ -796,5 +846,51 @@ const FullscreenButtonIcon = styled("div", {
     _active: {
       transform: "scale(0.9)",
     }
+  }
+});
+
+const PausedOverlay = styled("div", {
+  base: {
+    gridArea: "1/1",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 5,
+    background: "rgba(0,0,0,0.4)",
+    backdropFilter: "blur(4px)",
+    color: "#fff",
+    textAlign: "center",
+  }
+});
+
+const PausedIcon = styled("div", {
+  base: {
+    width: "64px",
+    height: "64px",
+    borderRadius: "50%",
+    background: "rgba(255,255,255,0.1)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: "12px",
+    border: "2px solid rgba(255,255,255,0.2)",
+  }
+});
+
+const PausedText = styled("div", {
+  base: {
+    fontSize: "16px",
+    fontWeight: "bold",
+    textShadow: "0 2px 4px rgba(0,0,0,0.5)",
+  }
+});
+
+const PausedSubtext = styled("div", {
+  base: {
+    fontSize: "12px",
+    opacity: 0.7,
+    marginTop: "4px",
+    textShadow: "0 1px 2px rgba(0,0,0,0.5)",
   }
 });

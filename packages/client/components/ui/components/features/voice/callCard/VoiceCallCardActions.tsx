@@ -1,10 +1,10 @@
 import { Show, For } from "solid-js";
 
-import { useLingui } from "@lingui-solid/solid/macro";
+import { useLingui, t } from "@lingui-solid/solid/macro";
 import { styled } from "styled-system/jsx";
 
 import { CONFIGURATION } from "@revolt/common";
-import { useVoice } from "@revolt/rtc";
+import { useVoice, ScreenShareResolution, ScreenShareFrameRate } from "@revolt/rtc";
 import { useState } from "@revolt/state";
 import { Button, IconButton } from "@revolt/ui/components/design";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
@@ -94,31 +94,34 @@ export function VoiceCallCardActions(props: { size: "xs" | "sm" }) {
       >
         <Symbol>camera_video</Symbol>
       </IconButton>
-      <IconButton
-        size={props.size}
-        variant={isVideoEnabled() && voice.screenshare() ? "filled" : "tonal"}
-        onPress={() => {
-          if (isVideoEnabled()) voice.toggleScreenshare();
-        }}
-        use:floating={{
-          tooltip: {
-            placement: "top",
-            content: isVideoEnabled()
-              ? voice.screenshare()
-                ? "Stop Sharing"
-                : "Share Screen"
-              : "Coming soon! 👀",
-          },
-        }}
-        isDisabled={!isVideoEnabled()}
-      >
-        <Show
-          when={voice.screenshare()}
-          fallback={<Symbol>screen_share</Symbol>}
+      <SplitAction>
+        <IconButton
+          size={props.size}
+          variant={isVideoEnabled() && voice.screenshare() ? "filled" : "tonal"}
+          onPress={() => {
+            if (isVideoEnabled()) voice.toggleScreenshare();
+          }}
+          use:floating={{
+            contextMenu: () => <ScreenshareMenu />,
+            tooltip: {
+              placement: "top",
+              content: isVideoEnabled()
+                ? voice.screenshare()
+                  ? "Stop Sharing"
+                  : "Share Screen"
+                : "Coming soon! 👀",
+            },
+          }}
+          isDisabled={!isVideoEnabled()}
         >
-          <Symbol>stop_screen_share</Symbol>
-        </Show>
-      </IconButton>
+          <Show
+            when={voice.screenshare()}
+            fallback={<Symbol>screen_share</Symbol>}
+          >
+            <Symbol>stop_screen_share</Symbol>
+          </Show>
+        </IconButton>
+      </SplitAction>
       <Button
         size={props.size}
         variant="_error"
@@ -200,6 +203,75 @@ function SpeakerMenu() {
           </ContextMenuButton>
         )}
       </For>
+    </ContextMenu>
+  );
+}
+
+function ScreenshareMenu() {
+  const voice = useVoice();
+  
+  const resolutions: { label: string; value: ScreenShareResolution }[] = [
+    { label: "4K (2160p)", value: "4k" },
+    { label: "Ultra (1440p)", value: "ultra" },
+    { label: "High (1080p)", value: "high" },
+    { label: "Medium (720p)", value: "medium" },
+    { label: "Low (360p)", value: "low" },
+  ];
+
+  const frameRates: { label: string; value: ScreenShareFrameRate }[] = [
+    { label: "60 FPS", value: 60 },
+    { label: "30 FPS", value: 30 },
+    { label: "24 FPS", value: 24 },
+    { label: "15 FPS", value: 15 },
+  ];
+
+  const update = (res?: ScreenShareResolution, fps?: ScreenShareFrameRate, audio?: boolean) => {
+    voice.updateScreenShareSettings(
+      res ?? voice.screenshareResolution(),
+      fps ?? voice.screenshareFrameRate(),
+      audio ?? voice.screenshareAudio()
+    );
+  };
+
+  return (
+    <ContextMenu>
+      <div style={{ padding: "8px 12px", "font-size": "11px", "font-weight": "bold", color: "var(--md-sys-color-on-surface-variant)", "text-transform": "uppercase" }}>{t`Resolution`}</div>
+      <For each={resolutions}>
+        {(res) => (
+          <ContextMenuButton 
+            icon={() => <Symbol>{res.value === voice.screenshareResolution() ? "radio_button_checked" : "radio_button_unchecked"}</Symbol>}
+            onClick={() => update(res.value)}
+          >
+            {res.label}
+          </ContextMenuButton>
+        )}
+      </For>
+      <div style={{ "border-top": "1px solid var(--md-sys-color-outline-variant)", "margin-top": "4px", "padding-top": "4px" }} />
+      <div style={{ padding: "8px 12px", "font-size": "11px", "font-weight": "bold", color: "var(--md-sys-color-on-surface-variant)", "text-transform": "uppercase" }}>{t`Frame Rate`}</div>
+      <For each={frameRates}>
+        {(fps) => (
+          <ContextMenuButton 
+            icon={() => <Symbol>{fps.value === voice.screenshareFrameRate() ? "radio_button_checked" : "radio_button_unchecked"}</Symbol>}
+            onClick={() => update(undefined, fps.value)}
+          >
+            {fps.label}
+          </ContextMenuButton>
+        )}
+      </For>
+      <div style={{ "border-top": "1px solid var(--md-sys-color-outline-variant)", "margin-top": "4px", "padding-top": "4px" }} />
+      <ContextMenuButton 
+        icon={() => <Symbol>{voice.screenshareAudio() ? "check_box" : "check_box_outline_blank"}</Symbol>}
+        onClick={() => update(undefined, undefined, !voice.screenshareAudio())}
+      >
+        {t`Include System Audio`}
+      </ContextMenuButton>
+      <div style={{ "border-top": "1px solid var(--md-sys-color-outline-variant)", "margin-top": "4px", "padding-top": "4px" }} />
+      <ContextMenuButton 
+        icon={() => <Symbol>{voice.previewPaused() ? "play_circle" : "pause_circle"}</Symbol>}
+        onClick={() => voice.togglePreviewPause()}
+      >
+        {voice.previewPaused() ? t`Resume Preview` : t`Pause Preview`}
+      </ContextMenuButton>
     </ContextMenu>
   );
 }

@@ -53,7 +53,7 @@ export function Downloads() {
 
       <Column gap="lg">
         <a
-          href="https://github.com/Gangio-App/for-desktop/releases/download/v1.3.0/gangio-desktop-setup.exe"
+          href="https://github.com/Gangio-App/for-desktop/releases/download/v1.3.16/gangio-desktop-setup.exe"
           target="_blank"
           rel="noopener noreferrer"
         >

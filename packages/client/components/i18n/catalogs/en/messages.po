@@ -4450,3 +4450,24 @@ msgstr "Slowmode is active"
 
 msgid "Slowmode is enabled. You can send another message in {0} seconds."
 msgstr "Slowmode is enabled. You can send another message in {0} seconds."
+
+msgid "Resolution"
+msgstr "Resolution"
+
+msgid "Frame Rate"
+msgstr "Frame Rate"
+
+msgid "Include System Audio"
+msgstr "Include System Audio"
+
+msgid "Pause Preview"
+msgstr "Pause Preview"
+
+msgid "Resume Preview"
+msgstr "Resume Preview"
+
+msgid "Preview Paused"
+msgstr "Preview Paused"
+
+msgid "Saving resources"
+msgstr "Saving resources"
