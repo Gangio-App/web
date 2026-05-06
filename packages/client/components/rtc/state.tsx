@@ -224,6 +224,18 @@ class Voice {
     }
   }
 
+  setScreenshareResolution(resolution: ScreenShareResolution) {
+    this.#setScreenshareResolution(resolution);
+  }
+
+  setScreenshareFrameRate(frameRate: ScreenShareFrameRate) {
+    this.#setScreenshareFrameRate(frameRate);
+  }
+
+  setScreenshareAudio(audio: boolean) {
+    this.#setScreenshareAudio(audio);
+  }
+
   async connect(channel: Channel, auth?: { url: string; token: string }) {
     this.disconnect();
 

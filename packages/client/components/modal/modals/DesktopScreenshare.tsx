@@ -27,11 +27,11 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
   const [audio, setAudio] = createSignal(voice.screenshareAudio());
 
   const resolutions: { label: string; value: ScreenShareResolution }[] = [
-    { label: t`4K`, value: "4k" },
-    { label: t`Ultra`, value: "ultra" },
-    { label: t`High`, value: "high" },
-    { label: t`Med`, value: "medium" },
-    { label: t`Low`, value: "low" },
+    { label: "4K", value: "4k" },
+    { label: "Ultra", value: "ultra" },
+    { label: "High", value: "high" },
+    { label: "Med", value: "medium" },
+    { label: "Low", value: "low" },
   ];
 
   const frameRates: { label: string; value: ScreenShareFrameRate }[] = [
@@ -94,7 +94,7 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
       onClose={handlePropClose}
       title={
         <div style={{ display: "flex", "align-items": "center", gap: "var(--gap-sm)" }}>
-          Share your screen
+          {t`Share your screen`}
           <span style={{ 
             background: "var(--md-sys-color-primary)", 
             color: "var(--md-sys-color-on-primary)", 
@@ -105,11 +105,11 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
             "letter-spacing": "0.5px", 
             "text-transform": "uppercase" 
           }}>
-            New
+            {t`New`}
           </span>
         </div>
       }
-      actions={[{ text: "Cancel", onClick: handleClose }]}
+      actions={[{ text: t`Cancel`, onClick: handleClose }]}
     >
       <div style={{ width: "800px", "max-width": "100%", height: "550px", display: "flex", "flex-direction": "column" }}>
         <TabsContainer>
@@ -344,10 +344,10 @@ const ThumbnailName = styled("div", {
 const SettingsRow = styled("div", {
   base: {
     display: "flex",
-    gap: "var(--gap-lg)",
+    gap: "var(--gap-md)",
     padding: "0 var(--gap-md) var(--gap-md)",
     borderBottom: "1px solid var(--md-sys-color-outline-variant)",
-    alignItems: "center",
+    alignItems: "flex-end",
     marginBottom: "var(--gap-sm)",
   }
 });
@@ -356,42 +356,46 @@ const SettingGroup = styled("div", {
   base: {
     display: "flex",
     flexDirection: "column",
-    gap: "4px",
+    gap: "6px",
+    flex: 1,
   }
 });
 
 const SettingLabel = styled("div", {
   base: {
     fontSize: "0.65rem",
-    fontWeight: 700,
+    fontWeight: 800,
     textTransform: "uppercase",
     color: "var(--md-sys-color-on-surface-variant)",
-    letterSpacing: "0.5px",
+    letterSpacing: "0.8px",
+    opacity: 0.8,
   }
 });
 
 const SettingOptions = styled("div", {
   base: {
     display: "flex",
-    gap: "4px",
+    gap: "2px",
     background: "var(--md-sys-color-surface-container-high)",
-    padding: "2px",
-    borderRadius: "var(--borderRadius-md)",
+    padding: "3px",
+    borderRadius: "var(--borderRadius-lg)",
   }
 });
 
 const OptionButton = styled("button", {
   base: {
-    padding: "2px 8px",
-    fontSize: "0.75rem",
-    fontWeight: 600,
-    borderRadius: "var(--borderRadius-sm)",
+    flex: 1,
+    padding: "4px 0",
+    fontSize: "0.7rem",
+    fontWeight: 700,
+    borderRadius: "var(--borderRadius-md)",
     cursor: "pointer",
-    transition: "all 0.15s",
+    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
     color: "var(--md-sys-color-on-surface-variant)",
     
     _hover: {
       background: "var(--md-sys-color-surface-container-highest)",
+      color: "var(--md-sys-color-on-surface)",
     }
   },
   variants: {
@@ -399,9 +403,10 @@ const OptionButton = styled("button", {
       true: {
         background: "var(--md-sys-color-primary)",
         color: "var(--md-sys-color-on-primary)",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
         _hover: {
           background: "var(--md-sys-color-primary)",
+          color: "var(--md-sys-color-on-primary)",
         }
       }
     }
