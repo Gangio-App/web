@@ -10,9 +10,6 @@ import { Button, IconButton } from "@revolt/ui/components/design";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 import { ContextMenu, ContextMenuButton } from "../../../../../app/menus/ContextMenu";
 import { useMediaDeviceSelect } from "solid-livekit-components";
-import { floating } from "../../../directives/floating";
-
-(void floating);
 
 export function VoiceCallCardActions(props: { size: "xs" | "sm" }) {
   const voice = useVoice();
