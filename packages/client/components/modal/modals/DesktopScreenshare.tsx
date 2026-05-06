@@ -1,7 +1,9 @@
 import { createResource, createSignal, For, Show, createEffect, onCleanup } from "solid-js";
+import { useLingui, t } from "@lingui-solid/solid/macro";
 import { styled } from "styled-system/jsx";
-import { Dialog, DialogProps, Button } from "@revolt/ui";
+import { Dialog, DialogProps, Button, IconButton } from "@revolt/ui";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
+import { useVoice, ScreenShareResolution, ScreenShareFrameRate } from "@revolt/rtc";
 import { Modals } from "../types";
 
 const TABS = ["Applications", "Entire Screen"] as const;
@@ -16,7 +18,28 @@ type DesktopSource = {
 };
 
 export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "desktop_screenshare" }) {
+  const { t } = useLingui();
+  const voice = useVoice();
   const [tab, setTab] = createSignal<TabType>("Applications");
+
+  const [resolution, setResolution] = createSignal<ScreenShareResolution>(voice.screenshareResolution());
+  const [fps, setFps] = createSignal<ScreenShareFrameRate>(voice.screenshareFrameRate());
+  const [audio, setAudio] = createSignal(voice.screenshareAudio());
+
+  const resolutions: { label: string; value: ScreenShareResolution }[] = [
+    { label: t`4K`, value: "4k" },
+    { label: t`Ultra`, value: "ultra" },
+    { label: t`High`, value: "high" },
+    { label: t`Med`, value: "medium" },
+    { label: t`Low`, value: "low" },
+  ];
+
+  const frameRates: { label: string; value: ScreenShareFrameRate }[] = [
+    { label: "60", value: 60 },
+    { label: "30", value: 30 },
+    { label: "24", value: 24 },
+    { label: "15", value: 15 },
+  ];
 
   const fetchSources = async () => {
     if ((window as any).native?.getDesktopSources) {
@@ -48,6 +71,9 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
   };
 
   const handleSelect = (id: string) => {
+    voice.setScreenshareResolution(resolution());
+    voice.setScreenshareFrameRate(fps());
+    voice.setScreenshareAudio(audio());
     props.callback(id);
     props.onClose();
   };
@@ -95,6 +121,51 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
             )}
           </For>
         </TabsContainer>
+
+        <SettingsRow>
+          <SettingGroup>
+            <SettingLabel>{t`Resolution`}</SettingLabel>
+            <SettingOptions>
+              <For each={resolutions}>
+                {res => (
+                  <OptionButton 
+                    active={resolution() === res.value} 
+                    onClick={() => setResolution(res.value)}
+                  >
+                    {res.label}
+                  </OptionButton>
+                )}
+              </For>
+            </SettingOptions>
+          </SettingGroup>
+
+          <SettingGroup>
+            <SettingLabel>{t`FPS`}</SettingLabel>
+            <SettingOptions>
+              <For each={frameRates}>
+                {f => (
+                  <OptionButton 
+                    active={fps() === f.value} 
+                    onClick={() => setFps(f.value)}
+                  >
+                    {f.label}
+                  </OptionButton>
+                )}
+              </For>
+            </SettingOptions>
+          </SettingGroup>
+
+          <SettingGroup>
+            <SettingLabel>{t`Audio`}</SettingLabel>
+            <IconButton 
+              variant={audio() ? "filled" : "tonal"} 
+              size="sm" 
+              onPress={() => setAudio(!audio())}
+            >
+              <Symbol>{audio() ? "volume_up" : "volume_off"}</Symbol>
+            </IconButton>
+          </SettingGroup>
+        </SettingsRow>
 
         <div style={{ padding: "0 var(--gap-md) var(--gap-sm)", color: "var(--md-sys-color-on-surface-variant)", "font-size": "0.85rem", display: "flex", "align-items": "center", gap: "var(--gap-xs)" }}>
           <Symbol size={16}>info</Symbol>
@@ -267,5 +338,72 @@ const ThumbnailName = styled("div", {
     textOverflow: "ellipsis",
     textAlign: "center",
     padding: "var(--gap-sm)",
+  }
+});
+
+const SettingsRow = styled("div", {
+  base: {
+    display: "flex",
+    gap: "var(--gap-lg)",
+    padding: "0 var(--gap-md) var(--gap-md)",
+    borderBottom: "1px solid var(--md-sys-color-outline-variant)",
+    alignItems: "center",
+    marginBottom: "var(--gap-sm)",
+  }
+});
+
+const SettingGroup = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  }
+});
+
+const SettingLabel = styled("div", {
+  base: {
+    fontSize: "0.65rem",
+    fontWeight: 700,
+    textTransform: "uppercase",
+    color: "var(--md-sys-color-on-surface-variant)",
+    letterSpacing: "0.5px",
+  }
+});
+
+const SettingOptions = styled("div", {
+  base: {
+    display: "flex",
+    gap: "4px",
+    background: "var(--md-sys-color-surface-container-high)",
+    padding: "2px",
+    borderRadius: "var(--borderRadius-md)",
+  }
+});
+
+const OptionButton = styled("button", {
+  base: {
+    padding: "2px 8px",
+    fontSize: "0.75rem",
+    fontWeight: 600,
+    borderRadius: "var(--borderRadius-sm)",
+    cursor: "pointer",
+    transition: "all 0.15s",
+    color: "var(--md-sys-color-on-surface-variant)",
+    
+    _hover: {
+      background: "var(--md-sys-color-surface-container-highest)",
+    }
+  },
+  variants: {
+    active: {
+      true: {
+        background: "var(--md-sys-color-primary)",
+        color: "var(--md-sys-color-on-primary)",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+        _hover: {
+          background: "var(--md-sys-color-primary)",
+        }
+      }
+    }
   }
 });

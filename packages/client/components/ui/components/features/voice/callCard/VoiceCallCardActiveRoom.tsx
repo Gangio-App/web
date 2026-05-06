@@ -38,6 +38,7 @@ import { Channel, Message as MessageInterface } from "stoat.js";
  * Call card (active)
  */
 export function VoiceCallCardActiveRoom(props: { channel?: Channel }) {
+  const { t } = useLingui();
   return (
     <View>
       <Call>
