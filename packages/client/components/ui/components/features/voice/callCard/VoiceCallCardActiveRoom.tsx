@@ -1,5 +1,5 @@
 import { createEffect, Match, Show, Switch, createSignal, onCleanup, For } from "solid-js";
-import { t } from "@lingui-solid/solid/macro";
+import { useLingui, t } from "@lingui-solid/solid/macro";
 import {
   isTrackReference,
   TrackLoop,
