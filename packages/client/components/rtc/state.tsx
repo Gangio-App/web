@@ -11,7 +11,7 @@ import {
 import { useModals } from "@revolt/modal";
 import { RoomContext } from "solid-livekit-components";
 
-import { Room, Track, ScreenSharePresets } from "livekit-client";
+import { Room, Track } from "livekit-client";
 import { DenoiseTrackProcessor } from "livekit-rnnoise-processor";
 import { Channel } from "stoat.js";
 
@@ -39,17 +39,20 @@ export type ScreenShareResolution = "low" | "medium" | "high" | "ultra" | "4k";
 export type ScreenShareFrameRate = 15 | 24 | 30 | 60;
 
 /**
- * Maps each resolution tier to the closest LiveKit ScreenSharePreset.
- * "ultra" (1440p) uses h1080fps30 for the encoding profile — the actual
- * capture resolution is overridden via captureOptions.
+ * Custom encoding parameters per resolution tier.
+ * LiveKit's built-in ScreenSharePresets don't support 4K or 60fps,
+ * so we define our own bitrate ceilings and capture dimensions.
  */
-export const SCREEN_SHARE_PRESETS = {
-  low:    ScreenSharePresets.h360fps15,
-  medium: ScreenSharePresets.h720fps30,
-  high:   ScreenSharePresets.h1080fps30,
-  ultra:  ScreenSharePresets.h1080fps30, // encoding profile; capture is 1440p
-  "4k":   ScreenSharePresets.original,
-} as const;
+const SCREEN_SHARE_ENCODINGS: Record<
+  ScreenShareResolution,
+  { maxBitrate: number; width: number; height: number }
+> = {
+  low:    { maxBitrate: 800_000,   width: 640,  height: 360  },
+  medium: { maxBitrate: 2_000_000, width: 1280, height: 720  },
+  high:   { maxBitrate: 4_500_000, width: 1920, height: 1080 },
+  ultra:  { maxBitrate: 8_000_000, width: 2560, height: 1440 },
+  "4k":   { maxBitrate: 12_000_000, width: 3840, height: 2160 },
+};
 
 /**
  * Capture resolution dimensions per tier.
@@ -74,15 +77,19 @@ export function resolveFrameRate(fps: number): ScreenShareFrameRate {
 
 /**
  * Build LiveKit capture + publish options for a given resolution / framerate.
- * This is the single source of truth used by both initial start and live updates.
  */
 export function buildScreenShareOptions(
   resolution: ScreenShareResolution,
   frameRate: ScreenShareFrameRate,
   includeAudio: boolean,
 ) {
-  const preset = SCREEN_SHARE_PRESETS[resolution];
+  const encoding = SCREEN_SHARE_ENCODINGS[resolution];
   const dimensions = SCREEN_SHARE_DIMENSIONS[resolution];
+
+  // For 60fps, bump bitrate by 50%
+  const maxBitrate = frameRate === 60
+    ? Math.round(encoding.maxBitrate * 1.5)
+    : encoding.maxBitrate;
 
   const captureOptions = {
     audio: includeAudio,
@@ -96,19 +103,15 @@ export function buildScreenShareOptions(
 
   const publishOptions = {
     screenShareEncoding: {
-      ...preset.encoding,
-      // For 60 fps tiers bump the bitrate ceiling to avoid quality drops
-      maxBitrate:
-        frameRate === 60
-          ? Math.max(preset.encoding.maxBitrate ?? 0, 8_000_000)
-          : preset.encoding.maxBitrate,
+      maxBitrate,
       maxFramerate: frameRate,
     },
-    videoCodec: "vp9" as const,
+    videoCodec: (resolution === "4k" || resolution === "ultra") ? "vp9" as const : "h264" as const,
   };
 
   return { captureOptions, publishOptions };
 }
+
 
 // ---------------------------------------------------------------------------
 // Voice class
@@ -523,13 +526,12 @@ export function VoiceContext(props: { children: JSX.Element }) {
                 const fps = voice.screenshareFrameRate();
 
                 try {
-                  const stream = await navigator.mediaDevices.getUserMedia({
-                    audio: isScreen && voice.screenshareAudio() ? {
+                  const constraints = {
+                    audio: voice.screenshareAudio() ? {
                       mandatory: {
                         chromeMediaSource: "desktop",
-                        chromeMediaSourceId: sourceId,
                       }
-                    } : false as any,
+                    } : false,
                     video: {
                       mandatory: {
                         chromeMediaSource: "desktop",
@@ -539,32 +541,40 @@ export function VoiceContext(props: { children: JSX.Element }) {
                         maxFrameRate: fps,
                       }
                     }
-                  } as any);
+                  };
 
-                  if (!stream || stream.getTracks().length === 0) {
-                    throw new Error("Captured stream is empty");
+                  const stream = await navigator.mediaDevices.getUserMedia(constraints as any);
+
+                  if (!stream || stream.getVideoTracks().length === 0) {
+                    throw new Error("Captured stream is empty or missing video track");
                   }
 
                   resolve(stream);
                 } catch (err) {
-                  console.error("Primary capture failed, trying fallback", err);
-                  try {
-                    const stream = await navigator.mediaDevices.getUserMedia({
-                      audio: false,
-                      video: {
-                        mandatory: {
-                          chromeMediaSource: "desktop",
-                          chromeMediaSourceId: sourceId,
-                          maxWidth: dims.width,
-                          maxHeight: dims.height,
-                          maxFrameRate: fps,
+                  console.error("Primary screenshare capture failed", err);
+                  // Fallback without audio if audio was the cause
+                  if (voice.screenshareAudio()) {
+                    try {
+                      const stream = await navigator.mediaDevices.getUserMedia({
+                        audio: false,
+                        video: {
+                          mandatory: {
+                            chromeMediaSource: "desktop",
+                            chromeMediaSourceId: sourceId,
+                            maxWidth: dims.width,
+                            maxHeight: dims.height,
+                            maxFrameRate: fps,
+                          }
                         }
-                      }
-                    } as any);
-                    resolve(stream);
-                  } catch (finalErr) {
-                    console.error("Screenshare capture failed completely", finalErr);
-                    reject(finalErr);
+                      } as any);
+                      resolve(stream);
+                      return;
+                    } catch (finalErr) {
+                      console.error("Screenshare fallback failed", finalErr);
+                      reject(finalErr);
+                    }
+                  } else {
+                    reject(err);
                   }
                 }
               }
