@@ -1,5 +1,5 @@
 import { createEffect, Match, Show, Switch, createSignal, onCleanup, For } from "solid-js";
-import { useLingui, t } from "@lingui-solid/solid/macro";
+import { useLingui } from "@lingui-solid/solid/macro";
 import {
   isTrackReference,
   TrackLoop,
@@ -38,7 +38,6 @@ import { Channel, Message as MessageInterface } from "stoat.js";
  * Call card (active)
  */
 export function VoiceCallCardActiveRoom(props: { channel?: Channel }) {
-  const { t } = useLingui();
   return (
     <View>
       <Call>
@@ -334,6 +333,7 @@ function UserTile() {
   const participant = useEnsureParticipant();
   const track = useMaybeTrackRefContext();
   const voice = useVoice();
+  const { t } = useLingui();
 
   const isMuted = useIsMuted({
     participant,
@@ -477,15 +477,6 @@ function UserTile() {
             <VoiceStatefulUserIcons
               userId={participant.identity}
               muted={isMuted()}
-              deafened={(() => {
-                try {
-                  return JSON.parse(participant.metadata || "{}").deafened;
-                } catch {
-                  return false;
-                }
-              })()}
-              camera={!isVideoMuted()}
-              screenshare={participant.isScreenShareEnabled}
             />
             <Show when={isTrackReference(track) && !isVideoMuted()}>
               <FullscreenButtonIcon>
@@ -558,11 +549,15 @@ function ScreenshareTile() {
   const track = useMaybeTrackRefContext();
   const user = useUser(participant.identity);
   const voice = useVoice();
+  const { t } = useLingui();
 
   const isMuted = useIsMuted({
     participant,
     source: Track.Source.ScreenShareAudio,
   });
+
+  // Auto-pause: local user's own screenshare preview is always paused
+  const isOwnShare = () => isLocal(participant);
 
   let videoRef: HTMLDivElement | undefined;
   const [isFullscreen, setIsFullscreen] = createSignal(false);
@@ -580,22 +575,20 @@ function ScreenshareTile() {
     onCleanup(() => document.removeEventListener("fullscreenchange", handleFullscreenChange));
   });
 
+  // Auto-pause the local video element to save resources
   createEffect(() => {
-    if (isLocal(participant)) {
+    if (isOwnShare()) {
       const video = videoRef?.querySelector("video");
       if (video) {
-        if (voice.previewPaused()) {
-          video.pause();
-        } else {
-          video.play().catch(() => {});
-        }
+        video.pause();
       }
     }
   });
 
   const toggleFullscreen = (e: Event) => {
     if ((e.target as HTMLElement).closest('.controls-container') || (e.target as HTMLElement).closest('.top-controls')) return;
-    
+    // Don't allow fullscreen for own paused preview
+    if (isOwnShare()) return;
     if (!videoRef) return;
     if (!isTrackReference(track)) return;
     if (!document.fullscreenElement) {
@@ -611,7 +604,7 @@ function ScreenshareTile() {
       class={tile({ fullscreen: isFullscreen() }) + " group"}
       onClick={toggleFullscreen}
       style={{ 
-        cursor: isFullscreen() ? (showOverlay() ? "default" : "none") : "pointer",
+        cursor: isOwnShare() ? "default" : isFullscreen() ? (showOverlay() ? "default" : "none") : "pointer",
         display: isFullscreen() && isChatOpen() ? "flex" : "grid"
       }}
     >
@@ -656,33 +649,49 @@ function ScreenshareTile() {
           />
           LIVE
         </div>
-        <VideoTrack
-          style={{
-            "grid-area": "1/1",
-            "object-fit": "contain",
-            width: "100%",
-            height: "100%",
-            "will-change": "auto",
-            opacity: isLocal(participant) && voice.previewPaused() ? 0.3 : 1,
-            transition: "opacity 0.3s ease",
-          }}
-          trackRef={track as TrackReference}
-          manageSubscription={true}
-        />
-        <Show when={isLocal(participant) && voice.previewPaused()}>
+
+        <Show when={!isOwnShare()}>
+          {/* Remote user's screenshare: render live */}
+          <VideoTrack
+            style={{
+              "grid-area": "1/1",
+              "object-fit": "contain",
+              width: "100%",
+              height: "100%",
+              "will-change": "auto",
+            }}
+            trackRef={track as TrackReference}
+            manageSubscription={true}
+          />
+        </Show>
+
+        <Show when={isOwnShare()}>
+          {/* Own screenshare: auto-paused, show static overlay */}
+          <VideoTrack
+            style={{
+              "grid-area": "1/1",
+              "object-fit": "contain",
+              width: "100%",
+              height: "100%",
+              "will-change": "auto",
+              opacity: 0,
+            }}
+            trackRef={track as TrackReference}
+            manageSubscription={false}
+          />
           <PausedOverlay>
             <PausedIcon>
-              <Symbol size={48}>pause</Symbol>
+              <Symbol size={48}>screen_share</Symbol>
             </PausedIcon>
-            <PausedText>{t`Preview Paused`}</PausedText>
-            <PausedSubtext>{t`Saving resources`}</PausedSubtext>
+            <PausedText>{t`You are sharing your screen`}</PausedText>
+            <PausedSubtext>{t`Preview paused to save resources`}</PausedSubtext>
           </PausedOverlay>
         </Show>
 
         <Overlay
-          showOnHover
+          showOnHover={!isOwnShare()}
           style={{
-            opacity: isFullscreen() ? (showOverlay() ? 1 : 0) : undefined,
+            opacity: isOwnShare() ? 1 : isFullscreen() ? (showOverlay() ? 1 : 0) : undefined,
             "pointer-events": isFullscreen() && !showOverlay() ? "none" : undefined,
           }}
         >
@@ -691,9 +700,11 @@ function ScreenshareTile() {
             <Show when={isMuted()}>
               <Symbol size={18}>no_sound</Symbol>
             </Show>
-            <FullscreenButtonIcon>
-              <Symbol size={22}>{isFullscreen() ? "fullscreen_exit" : "fullscreen"}</Symbol>
-            </FullscreenButtonIcon>
+            <Show when={!isOwnShare()}>
+              <FullscreenButtonIcon>
+                <Symbol size={22}>{isFullscreen() ? "fullscreen_exit" : "fullscreen"}</Symbol>
+              </FullscreenButtonIcon>
+            </Show>
           </OverlayInner>
         </Overlay>
 

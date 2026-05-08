@@ -4528,3 +4528,24 @@ msgstr "Resume Preview"
 
 msgid "Pause Preview"
 msgstr "Pause Preview"
+
+msgid "No sources found"
+msgstr "No sources found"
+
+msgid "Make sure the application is not minimized."
+msgstr "Make sure the application is not minimized."
+
+msgid "Unmute"
+msgstr "Unmute"
+
+msgid "Deafen"
+msgstr "Deafen"
+
+msgid "Undeafen"
+msgstr "Undeafen"
+
+msgid "You are sharing your screen"
+msgstr "You are sharing your screen"
+
+msgid "Preview paused to save resources"
+msgstr "Preview paused to save resources"

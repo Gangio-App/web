@@ -4639,3 +4639,24 @@ msgstr "Önizlemeye Devam Et"
 
 msgid "Pause Preview"
 msgstr "Önizlemeyi Duraklat"
+
+msgid "No sources found"
+msgstr "Kaynak bulunamadı"
+
+msgid "Make sure the application is not minimized."
+msgstr "Uygulamanın simge durumuna küçültülmediğinden emin olun."
+
+msgid "Unmute"
+msgstr "Sesi Aç"
+
+msgid "Deafen"
+msgstr "Sağırlaştır"
+
+msgid "Undeafen"
+msgstr "Sağırlaştırmayı Kaldır"
+
+msgid "You are sharing your screen"
+msgstr "Ekranınızı paylaşıyorsunuz"
+
+msgid "Preview paused to save resources"
+msgstr "Kaynak tasarrufu için önizleme duraklatıldı"

@@ -1,9 +1,7 @@
 import { createResource, createSignal, For, Show, createEffect, onCleanup } from "solid-js";
-import { useLingui } from "@lingui-solid/solid/macro";
 import { styled } from "styled-system/jsx";
-import { Dialog, DialogProps, Button, IconButton } from "@revolt/ui";
+import { Dialog, DialogProps, Button } from "@revolt/ui";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
-import { useVoice, ScreenShareResolution, ScreenShareFrameRate } from "@revolt/rtc";
 import { Modals } from "../types";
 
 const TABS = ["Applications", "Entire Screen"] as const;
@@ -18,26 +16,7 @@ type DesktopSource = {
 };
 
 export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "desktop_screenshare" }) {
-  const { t } = useLingui();
-  const voice = useVoice();
   const [tab, setTab] = createSignal<TabType>("Applications");
-
-  const [resolution, setResolution] = createSignal<ScreenShareResolution>(voice.screenshareResolution());
-  const [fps, setFps] = createSignal<ScreenShareFrameRate>(voice.screenshareFrameRate());
-  const [audio, setAudio] = createSignal(voice.screenshareAudio());
-
-  const resolutions: { label: string; value: ScreenShareResolution }[] = [
-    { label: "1080p", value: "high" },
-    { label: "720p", value: "medium" },
-    { label: "480p", value: "low" },
-  ];
-
-  const frameRates: { label: string; value: ScreenShareFrameRate }[] = [
-    { label: "60", value: 60 },
-    { label: "30", value: 30 },
-    { label: "24", value: 24 },
-    { label: "15", value: 15 },
-  ];
 
   const fetchSources = async () => {
     if ((window as any).native?.getDesktopSources) {
@@ -61,6 +40,7 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
   const filteredSources = () => {
     if (!sources()) return [];
     if (tab() === "Applications") {
+      // Filter for windows, making sure we don't accidentally hide anything
       return sources()!.filter(s => s.id.startsWith("window"));
     } else {
       return sources()!.filter(s => s.id.startsWith("screen"));
@@ -68,10 +48,6 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
   };
 
   const handleSelect = (id: string) => {
-    // Persist the user's chosen quality settings before triggering capture
-    voice.setScreenshareResolution(resolution());
-    voice.setScreenshareFrameRate(fps());
-    voice.setScreenshareAudio(audio());
     props.callback(id);
     props.onClose();
   };
@@ -81,6 +57,7 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
     props.onClose();
   };
 
+  // Prevent default close behavior since we want to pass undefined if canceled.
   const handlePropClose = () => {
     handleClose();
   };
@@ -91,92 +68,40 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
       onClose={handlePropClose}
       title={
         <div style={{ display: "flex", "align-items": "center", gap: "var(--gap-sm)" }}>
-          {t`Share your screen`}
+          Share your screen
           <span style={{ 
             background: "var(--md-sys-color-primary)", 
             color: "var(--md-sys-color-on-primary)", 
-            "font-size": "0.65rem", 
+            "font-size": "0.75rem", 
             padding: "2px 8px", 
             "border-radius": "var(--borderRadius-full)", 
             "font-weight": 700, 
             "letter-spacing": "0.5px", 
             "text-transform": "uppercase" 
           }}>
-            {t`New`}
+            New
           </span>
         </div>
       }
-      actions={[{ text: t`Cancel`, onClick: handleClose }]}
+      actions={[{ text: "Cancel", onClick: handleClose }]}
     >
       <div style={{ width: "800px", "max-width": "100%", height: "550px", display: "flex", "flex-direction": "column" }}>
         <TabsContainer>
           <For each={TABS}>
-            {(tabItem) => (
-              <TabButton active={tab() === tabItem} onClick={() => setTab(tabItem)}>
-                {tabItem === "Applications" 
-                  ? t`Applications`
-                  : t`Entire Screen`}
+            {t => (
+              <TabButton active={tab() === t} onClick={() => setTab(t)}>
+                {t}
               </TabButton>
             )}
           </For>
         </TabsContainer>
 
-        <SettingsRow>
-          <SettingGroup>
-            <SettingLabel>{t`Resolution`}</SettingLabel>
-            <SettingOptions>
-              <For each={resolutions}>
-                {res => (
-                  <OptionButton 
-                    active={resolution() === res.value} 
-                    onClick={() => setResolution(res.value)}
-                  >
-                    {res.label}
-                  </OptionButton>
-                )}
-              </For>
-            </SettingOptions>
-          </SettingGroup>
-
-          <SettingGroup>
-            <SettingLabel>{t`Frame Rate`}</SettingLabel>
-            <SettingOptions>
-              <For each={frameRates}>
-                {f => (
-                  <OptionButton 
-                    active={fps() === f.value} 
-                    onClick={() => setFps(f.value)}
-                  >
-                    {f.label}
-                  </OptionButton>
-                )}
-              </For>
-            </SettingOptions>
-          </SettingGroup>
-
-          <SettingGroup style={{ "flex": "0 0 auto" }}>
-            <SettingLabel>{t`System Audio`}</SettingLabel>
-            <div style={{ display: "flex", "align-items": "center", gap: "var(--gap-sm)" }}>
-              <IconButton 
-                variant={audio() ? "filled" : "tonal"} 
-                size="sm" 
-                onPress={() => setAudio(!audio())}
-              >
-                <Symbol>{audio() ? "volume_up" : "volume_off"}</Symbol>
-              </IconButton>
-              <span style={{ "font-size": "0.75rem", color: audio() ? "var(--md-sys-color-primary)" : "var(--md-sys-color-on-surface-variant)" }}>
-                {audio() ? t`Enabled` : t`Disabled`}
-              </span>
-            </div>
-          </SettingGroup>
-        </SettingsRow>
-
-        <div style={{ padding: "var(--gap-sm) var(--gap-md)", color: "var(--md-sys-color-on-surface-variant)", "font-size": "0.8rem", display: "flex", "align-items": "center", gap: "var(--gap-xs)", background: "var(--md-sys-color-surface-container-low)", margin: "0 var(--gap-md) var(--gap-md)", "border-radius": "var(--borderRadius-md)" }}>
+        <div style={{ padding: "0 var(--gap-md) var(--gap-sm)", color: "var(--md-sys-color-on-surface-variant)", "font-size": "0.85rem", display: "flex", "align-items": "center", gap: "var(--gap-xs)" }}>
           <Symbol size={16}>info</Symbol>
-          <span>{t`Tip: For best results, use Borderless Fullscreen. Audio capture is currently optimized for Entire Screen sharing.`}</span>
+          <span>Tip: If a game is missing or turns black when you click away, use <b>Borderless Fullscreen</b>. Audio is supported on <b>GANGIO</b> Desktop.</span>
         </div>
 
-        <Show when={!sources.loading} fallback={<div style={{ flex: 1, display: "flex", "align-items": "center", "justify-content": "center", color: "var(--md-sys-color-on-surface-variant)" }}>{t`Loading sources...`}</div>}>
+        <Show when={!sources.loading} fallback={<div style={{ padding: "var(--gap-xl)", "text-align": "center" }}>Loading sources...</div>}>
           <GridWrapper>
             <Grid>
               <For each={filteredSources()}>
@@ -202,7 +127,7 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
                          />
                        </Show>
                      </ThumbnailImageWrapper>
-                     <ThumbnailName title={source.name}>{source.name}</ThumbnailName>
+                     <ThumbnailName>{source.name}</ThumbnailName>
                    </ThumbnailContainer>
                   );
                 }}
@@ -214,10 +139,6 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
     </Dialog>
   );
 }
-
-// ---------------------------------------------------------------------------
-// Styled Components
-// ---------------------------------------------------------------------------
 
 const TabsContainer = styled("div", {
   base: {
@@ -280,7 +201,7 @@ const ThumbnailContainer = styled("div", {
     border: "2px solid transparent",
     transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
     boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-    overflow: "hidden",
+    overflow: "hidden", // clip image and names flush!
     
     _hover: {
       transform: "translateY(-4px)",
@@ -346,108 +267,5 @@ const ThumbnailName = styled("div", {
     textOverflow: "ellipsis",
     textAlign: "center",
     padding: "var(--gap-sm)",
-  }
-});
-
-const SettingsRow = styled("div", {
-  base: {
-    display: "flex",
-    gap: "var(--gap-md)",
-    padding: "0 var(--gap-md) var(--gap-md)",
-    borderBottom: "1px solid var(--md-sys-color-outline-variant)",
-    alignItems: "flex-end",
-    marginBottom: "var(--gap-sm)",
-  }
-});
-
-const SettingGroup = styled("div", {
-  base: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-    flex: 1,
-  }
-});
-
-const SettingLabel = styled("div", {
-  base: {
-    fontSize: "0.65rem",
-    fontWeight: 800,
-    textTransform: "uppercase",
-    color: "var(--md-sys-color-on-surface-variant)",
-    letterSpacing: "0.8px",
-    opacity: 0.8,
-  }
-});
-
-const SettingOptions = styled("div", {
-  base: {
-    display: "flex",
-    gap: "2px",
-    background: "var(--md-sys-color-surface-container-high)",
-    padding: "3px",
-    borderRadius: "var(--borderRadius-lg)",
-  }
-});
-
-const OptionButton = styled("button", {
-  base: {
-    flex: 1,
-    padding: "6px 2px",
-    fontSize: "0.7rem",
-    fontWeight: 700,
-    borderRadius: "var(--borderRadius-md)",
-    cursor: "pointer",
-    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-    color: "var(--md-sys-color-on-surface-variant)",
-    textAlign: "center",
-    
-    _hover: {
-      background: "var(--md-sys-color-surface-container-highest)",
-      color: "var(--md-sys-color-on-surface)",
-    }
-  },
-  variants: {
-    active: {
-      true: {
-        background: "var(--md-sys-color-primary)",
-        color: "var(--md-sys-color-on-primary)",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
-        _hover: {
-          background: "var(--md-sys-color-primary)",
-          color: "var(--md-sys-color-on-primary)",
-        }
-      }
-    }
-  }
-});
-
-const AudioToggle = styled("button", {
-  base: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "36px",
-    height: "36px",
-    borderRadius: "var(--borderRadius-lg)",
-    cursor: "pointer",
-    transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
-    color: "var(--md-sys-color-on-surface-variant)",
-    background: "var(--md-sys-color-surface-container-high)",
-    
-    _hover: {
-      background: "var(--md-sys-color-surface-container-highest)",
-    }
-  },
-  variants: {
-    active: {
-      true: {
-        background: "var(--md-sys-color-primary)",
-        color: "var(--md-sys-color-on-primary)",
-        _hover: {
-          background: "var(--md-sys-color-primary)",
-        }
-      }
-    }
   }
 });
