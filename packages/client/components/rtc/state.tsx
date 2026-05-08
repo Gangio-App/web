@@ -403,6 +403,11 @@ class Voice {
     }
   }
 
+  /** Update audio preference without restarting stream */
+  setScreenshareAudio(enabled: boolean) {
+    this.#setScreenshareAudio(enabled);
+  }
+
   /**
    * Update screenshare quality while a share is already active.
    * Restarts the screen share track with new capture + publish options.
@@ -495,13 +500,9 @@ export function VoiceContext(props: { children: JSX.Element }) {
                 const sourceId = typeof data === "string" ? data : data.id;
                 const includeAudio = typeof data === "string" ? voice.screenshareAudio() : data.includeAudio;
 
-                // Sync the selected audio preference back to voice state
+                // Sync the selected audio preference back to voice state WITHOUT restarting
                 if (typeof data !== "string") {
-                  voice.updateScreenShareSettings(
-                    voice.screenshareResolution(),
-                    voice.screenshareFrameRate(),
-                    includeAudio
-                  );
+                  voice.setScreenshareAudio(includeAudio);
                 }
 
                 const isScreen = sourceId.startsWith("screen");
@@ -512,7 +513,7 @@ export function VoiceContext(props: { children: JSX.Element }) {
 
                 try {
                   const stream = await navigator.mediaDevices.getUserMedia({
-                    audio: isScreen && voice.screenshareAudio() ? {
+                    audio: isScreen && includeAudio ? {
                       mandatory: {
                         chromeMediaSource: "desktop",
                         chromeMediaSourceId: sourceId,
