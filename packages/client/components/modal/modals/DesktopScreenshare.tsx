@@ -1,5 +1,6 @@
 import { createResource, createSignal, For, Show, createEffect, onCleanup } from "solid-js";
 import { styled } from "styled-system/jsx";
+import { useLingui } from "@lingui-solid/solid/macro";
 import { Dialog, DialogProps, Button } from "@revolt/ui";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 import { Modals } from "../types";
@@ -17,6 +18,7 @@ type DesktopSource = {
 
 export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "desktop_screenshare" }) {
   const [tab, setTab] = createSignal<TabType>("Applications");
+  const [includeAudio, setIncludeAudio] = createSignal(true);
 
   const fetchSources = async () => {
     if ((window as any).native?.getDesktopSources) {
@@ -48,7 +50,7 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
   };
 
   const handleSelect = (id: string) => {
-    props.callback(id);
+    props.callback({ id, includeAudio: includeAudio() });
     props.onClose();
   };
 
@@ -135,6 +137,50 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
             </Grid>
           </GridWrapper>
         </Show>
+
+        <div style={{ 
+          padding: "var(--gap-md) var(--gap-lg)", 
+          borderTop: "1px solid var(--md-sys-color-outline-variant)",
+          display: "flex",
+          "align-items": "center",
+          "justify-content": "space-between",
+          background: "var(--md-sys-color-surface-container-low)"
+        }}>
+          <div 
+            onClick={() => setIncludeAudio(!includeAudio())}
+            style={{ 
+              display: "flex", 
+              "align-items": "center", 
+              gap: "var(--gap-sm)", 
+              cursor: "pointer",
+              userSelect: "none"
+            }}
+          >
+            <div style={{
+              width: "20px",
+              height: "20px",
+              borderRadius: "4px",
+              border: "2px solid var(--md-sys-color-primary)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: includeAudio() ? "var(--md-sys-color-primary)" : "transparent",
+              transition: "all 0.2s"
+            }}>
+              <Show when={includeAudio()}>
+                <Symbol size={16} style={{ color: "var(--md-sys-color-on-primary)" }}>check</Symbol>
+              </Show>
+            </div>
+            <div style={{ display: "flex", "flex-direction": "column" }}>
+              <span style={{ fontWeight: 600, fontSize: "0.9rem" }}>{t`Share Audio`}</span>
+              <span style={{ fontSize: "0.75rem", opacity: 0.7 }}>{t`Include system sound from this source`}</span>
+            </div>
+          </div>
+          
+          <div style={{ opacity: 0.5, "font-size": "0.75rem", "font-style": "italic" }}>
+            Select a source to start sharing
+          </div>
+        </div>
       </div>
     </Dialog>
   );

@@ -313,6 +313,13 @@ class Voice {
     const next = !this.deafen();
     this.#setDeafen(next);
     void playSound(next ? "user_deafen" : "user_undeafen");
+
+    const room = this.room();
+    if (room) {
+      await room.localParticipant.setAttributes({
+        deafened: next ? "true" : "false",
+      });
+    }
   }
 
   async toggleMute() {
@@ -480,9 +487,21 @@ export function VoiceContext(props: { children: JSX.Element }) {
           return new Promise((resolve, reject) => {
             modals.openModal({
               type: "desktop_screenshare",
-              callback: async (sourceId?: string) => {
-                if (!sourceId) {
+              callback: async (data?: string | { id: string; includeAudio: boolean }) => {
+                if (!data) {
                   return reject(new DOMException("Canceled by user", "NotAllowedError"));
+                }
+
+                const sourceId = typeof data === "string" ? data : data.id;
+                const includeAudio = typeof data === "string" ? voice.screenshareAudio() : data.includeAudio;
+
+                // Sync the selected audio preference back to voice state
+                if (typeof data !== "string") {
+                  voice.updateScreenShareSettings(
+                    voice.screenshareResolution(),
+                    voice.screenshareFrameRate(),
+                    includeAudio
+                  );
                 }
 
                 const isScreen = sourceId.startsWith("screen");

@@ -4660,3 +4660,12 @@ msgstr "Ekranınızı paylaşıyorsunuz"
 
 msgid "Preview paused to save resources"
 msgstr "Kaynak tasarrufu için önizleme duraklatıldı"
+
+msgid "LIVE"
+msgstr "CANLI"
+
+msgid "Share Audio"
+msgstr "Sesi Paylaş"
+
+msgid "Include system sound from this source"
+msgstr "Bu kaynaktan sistem sesini dahil et"

@@ -320,7 +320,7 @@ export type Modals =
     }
   | {
       type: "desktop_screenshare";
-      callback: (sourceId?: string) => void;
+      callback: (data?: string | { id: string; includeAudio: boolean }) => void;
     }
   | {
       type: "voice_room";

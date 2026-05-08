@@ -477,6 +477,7 @@ function UserTile() {
             <VoiceStatefulUserIcons
               userId={participant.identity}
               muted={isMuted()}
+              deafened={participant.attributes.deafened === "true"}
             />
             <Show when={isTrackReference(track) && !isVideoMuted()}>
               <FullscreenButtonIcon>
