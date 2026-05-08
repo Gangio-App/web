@@ -40,21 +40,17 @@ export type ScreenShareFrameRate = 15 | 24 | 30 | 60;
 
 /**
  * Maps each resolution tier to the closest LiveKit ScreenSharePreset.
- * "ultra" (1440p) uses h1080fps30 for the encoding profile — the actual
- * capture resolution is overridden via captureOptions.
  */
 export const SCREEN_SHARE_PRESETS = {
   low:    ScreenSharePresets.h360fps15,
   medium: ScreenSharePresets.h720fps30,
   high:   ScreenSharePresets.h1080fps30,
-  ultra:  ScreenSharePresets.h1080fps30, // encoding profile; capture is 1440p
+  ultra:  ScreenSharePresets.h1080fps30, 
   "4k":   ScreenSharePresets.original,
 } as const;
 
-
 /**
  * Capture resolution dimensions per tier.
- * These are passed into getDisplayMedia / LiveKit captureOptions.
  */
 const SCREEN_SHARE_DIMENSIONS: Record<
   ScreenShareResolution,
@@ -67,16 +63,11 @@ const SCREEN_SHARE_DIMENSIONS: Record<
   "4k":   { width: 3840, height: 2160 },
 };
 
-/** Clamp any stored framerate to a valid option; fall back to 30. */
 export function resolveFrameRate(fps: number): ScreenShareFrameRate {
   if (fps === 15 || fps === 24 || fps === 60) return fps;
   return 30;
 }
 
-/**
- * Build LiveKit capture + publish options for a given resolution / framerate.
- * This is the single source of truth used by both initial start and live updates.
- */
 export function buildScreenShareOptions(
   resolution: ScreenShareResolution,
   frameRate: ScreenShareFrameRate,
@@ -85,20 +76,24 @@ export function buildScreenShareOptions(
   const preset = SCREEN_SHARE_PRESETS[resolution];
   const dimensions = SCREEN_SHARE_DIMENSIONS[resolution];
 
-  const captureOptions = {
-    audio: includeAudio,
-    selfBrowserSurface: "include" as const,
-    systemAudio: "include" as const,
-    resolution: {
-      ...dimensions,
-      frameRate,
-    },
-  };
+    const captureOptions = {
+      audio: includeAudio,
+      selfBrowserSurface: "include" as const,
+      systemAudio: "include" as const,
+      video: true, // Fallback to true for maximum compatibility on browser
+    };
+
+    // If we have specific dimensions, try to use them
+    if (dimensions) {
+      (captureOptions.video as any) = {
+        ...dimensions,
+        frameRate,
+      };
+    }
 
   const publishOptions = {
     screenShareEncoding: {
       ...preset.encoding,
-      // For 60 fps tiers bump the bitrate ceiling to avoid quality drops
       maxBitrate:
         frameRate === 60
           ? Math.max(preset.encoding.maxBitrate ?? 0, 8_000_000)
@@ -110,10 +105,6 @@ export function buildScreenShareOptions(
 
   return { captureOptions, publishOptions };
 }
-
-// ---------------------------------------------------------------------------
-// Voice class
-// ---------------------------------------------------------------------------
 
 class Voice {
   #settings: VoiceSettings;
@@ -140,18 +131,15 @@ class Voice {
   screenshare: Accessor<boolean>;
   #setScreenshare: Setter<boolean>;
 
-  /** Currently active screenshare resolution tier */
   screenshareResolution: Accessor<ScreenShareResolution>;
   #setScreenshareResolution: Setter<ScreenShareResolution>;
 
-  /** Currently active screenshare framerate */
   screenshareFrameRate: Accessor<ScreenShareFrameRate>;
   #setScreenshareFrameRate: Setter<ScreenShareFrameRate>;
 
   screenshareAudio: Accessor<boolean>;
   #setScreenshareAudio: Setter<boolean>;
 
-  /** Whether the local preview is paused to save resources */
   previewPaused: Accessor<boolean>;
   #setPreviewPaused: Setter<boolean>;
 
@@ -189,7 +177,6 @@ class Voice {
     this.screenshare = screenshare;
     this.#setScreenshare = setScreenshare;
 
-    // Screenshare quality state — defaults to 1080p @ 30fps, no audio
     const [screenshareResolution, setScreenshareResolution] =
       createSignal<ScreenShareResolution>("high");
     this.screenshareResolution = screenshareResolution;
@@ -221,7 +208,6 @@ class Voice {
       audioOutput: {
         deviceId: this.#settings.preferredAudioOutputDevice,
       },
-      // Room-level defaults — these are overridden per-call in toggleScreenshare
       screenShareCaptureDefaults: {
         resolution: { width: 1920, height: 1080, frameRate: 30 },
       },
@@ -351,18 +337,17 @@ class Voice {
     this.#setPreviewPaused(!this.previewPaused());
   }
 
-  /**
-   * Start or stop screensharing using the currently stored quality settings.
-   * Pass explicit overrides (e.g. from a settings modal) to start with
-   * non-default quality without needing a separate updateScreenShareSettings call.
-   */
   async toggleScreenshare(opts?: {
     resolution?: ScreenShareResolution;
     frameRate?: ScreenShareFrameRate;
     includeAudio?: boolean;
   }) {
+    console.info("[Voice] toggleScreenshare called", opts);
     const room = this.room();
-    if (!room?.localParticipant || this.state() !== "CONNECTED") return;
+    if (!room?.localParticipant || this.state() !== "CONNECTED") {
+      console.warn("[Voice] Cannot toggle screenshare: room or state invalid", { state: this.state(), hasParticipant: !!room?.localParticipant });
+      return;
+    }
 
     const isEnabled = room.localParticipant.isScreenShareEnabled;
 
@@ -376,7 +361,6 @@ class Voice {
       return;
     }
 
-    // Merge caller overrides into stored state
     const resolution = opts?.resolution ?? this.screenshareResolution();
     const frameRate = opts?.frameRate ?? this.screenshareFrameRate();
     const includeAudio = opts?.includeAudio ?? this.screenshareAudio();
@@ -388,13 +372,14 @@ class Voice {
     );
 
     try {
+      console.info("[Voice] calling setScreenShareEnabled(true)", captureOptions);
       await room.localParticipant.setScreenShareEnabled(
         true,
         captureOptions,
         publishOptions,
       );
+      console.info("[Voice] setScreenShareEnabled(true) success");
 
-      // Persist the settings that were actually used
       batch(() => {
         this.#setScreenshareResolution(resolution);
         this.#setScreenshareFrameRate(frameRate);
@@ -407,16 +392,10 @@ class Voice {
     }
   }
 
-  /** Update audio preference without restarting stream */
   setScreenshareAudio(enabled: boolean) {
     this.#setScreenshareAudio(enabled);
   }
 
-  /**
-   * Update screenshare quality while a share is already active.
-   * Restarts the screen share track with new capture + publish options.
-   * No-op if not currently sharing.
-   */
   async updateScreenShareSettings(
     resolution: ScreenShareResolution,
     frameRate: ScreenShareFrameRate,
@@ -424,7 +403,6 @@ class Voice {
   ) {
     const room = this.room();
     if (!room?.localParticipant || !room.localParticipant.isScreenShareEnabled) {
-       // Just update the settings for next time
        batch(() => {
           this.#setScreenshareResolution(resolution);
           this.#setScreenshareFrameRate(frameRate);
@@ -440,7 +418,6 @@ class Voice {
     );
 
     try {
-      // Stop then restart with new options — LiveKit has no "update" API for screenshare
       await room.localParticipant.setScreenShareEnabled(false);
       await room.localParticipant.setScreenShareEnabled(
         true,
@@ -456,7 +433,6 @@ class Voice {
       });
     } catch (e) {
       console.error("Failed to update screenshare settings", e);
-      // If restart failed, mark as stopped
       this.#setScreenshare(room.localParticipant.isScreenShareEnabled);
     }
   }
@@ -480,9 +456,6 @@ class Voice {
 
 const voiceContext = createContext<Voice>(null as unknown as Voice);
 
-/**
- * Mount global voice context and room audio manager
- */
 export function VoiceContext(props: { children: JSX.Element }) {
   const state = useState();
   const voice = new Voice(state.voice);
@@ -490,13 +463,19 @@ export function VoiceContext(props: { children: JSX.Element }) {
 
   createEffect(() => {
     if ((window as any).native?.getDesktopSources) {
-      // Monkey-patch to use our own Electron Screenshare picker since Chromium's is missing
       if (!navigator.mediaDevices.getDisplayMedia.toString().includes("desktop_screenshare")) {
         navigator.mediaDevices.getDisplayMedia = async () => {
+          console.info("[Native] getDisplayMedia intercept triggered");
+          if (!modals) {
+            console.error("[Native] Modals context not available in monkey-patch!");
+            return Promise.reject(new Error("Modals not available"));
+          }
           return new Promise((resolve, reject) => {
+            console.info("[Native] Opening desktop_screenshare modal...");
             modals.openModal({
               type: "desktop_screenshare",
               callback: async (data?: string | { id: string; includeAudio: boolean }) => {
+                console.info("[Native] Modal callback data:", data);
                 if (!data) {
                   return reject(new DOMException("Canceled by user", "NotAllowedError"));
                 }
@@ -504,15 +483,11 @@ export function VoiceContext(props: { children: JSX.Element }) {
                 const sourceId = typeof data === "string" ? data : data.id;
                 const includeAudio = typeof data === "string" ? voice.screenshareAudio() : data.includeAudio;
 
-                // Sync the selected audio preference back to voice state WITHOUT restarting
                 if (typeof data !== "string") {
-                  console.info("Screenshare modal returned:", data);
                   voice.setScreenshareAudio(includeAudio);
                 }
 
                 const isScreen = sourceId.startsWith("screen");
-
-                // Use the current quality settings from voice state
                 const dims = SCREEN_SHARE_DIMENSIONS[voice.screenshareResolution()];
                 const fps = voice.screenshareFrameRate();
 
@@ -571,10 +546,12 @@ export function VoiceContext(props: { children: JSX.Element }) {
     <voiceContext.Provider value={voice}>
       <RoomContext.Provider value={voice.room}>
         <VoiceCallCardContext>
-          {props.children}
-          <InRoom>
-            <RoomAudioManager />
-          </InRoom>
+          <>
+            {props.children}
+            <InRoom>
+              <RoomAudioManager />
+            </InRoom>
+          </>
         </VoiceCallCardContext>
       </RoomContext.Provider>
     </voiceContext.Provider>

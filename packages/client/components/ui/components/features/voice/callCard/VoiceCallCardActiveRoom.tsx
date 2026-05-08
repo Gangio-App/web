@@ -86,8 +86,24 @@ function Participants() {
     { onlySubscribed: false },
   );
 
+  const count = () => tracks().length;
+
   return (
-    <Grid>
+    <Grid
+      style={{
+        "grid-template-columns": count() === 1 
+          ? "1fr" 
+          : count() === 2
+            ? "repeat(2, 1fr)"
+            : count() <= 4
+              ? "repeat(2, 1fr)"
+              : count() <= 6
+                ? "repeat(3, 1fr)"
+                : "repeat(auto-fill, minmax(240px, 1fr))",
+        "max-width": count() === 1 ? "800px" : "100%",
+        "margin": "0 auto",
+      }}
+    >
       <TrackLoop tracks={tracks}>{() => <ParticipantTile />}</TrackLoop>
     </Grid>
   );
@@ -98,9 +114,9 @@ const Grid = styled("div", {
     display: "grid",
     gap: "var(--gap-md)",
     padding: "var(--gap-md)",
-    gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
     height: "100%",
     alignContent: "center",
+    transition: "all 0.3s ease",
   },
 });
 
@@ -108,14 +124,16 @@ const Grid = styled("div", {
  * Individual participant tile
  */
 function ParticipantTile() {
-  const track = useTrackRefContext();
+  const track = useMaybeTrackRefContext();
 
   return (
-    <Switch fallback={<UserTile />}>
-      <Match when={track.source === Track.Source.ScreenShare}>
-        <ScreenshareTile />
-      </Match>
-    </Switch>
+    <Show when={track}>
+      <Switch fallback={<UserTile />}>
+        <Match when={track!.source === Track.Source.ScreenShare}>
+          <ScreenshareTile />
+        </Match>
+      </Switch>
+    </Show>
   );
 }
 
