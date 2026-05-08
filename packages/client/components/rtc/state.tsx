@@ -35,7 +35,7 @@ type State =
 // Screen share quality types & presets
 // ---------------------------------------------------------------------------
 
-export type ScreenShareResolution = "low" | "medium" | "high" | "ultra" | "4k";
+export type ScreenShareResolution = "low" | "medium" | "high";
 export type ScreenShareFrameRate = 15 | 24 | 30 | 60;
 
 /**
@@ -50,8 +50,6 @@ const SCREEN_SHARE_ENCODINGS: Record<
   low:    { maxBitrate: 800_000,   width: 640,  height: 360  },
   medium: { maxBitrate: 2_000_000, width: 1280, height: 720  },
   high:   { maxBitrate: 4_500_000, width: 1920, height: 1080 },
-  ultra:  { maxBitrate: 8_000_000, width: 2560, height: 1440 },
-  "4k":   { maxBitrate: 12_000_000, width: 3840, height: 2160 },
 };
 
 /**
@@ -65,8 +63,6 @@ const SCREEN_SHARE_DIMENSIONS: Record<
   low:    { width: 640,  height: 360  },
   medium: { width: 1280, height: 720  },
   high:   { width: 1920, height: 1080 },
-  ultra:  { width: 2560, height: 1440 },
-  "4k":   { width: 3840, height: 2160 },
 };
 
 /** Clamp any stored framerate to a valid option; fall back to 30. */
@@ -106,7 +102,7 @@ export function buildScreenShareOptions(
       maxBitrate,
       maxFramerate: frameRate,
     },
-    videoCodec: (resolution === "4k" || resolution === "ultra") ? "vp9" as const : "h264" as const,
+    videoCodec: "h264" as const,
   };
 
   return { captureOptions, publishOptions };
@@ -347,6 +343,17 @@ class Voice {
     const next = !this.deafen();
     this.#setDeafen(next);
     void playSound(next ? "user_deafen" : "user_undeafen");
+
+    const room = this.room();
+    if (room) {
+      try {
+        const metadata = JSON.parse(room.localParticipant.metadata || "{}");
+        metadata.deafened = next;
+        await room.localParticipant.setMetadata(JSON.stringify(metadata));
+      } catch (e) {
+        console.error("Failed to update deafen metadata", e);
+      }
+    }
   }
 
   async toggleMute() {
@@ -423,6 +430,7 @@ class Voice {
         this.#setScreenshareFrameRate(frameRate);
         this.#setScreenshareAudio(includeAudio);
         this.#setScreenshare(true);
+        this.#setPreviewPaused(true);
       });
     } catch (e) {
       console.error("Failed to start screenshare", e);

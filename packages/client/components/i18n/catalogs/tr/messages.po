@@ -4582,3 +4582,60 @@ msgstr "Önizleme Duraklatıldı"
 
 msgid "Saving resources"
 msgstr "Kaynak tasarrufu yapılıyor"
+
+msgid "Share your screen"
+msgstr "Ekranını paylaş"
+
+msgid "New"
+msgstr "Yeni"
+
+msgid "Applications"
+msgstr "Uygulamalar"
+
+msgid "Entire Screen"
+msgstr "Tüm Ekran"
+
+msgid "Resolution"
+msgstr "Çözünürlük"
+
+msgid "Frame Rate"
+msgstr "Kare Hızı"
+
+msgid "System Audio"
+msgstr "Sistem Sesi"
+
+msgid "Enabled"
+msgstr "Etkin"
+
+msgid "Disabled"
+msgstr "Devre Dışı"
+
+msgid "Tip: For best results, use Borderless Fullscreen. Audio capture is currently optimized for Entire Screen sharing."
+msgstr "İpucu: En iyi sonuçlar için Çerçevesiz Tam Ekran kullanın. Ses yakalama şu anda Tüm Ekran paylaşımı için optimize edilmiştir."
+
+msgid "Loading sources..."
+msgstr "Kaynaklar yükleniyor..."
+
+msgid "Missing permission"
+msgstr "Yetki eksik"
+
+msgid "Stop Camera"
+msgstr "Kamerayı Durdur"
+
+msgid "Start Camera"
+msgstr "Kamerayı Başlat"
+
+msgid "Stop Sharing"
+msgstr "Paylaşımı Durdur"
+
+msgid "Share Screen"
+msgstr "Ekran Paylaş"
+
+msgid "Coming soon! ��"
+msgstr "Yakında gelecek! 👀"
+
+msgid "Resume Preview"
+msgstr "Önizlemeye Devam Et"
+
+msgid "Pause Preview"
+msgstr "Önizlemeyi Duraklat"

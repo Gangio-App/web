@@ -4471,3 +4471,60 @@ msgstr "Preview Paused"
 
 msgid "Saving resources"
 msgstr "Saving resources"
+
+msgid "Share your screen"
+msgstr "Share your screen"
+
+msgid "New"
+msgstr "New"
+
+msgid "Applications"
+msgstr "Applications"
+
+msgid "Entire Screen"
+msgstr "Entire Screen"
+
+msgid "Resolution"
+msgstr "Resolution"
+
+msgid "Frame Rate"
+msgstr "Frame Rate"
+
+msgid "System Audio"
+msgstr "System Audio"
+
+msgid "Enabled"
+msgstr "Enabled"
+
+msgid "Disabled"
+msgstr "Disabled"
+
+msgid "Tip: For best results, use Borderless Fullscreen. Audio capture is currently optimized for Entire Screen sharing."
+msgstr "Tip: For best results, use Borderless Fullscreen. Audio capture is currently optimized for Entire Screen sharing."
+
+msgid "Loading sources..."
+msgstr "Loading sources..."
+
+msgid "Missing permission"
+msgstr "Missing permission"
+
+msgid "Stop Camera"
+msgstr "Stop Camera"
+
+msgid "Start Camera"
+msgstr "Start Camera"
+
+msgid "Stop Sharing"
+msgstr "Stop Sharing"
+
+msgid "Share Screen"
+msgstr "Share Screen"
+
+msgid "Coming soon! 👀"
+msgstr "Coming soon! 👀"
+
+msgid "Resume Preview"
+msgstr "Resume Preview"
+
+msgid "Pause Preview"
+msgstr "Pause Preview"

@@ -13,7 +13,7 @@ import { useMediaDeviceSelect } from "solid-livekit-components";
 
 export function VoiceCallCardActions(props: { size: "xs" | "sm" }) {
   const voice = useVoice();
-  const { t: tr } = useLingui();
+  const { t } = useLingui();
 
   function isVideoEnabled() {
     return CONFIGURATION.ENABLE_VIDEO;
@@ -39,7 +39,7 @@ export function VoiceCallCardActions(props: { size: "xs" | "sm" }) {
               ? undefined
               : {
                   placement: "top",
-                  content: tr`Missing permission`,
+                  content: t`Missing permission`,
                 },
           }}
           isDisabled={!voice.speakingPermission}
@@ -61,7 +61,7 @@ export function VoiceCallCardActions(props: { size: "xs" | "sm" }) {
               ? undefined
               : {
                   placement: "top",
-                  content: tr`Missing permission`,
+                  content: t`Missing permission`,
                 },
           }}
           isDisabled={!voice.listenPermission}
@@ -85,9 +85,9 @@ export function VoiceCallCardActions(props: { size: "xs" | "sm" }) {
             placement: "top",
             content: isVideoEnabled()
               ? voice.video()
-                ? tr`Stop Camera`
-                : tr`Start Camera`
-              : tr`Coming soon! 👀`,
+                ? t`Stop Camera`
+                : t`Start Camera`
+              : t`Coming soon! 👀`,
           },
         }}
         isDisabled={!isVideoEnabled()}
@@ -102,9 +102,9 @@ export function VoiceCallCardActions(props: { size: "xs" | "sm" }) {
               placement: "top",
               content: isVideoEnabled()
                 ? voice.screenshare()
-                  ? tr`Stop Sharing`
-                  : tr`Share Screen`
-                : tr`Coming soon! 👀`,
+                  ? t`Stop Sharing`
+                  : t`Share Screen`
+                : t`Coming soon! 👀`,
             },
           }}
         >
@@ -212,14 +212,12 @@ function SpeakerMenu() {
 
 function ScreenshareMenu() {
   const voice = useVoice();
-  const { t: tr } = useLingui();
+  const { t } = useLingui();
   
   const resolutions: { label: string; value: ScreenShareResolution }[] = [
-    { label: "4K (2160p)", value: "4k" },
-    { label: "1440p", value: "ultra" },
     { label: "1080p", value: "high" },
     { label: "720p", value: "medium" },
-    { label: "360p", value: "low" },
+    { label: "480p", value: "low" },
   ];
 
   const frameRates: { label: string; value: ScreenShareFrameRate }[] = [
@@ -232,7 +230,7 @@ function ScreenshareMenu() {
   return (
     <ContextMenu>
       <div style={{ padding: "8px 12px", "font-size": "11px", "font-weight": "bold", color: "var(--md-sys-color-on-surface-variant)", "text-transform": "uppercase", "letter-spacing": "0.5px" }}>
-        {tr`Resolution` || "Resolution"}
+        {t`Resolution`}
       </div>
       <For each={resolutions}>
         {(res) => (
@@ -246,7 +244,7 @@ function ScreenshareMenu() {
       </For>
       <div style={{ "border-top": "1px solid var(--md-sys-color-outline-variant)", "margin-top": "4px", "padding-top": "4px" }} />
       <div style={{ padding: "8px 12px", "font-size": "11px", "font-weight": "bold", color: "var(--md-sys-color-on-surface-variant)", "text-transform": "uppercase", "letter-spacing": "0.5px" }}>
-        {tr`Frame Rate` || "Frame Rate"}
+        {t`Frame Rate`}
       </div>
       <For each={frameRates}>
         {(fpsItem) => (
@@ -263,7 +261,7 @@ function ScreenshareMenu() {
         icon={() => <Symbol>{voice.screenshareAudio() ? "check_box" : "check_box_outline_blank"}</Symbol>}
         onClick={() => voice.updateScreenShareSettings(voice.screenshareResolution(), voice.screenshareFrameRate(), !voice.screenshareAudio())}
       >
-        {tr`Include System Audio` || "Include System Audio"}
+        {t`Include System Audio`}
       </ContextMenuButton>
       <div style={{ "border-top": "1px solid var(--md-sys-color-outline-variant)", "margin-top": "4px", "padding-top": "4px" }} />
       <ContextMenuButton 
@@ -271,8 +269,8 @@ function ScreenshareMenu() {
         onClick={() => voice.togglePreviewPause()}
       >
         {voice.previewPaused() 
-          ? (tr`Resume Preview` || "Resume Preview") 
-          : (tr`Pause Preview` || "Pause Preview")}
+          ? t`Resume Preview` 
+          : t`Pause Preview`}
       </ContextMenuButton>
     </ContextMenu>
   );

@@ -18,7 +18,7 @@ type DesktopSource = {
 };
 
 export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "desktop_screenshare" }) {
-  const { t: tr } = useLingui();
+  const { t } = useLingui();
   const voice = useVoice();
   const [tab, setTab] = createSignal<TabType>("Applications");
 
@@ -27,11 +27,9 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
   const [audio, setAudio] = createSignal(voice.screenshareAudio());
 
   const resolutions: { label: string; value: ScreenShareResolution }[] = [
-    { label: "4K", value: "4k" },
-    { label: "1440p", value: "ultra" },
     { label: "1080p", value: "high" },
     { label: "720p", value: "medium" },
-    { label: "360p", value: "low" },
+    { label: "480p", value: "low" },
   ];
 
   const frameRates: { label: string; value: ScreenShareFrameRate }[] = [
@@ -93,7 +91,7 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
       onClose={handlePropClose}
       title={
         <div style={{ display: "flex", "align-items": "center", gap: "var(--gap-sm)" }}>
-          {tr`Share your screen` || "Share your screen"}
+          {t`Share your screen`}
           <span style={{ 
             background: "var(--md-sys-color-primary)", 
             color: "var(--md-sys-color-on-primary)", 
@@ -104,11 +102,11 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
             "letter-spacing": "0.5px", 
             "text-transform": "uppercase" 
           }}>
-            {tr`New` || "New"}
+            {t`New`}
           </span>
         </div>
       }
-      actions={[{ text: tr`Cancel` || "Cancel", onClick: handleClose }]}
+      actions={[{ text: t`Cancel`, onClick: handleClose }]}
     >
       <div style={{ width: "800px", "max-width": "100%", height: "550px", display: "flex", "flex-direction": "column" }}>
         <TabsContainer>
@@ -116,8 +114,8 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
             {(tabItem) => (
               <TabButton active={tab() === tabItem} onClick={() => setTab(tabItem)}>
                 {tabItem === "Applications" 
-                  ? (tr`Applications` || "Uygulamalar")
-                  : (tr`Entire Screen` || "Tüm Ekran")}
+                  ? t`Applications`
+                  : t`Entire Screen`}
               </TabButton>
             )}
           </For>
@@ -125,7 +123,7 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
 
         <SettingsRow>
           <SettingGroup>
-            <SettingLabel>{tr`Resolution` || "Resolution"}</SettingLabel>
+            <SettingLabel>{t`Resolution`}</SettingLabel>
             <SettingOptions>
               <For each={resolutions}>
                 {res => (
@@ -141,7 +139,7 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
           </SettingGroup>
 
           <SettingGroup>
-            <SettingLabel>{tr`Frame Rate` || "FPS"}</SettingLabel>
+            <SettingLabel>{t`Frame Rate`}</SettingLabel>
             <SettingOptions>
               <For each={frameRates}>
                 {f => (
@@ -157,7 +155,7 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
           </SettingGroup>
 
           <SettingGroup style={{ "flex": "0 0 auto" }}>
-            <SettingLabel>{tr`System Audio` || "Audio"}</SettingLabel>
+            <SettingLabel>{t`System Audio`}</SettingLabel>
             <div style={{ display: "flex", "align-items": "center", gap: "var(--gap-sm)" }}>
               <IconButton 
                 variant={audio() ? "filled" : "tonal"} 
@@ -167,7 +165,7 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
                 <Symbol>{audio() ? "volume_up" : "volume_off"}</Symbol>
               </IconButton>
               <span style={{ "font-size": "0.75rem", color: audio() ? "var(--md-sys-color-primary)" : "var(--md-sys-color-on-surface-variant)" }}>
-                {audio() ? (tr`Enabled` || "On") : (tr`Disabled` || "Off")}
+                {audio() ? t`Enabled` : t`Disabled`}
               </span>
             </div>
           </SettingGroup>
@@ -175,10 +173,10 @@ export function DesktopScreenshareModal(props: DialogProps & Modals & { type: "d
 
         <div style={{ padding: "var(--gap-sm) var(--gap-md)", color: "var(--md-sys-color-on-surface-variant)", "font-size": "0.8rem", display: "flex", "align-items": "center", gap: "var(--gap-xs)", background: "var(--md-sys-color-surface-container-low)", margin: "0 var(--gap-md) var(--gap-md)", "border-radius": "var(--borderRadius-md)" }}>
           <Symbol size={16}>info</Symbol>
-          <span>{tr`Tip: For best results, use Borderless Fullscreen. Audio capture is currently optimized for Entire Screen sharing.` || "Tip: For best results, use Borderless Fullscreen. Audio capture is currently optimized for Entire Screen sharing."}</span>
+          <span>{t`Tip: For best results, use Borderless Fullscreen. Audio capture is currently optimized for Entire Screen sharing.`}</span>
         </div>
 
-        <Show when={!sources.loading} fallback={<div style={{ flex: 1, display: "flex", "align-items": "center", "justify-content": "center", color: "var(--md-sys-color-on-surface-variant)" }}>{tr`Loading sources...` || "Loading sources..."}</div>}>
+        <Show when={!sources.loading} fallback={<div style={{ flex: 1, display: "flex", "align-items": "center", "justify-content": "center", color: "var(--md-sys-color-on-surface-variant)" }}>{t`Loading sources...`}</div>}>
           <GridWrapper>
             <Grid>
               <For each={filteredSources()}>

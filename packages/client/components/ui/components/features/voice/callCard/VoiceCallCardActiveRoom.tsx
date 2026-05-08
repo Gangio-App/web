@@ -477,6 +477,15 @@ function UserTile() {
             <VoiceStatefulUserIcons
               userId={participant.identity}
               muted={isMuted()}
+              deafened={(() => {
+                try {
+                  return JSON.parse(participant.metadata || "{}").deafened;
+                } catch {
+                  return false;
+                }
+              })()}
+              camera={!isVideoMuted()}
+              screenshare={participant.isScreenShareEnabled}
             />
             <Show when={isTrackReference(track) && !isVideoMuted()}>
               <FullscreenButtonIcon>
