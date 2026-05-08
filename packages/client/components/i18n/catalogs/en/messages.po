@@ -4552,9 +4552,3 @@ msgstr "Preview paused to save resources"
 
 msgid "LIVE"
 msgstr "LIVE"
-
-msgid "Share Audio"
-msgstr "Share Audio"
-
-msgid "Include system sound from this source"
-msgstr "Include system sound from this source"
