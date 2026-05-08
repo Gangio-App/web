@@ -406,12 +406,12 @@ function UserTile() {
         display: isFullscreen() && isChatOpen() ? "flex" : "grid"
       }}
       use:floating={{
-        userCard: {
-          user: user().user!,
-          member: user().member,
+        userCard: () => user()?.user && {
+          user: user()!.user!,
+          member: user()?.member,
         },
-        contextMenu: () => (
-          <UserContextMenu user={user().user!} member={user().member} inVoice />
+        contextMenu: () => user()?.user && (
+          <UserContextMenu user={user()!.user!} member={user()?.member} inVoice />
         ),
       }}
     >
@@ -428,8 +428,8 @@ function UserTile() {
           fallback={
             <AvatarOnly>
               <Avatar
-                src={user().avatar}
-                fallback={user().username}
+                src={user()?.avatar}
+                fallback={user()?.username || "..."}
                 size={48}
                 interactive={false}
               />
@@ -473,7 +473,7 @@ function UserTile() {
           }}
         >
           <OverlayInner>
-            <OverflowingText>{user().username}</OverflowingText>
+            <OverflowingText>{user()?.username || "..."}</OverflowingText>
             <VoiceStatefulUserIcons
               userId={participant.identity}
               muted={isMuted()}
@@ -648,7 +648,7 @@ function ScreenshareTile() {
               animation: "pulse 1.5s infinite",
             })}
           />
-          LIVE
+          {t`LIVE`}
         </div>
 
         <Show when={!isOwnShare()}>
@@ -697,7 +697,7 @@ function ScreenshareTile() {
           }}
         >
           <OverlayInner>
-            <OverflowingText>{user().username}</OverflowingText>
+            <OverflowingText>{user()?.username || "..."}</OverflowingText>
             <Show when={isMuted()}>
               <Symbol size={18}>no_sound</Symbol>
             </Show>
@@ -888,8 +888,8 @@ const PausedOverlay = styled("div", {
 
 const PausedIcon = styled("div", {
   base: {
-    width: "64px",
-    height: "64px",
+    width: "40px",
+    height: "40px",
     borderRadius: "50%",
     background: "rgba(255,255,255,0.1)",
     display: "flex",

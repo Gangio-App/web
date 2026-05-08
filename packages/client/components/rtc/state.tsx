@@ -51,6 +51,7 @@ export const SCREEN_SHARE_PRESETS = {
   "4k":   ScreenSharePresets.original,
 } as const;
 
+
 /**
  * Capture resolution dimensions per tier.
  * These are passed into getDisplayMedia / LiveKit captureOptions.
@@ -167,7 +168,10 @@ class Voice {
 
     const [state, setState] = createSignal<State>("READY");
     this.state = state;
-    this.#setState = setState;
+    this.#setState = (s) => {
+      console.log(`[Voice] State change: ${state()} -> ${s}`);
+      setState(s);
+    };
 
     const [deafen, setDeafen] = createSignal<boolean>(false);
     this.deafen = deafen;
@@ -315,7 +319,7 @@ class Voice {
     void playSound(next ? "user_deafen" : "user_undeafen");
 
     const room = this.room();
-    if (room) {
+    if (room?.localParticipant) {
       await room.localParticipant.setAttributes({
         deafened: next ? "true" : "false",
       });
@@ -324,7 +328,7 @@ class Voice {
 
   async toggleMute() {
     const room = this.room();
-    if (!room) throw "invalid state";
+    if (!room?.localParticipant) throw "invalid state";
     await room.localParticipant.setMicrophoneEnabled(
       !room.localParticipant.isMicrophoneEnabled,
     );
@@ -335,7 +339,7 @@ class Voice {
 
   async toggleCamera() {
     const room = this.room();
-    if (!room) throw "invalid state";
+    if (!room?.localParticipant) throw "invalid state";
     await room.localParticipant.setCameraEnabled(
       !room.localParticipant.isCameraEnabled,
     );
@@ -358,7 +362,7 @@ class Voice {
     includeAudio?: boolean;
   }) {
     const room = this.room();
-    if (!room || this.state() !== "CONNECTED") return;
+    if (!room?.localParticipant || this.state() !== "CONNECTED") return;
 
     const isEnabled = room.localParticipant.isScreenShareEnabled;
 
@@ -419,7 +423,7 @@ class Voice {
     includeAudio: boolean,
   ) {
     const room = this.room();
-    if (!room || !room.localParticipant.isScreenShareEnabled) {
+    if (!room?.localParticipant || !room.localParticipant.isScreenShareEnabled) {
        // Just update the settings for next time
        batch(() => {
           this.#setScreenshareResolution(resolution);
@@ -502,6 +506,7 @@ export function VoiceContext(props: { children: JSX.Element }) {
 
                 // Sync the selected audio preference back to voice state WITHOUT restarting
                 if (typeof data !== "string") {
+                  console.info("Screenshare modal returned:", data);
                   voice.setScreenshareAudio(includeAudio);
                 }
 
@@ -544,12 +549,10 @@ export function VoiceContext(props: { children: JSX.Element }) {
                         mandatory: {
                           chromeMediaSource: "desktop",
                           chromeMediaSourceId: sourceId,
-                          maxWidth: dims.width,
-                          maxHeight: dims.height,
-                          maxFrameRate: fps,
                         }
                       }
                     } as any);
+                    
                     resolve(stream);
                   } catch (finalErr) {
                     console.error("Screenshare capture failed completely", finalErr);
@@ -567,10 +570,12 @@ export function VoiceContext(props: { children: JSX.Element }) {
   return (
     <voiceContext.Provider value={voice}>
       <RoomContext.Provider value={voice.room}>
-        <VoiceCallCardContext>{props.children}</VoiceCallCardContext>
-        <InRoom>
-          <RoomAudioManager />
-        </InRoom>
+        <VoiceCallCardContext>
+          {props.children}
+          <InRoom>
+            <RoomAudioManager />
+          </InRoom>
+        </VoiceCallCardContext>
       </RoomContext.Provider>
     </voiceContext.Provider>
   );

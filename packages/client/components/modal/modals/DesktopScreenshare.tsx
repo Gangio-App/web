@@ -1,6 +1,6 @@
 import { createResource, createSignal, For, Show, createEffect, onCleanup } from "solid-js";
 import { styled } from "styled-system/jsx";
-import { useLingui } from "@lingui-solid/solid/macro";
+import { useLingui, t } from "@lingui-solid/solid/macro";
 import { Dialog, DialogProps, Button } from "@revolt/ui";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 import { Modals } from "../types";
