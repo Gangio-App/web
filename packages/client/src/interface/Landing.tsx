@@ -1,36 +1,19 @@
-import {
-  For,
-  Show,
-  createMemo,
-  createSignal,
-  onCleanup,
-  onMount,
-} from "solid-js";
+import { For, Show, createMemo, createSignal } from "solid-js";
 
-import gsap from "gsap";
 import {
-  BiRegularBot,
-  BiRegularChat,
   BiRegularCode,
   BiRegularGlobe,
-  BiRegularHash,
-  BiRegularMicrophone,
-  BiRegularPalette,
-  BiRegularShield,
-  BiSolidBolt,
-  BiSolidVolumeFull,
+  BiRegularLock,
+  BiSolidCheckCircle,
 } from "solid-icons/bi";
-import {
-  HiOutlineArrowRight,
-  HiOutlineLockClosed,
-  HiOutlineSparkles,
-} from "solid-icons/hi";
+import { FiArrowUpRight } from "solid-icons/fi";
 import { IoLogoApple, IoLogoMicrosoft } from "solid-icons/io";
 import { css, cx } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 import Wordmark from "../../public/assets/web/wordmark.svg?component-solid";
-import iosScreenshot from "../../assets/web/landing/ios.webp";
+import desktopShot from "../../assets/web/landing/desktop-screenshot.png";
+import iosShot from "../../assets/web/landing/ios.webp";
 
 /* ---------------- constants ---------------- */
 
@@ -44,188 +27,47 @@ const URLS = {
   login: "/login/auth",
 };
 
-type ChatMessage = {
-  user: string;
-  color: string;
-  time: string;
-  text: string;
-};
-
-const CHANNELS: Record<
-  string,
-  { name: string; topic: string; messages: ChatMessage[] }
-> = {
-  announcements: {
-    name: "announcements",
-    topic: "Server-wide announcements and updates.",
-    messages: [
-      {
-        user: "luna",
-        color: "#7c5cff",
-        time: "just now",
-        text: "Welcome to the new server everyone.",
-      },
-      {
-        user: "kai",
-        color: "#22d3ee",
-        time: "2m",
-        text: "this looks insanely clean.",
-      },
-      {
-        user: "nova",
-        color: "#f472b6",
-        time: "4m",
-        text: "Finally, a chat app that respects us.",
-      },
-    ],
-  },
-  general: {
-    name: "general",
-    topic: "Hang out, chat, anything goes.",
-    messages: [
-      {
-        user: "finn",
-        color: "#34d399",
-        time: "1m",
-        text: "morning gang 🌅",
-      },
-      {
-        user: "rae",
-        color: "#fbbf24",
-        time: "3m",
-        text: "anyone up for a movie night later?",
-      },
-      {
-        user: "luna",
-        color: "#7c5cff",
-        time: "5m",
-        text: "yes please. bringing snacks.",
-      },
-    ],
-  },
-  "off-topic": {
-    name: "off-topic",
-    topic: "Memes, side quests, off-the-wall takes.",
-    messages: [
-      {
-        user: "nova",
-        color: "#f472b6",
-        time: "just now",
-        text: "hot take: pineapple does belong on pizza",
-      },
-      {
-        user: "kai",
-        color: "#22d3ee",
-        time: "1m",
-        text: "you're banned",
-      },
-      {
-        user: "finn",
-        color: "#34d399",
-        time: "2m",
-        text: "i'm with nova on this one",
-      },
-    ],
-  },
-  showcase: {
-    name: "showcase",
-    topic: "Share what you're working on.",
-    messages: [
-      {
-        user: "rae",
-        color: "#fbbf24",
-        time: "6m",
-        text: "shipped the new landing today 🚀",
-      },
-      {
-        user: "luna",
-        color: "#7c5cff",
-        time: "8m",
-        text: "the gradient on this is *chef's kiss*",
-      },
-    ],
-  },
-};
-
-const CHANNEL_ORDER = ["announcements", "general", "off-topic", "showcase"];
+const THEMES: { name: string; bg: string; accent: string; text: string }[] = [
+  { name: "Midnight", bg: "#0b0c13", accent: "#7c5cff", text: "#ffffff" },
+  { name: "Paper", bg: "#fafaf7", accent: "#111111", text: "#0a0a0a" },
+  { name: "Forest", bg: "#0e1a14", accent: "#34d399", text: "#ecfdf5" },
+  { name: "Sunset", bg: "#1a0f12", accent: "#f97316", text: "#fff7ed" },
+  { name: "Ocean", bg: "#0b1220", accent: "#22d3ee", text: "#ecfeff" },
+  { name: "Rose", bg: "#fbf1f4", accent: "#e11d48", text: "#0a0a0a" },
+];
 
 /* ---------------- component ---------------- */
 
 export function Landing() {
-  let rootRef: HTMLDivElement | undefined;
-
-  const [activeChannel, setActiveChannel] = createSignal("announcements");
+  const [theme, setTheme] = createSignal(0);
 
   const isIOS = createMemo(() =>
     typeof navigator !== "undefined" &&
     /iPad|iPhone|iPod/.test(navigator.userAgent),
   );
 
-  onMount(() => {
-    if (!rootRef) return;
-
-    const ctx = gsap.context(() => {
-      gsap.from("[data-anim='hero-item']", {
-        y: 24,
-        opacity: 0,
-        duration: 0.85,
-        ease: "power3.out",
-        stagger: 0.07,
-        delay: 0.05,
-      });
-
-      gsap.from("[data-anim='hero-mock']", {
-        y: 36,
-        opacity: 0,
-        duration: 1.0,
-        ease: "power3.out",
-        delay: 0.3,
-      });
-
-      gsap.to("[data-anim='hero-mock']", {
-        y: -8,
-        duration: 5,
-        ease: "sine.inOut",
-        repeat: -1,
-        yoyo: true,
-        delay: 1.2,
-      });
-
-      gsap.to("[data-anim='glow']", {
-        x: 40,
-        duration: 16,
-        ease: "sine.inOut",
-        repeat: -1,
-        yoyo: true,
-      });
-    }, rootRef);
-
-    onCleanup(() => ctx.revert());
-  });
-
-  const ch = () => CHANNELS[activeChannel()];
+  const t = () => THEMES[theme()];
 
   return (
-    <Root ref={rootRef}>
-      <BackgroundLayer />
-      <Grid />
-
+    <Root>
+      {/* NAV */}
       <Nav>
         <NavInner>
           <a href="/" class={brandLink()}>
             <Wordmark
               class={css({
-                height: "26px",
+                height: "24px",
                 width: "auto",
-                color: "#fff",
+                color: "#0a0a0a",
               })}
             />
           </a>
           <NavLinks>
             <a href="#features">Features</a>
-            <a href="#why">Why Gangio</a>
-            <a href="/discover/servers">Discover</a>
+            <a href="#voice">Voice & video</a>
+            <a href="#themes">Themes</a>
             <a href="#download">Download</a>
+            <a href="/discover/servers">Discover</a>
           </NavLinks>
           <NavCtas>
             <a class={ghostBtn()} href={URLS.login}>
@@ -240,144 +82,169 @@ export function Landing() {
 
       {/* HERO */}
       <Hero>
-        <Glow data-anim="glow" />
-
-        <HeroContent>
-          <Eyebrow data-anim="hero-item">
-            <HiOutlineSparkles size={14} />
-            <span>A new home for your community</span>
+        <HeroCopy>
+          <Eyebrow>
+            <Pill>Public Beta</Pill>
+            <span>A chat app that puts your community first.</span>
           </Eyebrow>
 
-          <H1 data-anim="hero-item">
+          <H1>
             Your space.<br />
-            <Gradient>Your community.</Gradient>
+            <Accent>Your community.</Accent>
           </H1>
 
-          <Sub data-anim="hero-item">
+          <Sub>
             Gangio is a free and open-source chat platform for friends, groups,
-            and communities. Voice, video, and text — built the way you always
-            wished it would be.
+            and communities — with crystal-clear voice, HD video, and screen
+            sharing built in.
           </Sub>
 
-          <CtaRow data-anim="hero-item">
+          <CtaRow>
             <a class={primaryBtnLg()} href={URLS.signup}>
-              Get started
-              <HiOutlineArrowRight size={18} />
+              Get started — it's free
             </a>
-            <a class={ghostBtnLg()} href={URLS.login}>
-              Open in browser
+            <a class={ghostBtnLg()} href="#download">
+              Download the app
             </a>
           </CtaRow>
 
-          <TrustRow data-anim="hero-item">
+          <TrustRow>
             <TrustItem>
-              <HiOutlineLockClosed size={14} />
-              <span>Encrypted DMs</span>
+              <BiSolidCheckCircle size={14} /> No ads
             </TrustItem>
             <TrustItem>
-              <BiRegularCode size={14} />
-              <span>Open source</span>
+              <BiSolidCheckCircle size={14} /> No tracking
             </TrustItem>
             <TrustItem>
-              <BiRegularGlobe size={14} />
-              <span>Self-hostable</span>
+              <BiSolidCheckCircle size={14} /> Open source
             </TrustItem>
           </TrustRow>
-        </HeroContent>
+        </HeroCopy>
 
-        <HeroMock data-anim="hero-mock">
-          <MockChrome>
-            <MockDot style={{ background: "#ff5f57" }} />
-            <MockDot style={{ background: "#febc2e" }} />
-            <MockDot style={{ background: "#28c840" }} />
-            <MockChromeAddress>gangio.pro</MockChromeAddress>
-          </MockChrome>
-          <MockBody>
-            <MockSidebar>
-              <MockServer data-active>G</MockServer>
-              <MockServer style={{ background: "#3b3f4d" }} />
-              <MockServer style={{ background: "#3b3f4d" }} />
-              <MockServer style={{ background: "#3b3f4d" }} />
-              <MockServer style={{ background: "#3b3f4d" }} />
-            </MockSidebar>
-            <MockChannels>
-              <MockServerName>
-                <strong>Gangio Official</strong>
-              </MockServerName>
-              <MockChannelHeader>text channels</MockChannelHeader>
-              <For each={CHANNEL_ORDER}>
-                {(key) => (
-                  <MockChannel
-                    type="button"
-                    data-active={activeChannel() === key ? "true" : undefined}
-                    onClick={() => setActiveChannel(key)}
-                  >
-                    <BiRegularHash size={13} />
-                    {CHANNELS[key].name}
-                  </MockChannel>
-                )}
-              </For>
-              <MockChannelHeader>voice channels</MockChannelHeader>
-              <MockChannel type="button" disabled>
-                <BiSolidVolumeFull size={13} />
-                Lounge
-                <MockVoiceCount>3</MockVoiceCount>
-              </MockChannel>
-            </MockChannels>
-            <MockMain>
-              <MockMainHeader>
-                <BiRegularHash size={16} />
-                <strong>{ch().name}</strong>
-                <MockTopic>{ch().topic}</MockTopic>
-              </MockMainHeader>
-              <MockMessages>
-                <For each={ch().messages}>
-                  {(m) => (
-                    <MockMessage>
-                      <MockAvatar style={{ background: m.color }} />
-                      <MockMessageBody>
-                        <MockMeta>
-                          <MockName>{m.user}</MockName>
-                          <MockTime>{m.time}</MockTime>
-                        </MockMeta>
-                        <MockText>{m.text}</MockText>
-                      </MockMessageBody>
-                    </MockMessage>
-                  )}
-                </For>
-                <MockTyping>
-                  <MockTypingDot />
-                  <MockTypingDot style={{ "animation-delay": "0.15s" }} />
-                  <MockTypingDot style={{ "animation-delay": "0.3s" }} />
-                  <span>someone is typing…</span>
-                </MockTyping>
-              </MockMessages>
-            </MockMain>
-          </MockBody>
-        </HeroMock>
+        <HeroShot>
+          <HeroShotFrame>
+            <img
+              src={desktopShot}
+              alt="Gangio desktop app"
+              loading="eager"
+              class={css({
+                width: "100%",
+                height: "auto",
+                display: "block",
+              })}
+            />
+          </HeroShotFrame>
+        </HeroShot>
       </Hero>
 
-      <Divider />
+      {/* HEADLINE STATEMENT */}
+      <BigStatement>
+        <BigStatementText>
+          Chat that actually <Accent>feels like chat.</Accent>
+        </BigStatementText>
+        <BigStatementSub>
+          Built for the way people really hang out online — not for ad revenue,
+          not for investors, not for growth metrics.
+        </BigStatementSub>
+      </BigStatement>
+
+      {/* VOICE & VIDEO */}
+      <DarkSection id="voice">
+        <VoiceGrid>
+          <VoiceCopy>
+            <SectionEyebrow>Voice & Video</SectionEyebrow>
+            <VoiceTitle>
+              HD voice.<br />
+              Crisp video.<br />
+              <Accent>Zero drama.</Accent>
+            </VoiceTitle>
+            <VoiceLead>
+              Drop into a voice channel and talk. Share your screen in full HD.
+              Jump on a video call. All with noise suppression and echo
+              cancellation baked in — no plugins, no pro tier.
+            </VoiceLead>
+
+            <VoiceFeatures>
+              <VoiceFeature>
+                <VoiceFeatureTitle>HD screen sharing</VoiceFeatureTitle>
+                <VoiceFeatureDesc>
+                  Share a window, a tab, or your whole display in up to 1080p —
+                  game nights, watch parties, pair programming.
+                </VoiceFeatureDesc>
+              </VoiceFeature>
+              <VoiceFeature>
+                <VoiceFeatureTitle>Low-latency voice</VoiceFeatureTitle>
+                <VoiceFeatureDesc>
+                  Server-based voice channels with noise suppression and echo
+                  cancellation, so you sound like yourself.
+                </VoiceFeatureDesc>
+              </VoiceFeature>
+              <VoiceFeature>
+                <VoiceFeatureTitle>Video calls</VoiceFeatureTitle>
+                <VoiceFeatureDesc>
+                  1-on-1 or group video. Mute, deafen, and camera controls
+                  where you expect them.
+                </VoiceFeatureDesc>
+              </VoiceFeature>
+            </VoiceFeatures>
+          </VoiceCopy>
+
+          <VoiceVisual>
+            <VoiceTile data-a="1">
+              <VoiceAvatar style={{ background: "#7c5cff" }}>L</VoiceAvatar>
+              <VoiceName>luna</VoiceName>
+              <VoiceWave>
+                <WaveBar style={{ "--h": "40%" }} />
+                <WaveBar style={{ "--h": "80%" }} />
+                <WaveBar style={{ "--h": "60%" }} />
+                <WaveBar style={{ "--h": "95%" }} />
+                <WaveBar style={{ "--h": "50%" }} />
+              </VoiceWave>
+              <VoiceBadge>Speaking</VoiceBadge>
+            </VoiceTile>
+            <VoiceTile data-a="2">
+              <VoiceAvatar style={{ background: "#22d3ee" }}>K</VoiceAvatar>
+              <VoiceName>kai</VoiceName>
+              <VoiceBadge data-muted>Muted</VoiceBadge>
+            </VoiceTile>
+            <VoiceTile data-a="3" data-share="true">
+              <VoiceShareLabel>Screen share · 1080p</VoiceShareLabel>
+              <VoiceShareInner>
+                <VoiceShareDot style={{ background: "#ff5f57" }} />
+                <VoiceShareDot style={{ background: "#febc2e" }} />
+                <VoiceShareDot style={{ background: "#28c840" }} />
+              </VoiceShareInner>
+            </VoiceTile>
+            <VoiceTile data-a="4">
+              <VoiceAvatar style={{ background: "#f472b6" }}>N</VoiceAvatar>
+              <VoiceName>nova</VoiceName>
+              <VoiceWave>
+                <WaveBar style={{ "--h": "30%" }} />
+                <WaveBar style={{ "--h": "70%" }} />
+                <WaveBar style={{ "--h": "50%" }} />
+              </VoiceWave>
+            </VoiceTile>
+          </VoiceVisual>
+        </VoiceGrid>
+      </DarkSection>
 
       {/* FEATURES */}
       <Section id="features">
         <SectionHeader>
-          <SectionEyebrow>What's inside</SectionEyebrow>
+          <SectionEyebrow>Everything you need</SectionEyebrow>
           <SectionTitle>
-            Everything you need.<br />
-            <SectionTitleMuted>Nothing you don't.</SectionTitleMuted>
+            Built for conversation.<br />
+            <Muted>Not for metrics.</Muted>
           </SectionTitle>
           <SectionLead>
-            All the features you've come to expect — built thoughtfully, without
-            the bloat, the ads, or the data harvesting.
+            All the features you've come to expect from a modern chat app —
+            without the bloat, the ads, or the data harvesting.
           </SectionLead>
         </SectionHeader>
 
         <FeatureGrid>
           <FeatureCard>
-            <FeatureIcon>
-              <BiRegularChat size={22} />
-            </FeatureIcon>
+            <FeatureNum>01</FeatureNum>
             <FeatureTitle>Messaging that feels right</FeatureTitle>
             <FeatureDesc>
               Markdown, code blocks, embeds, threads, reactions, and search.
@@ -386,42 +253,16 @@ export function Landing() {
           </FeatureCard>
 
           <FeatureCard>
-            <FeatureIcon>
-              <BiRegularMicrophone size={22} />
-            </FeatureIcon>
-            <FeatureTitle>Voice and video</FeatureTitle>
-            <FeatureDesc>
-              Crystal-clear, low-latency voice with screen sharing, noise
-              suppression, and echo cancellation.
-            </FeatureDesc>
-          </FeatureCard>
-
-          <FeatureCard>
-            <FeatureIcon>
-              <BiRegularShield size={22} />
-            </FeatureIcon>
+            <FeatureNum>02</FeatureNum>
             <FeatureTitle>Moderation, done right</FeatureTitle>
             <FeatureDesc>
               Granular roles, audit logs, and powerful permissions. Run a
-              server of three or three thousand — same tools, no upsells.
+              server of three or three thousand — same tools.
             </FeatureDesc>
           </FeatureCard>
 
           <FeatureCard>
-            <FeatureIcon>
-              <BiRegularPalette size={22} />
-            </FeatureIcon>
-            <FeatureTitle>Make it yours</FeatureTitle>
-            <FeatureDesc>
-              Custom emojis, themes, and CSS. Set a profile banner without
-              paying for it. The little things matter.
-            </FeatureDesc>
-          </FeatureCard>
-
-          <FeatureCard>
-            <FeatureIcon>
-              <BiRegularBot size={22} />
-            </FeatureIcon>
+            <FeatureNum>03</FeatureNum>
             <FeatureTitle>Bots and a real API</FeatureTitle>
             <FeatureDesc>
               A first-class public API and bot platform — the same one we use
@@ -430,88 +271,131 @@ export function Landing() {
           </FeatureCard>
 
           <FeatureCard>
-            <FeatureIcon>
-              <BiSolidBolt size={22} />
-            </FeatureIcon>
-            <FeatureTitle>Fast everywhere</FeatureTitle>
+            <FeatureNum>04</FeatureNum>
+            <FeatureTitle>Your data, your rules</FeatureTitle>
             <FeatureDesc>
-              Native desktop, mobile, and web. Built on SolidJS for instant
-              interactions and tiny bundles.
+              End-to-end encrypted DMs. Self-hostable. Open source. The privacy
+              policy is short enough to actually read.
             </FeatureDesc>
           </FeatureCard>
         </FeatureGrid>
       </Section>
 
-      {/* WHY */}
-      <Section id="why">
-        <SectionHeader>
-          <SectionEyebrow>Why Gangio</SectionEyebrow>
+      {/* THEMES */}
+      <ThemesSection id="themes">
+        <ThemesHeader>
+          <SectionEyebrow>Make it yours</SectionEyebrow>
           <SectionTitle>
-            Answers to you,{" "}
-            <SectionTitleMuted>not investors.</SectionTitleMuted>
+            Pick a theme.<br />
+            <Muted>Or build your own.</Muted>
           </SectionTitle>
-        </SectionHeader>
+          <SectionLead>
+            Six built-in themes, custom color accents, and full CSS support —
+            so your server looks like your server, not like everybody else's.
+          </SectionLead>
+        </ThemesHeader>
 
-        <WhyGrid>
-          <WhyCard>
-            <WhyTitle>No ads. No tracking. No upsells.</WhyTitle>
-            <WhyDesc>
-              We don't sell your data and we never will. The privacy policy is
-              short enough to actually read.
-            </WhyDesc>
-          </WhyCard>
-          <WhyCard>
-            <WhyTitle>Free and open source.</WhyTitle>
-            <WhyDesc>
-              The whole stack is public. Audit it, fork it, host it on your own
-              hardware. It's yours.
-            </WhyDesc>
-          </WhyCard>
-          <WhyCard>
-            <WhyTitle>Built for the long term.</WhyTitle>
-            <WhyDesc>
-              No board to please. Every decision starts and ends with the
-              people actually using the software.
-            </WhyDesc>
-          </WhyCard>
-          <WhyCard>
-            <WhyTitle>Take it everywhere.</WhyTitle>
-            <WhyDesc>
-              Your account, conversations, and settings stay in sync across
-              every device — Windows, macOS, iOS, and the web.
-            </WhyDesc>
-          </WhyCard>
-        </WhyGrid>
-      </Section>
+        <ThemePreview
+          style={{
+            background: t().bg,
+            color: t().text,
+          }}
+        >
+          <ThemePreviewBody>
+            <ThemePreviewSidebar
+              style={{ borderColor: `${t().text}15` }}
+            >
+              <ThemePreviewServer style={{ background: t().accent }}>
+                g
+              </ThemePreviewServer>
+              <ThemePreviewServer style={{ background: `${t().text}10` }} />
+              <ThemePreviewServer style={{ background: `${t().text}10` }} />
+            </ThemePreviewSidebar>
+            <ThemePreviewChannels
+              style={{ borderColor: `${t().text}15` }}
+            >
+              <ThemePreviewLabel style={{ color: `${t().text}60` }}>
+                COMMUNITY
+              </ThemePreviewLabel>
+              <ThemePreviewChannel style={{ color: `${t().text}70` }}>
+                # general
+              </ThemePreviewChannel>
+              <ThemePreviewChannel
+                data-active
+                style={{
+                  background: `${t().accent}20`,
+                  color: t().text,
+                }}
+              >
+                # announcements
+              </ThemePreviewChannel>
+              <ThemePreviewChannel style={{ color: `${t().text}70` }}>
+                # off-topic
+              </ThemePreviewChannel>
+            </ThemePreviewChannels>
+            <ThemePreviewMain>
+              <ThemePreviewMessage>
+                <ThemePreviewAvatar style={{ background: t().accent }} />
+                <ThemePreviewMessageBody>
+                  <ThemePreviewName style={{ color: t().text }}>
+                    luna
+                  </ThemePreviewName>
+                  <ThemePreviewText style={{ color: `${t().text}99` }}>
+                    pick any color you want — it's your server.
+                  </ThemePreviewText>
+                </ThemePreviewMessageBody>
+              </ThemePreviewMessage>
+              <ThemePreviewMessage>
+                <ThemePreviewAvatar style={{ background: `${t().text}30` }} />
+                <ThemePreviewMessageBody>
+                  <ThemePreviewName style={{ color: t().text }}>kai</ThemePreviewName>
+                  <ThemePreviewText style={{ color: `${t().text}99` }}>
+                    this theme is {t().name.toLowerCase()}. nice.
+                  </ThemePreviewText>
+                </ThemePreviewMessageBody>
+              </ThemePreviewMessage>
+            </ThemePreviewMain>
+          </ThemePreviewBody>
+        </ThemePreview>
+
+        <ThemeSwatches>
+          <For each={THEMES}>
+            {(th, i) => (
+              <ThemeSwatch
+                type="button"
+                data-active={theme() === i() ? "true" : undefined}
+                onClick={() => setTheme(i())}
+                aria-label={`Select ${th.name} theme`}
+              >
+                <ThemeSwatchDot style={{ background: th.bg }}>
+                  <ThemeSwatchAccent style={{ background: th.accent }} />
+                </ThemeSwatchDot>
+                <ThemeSwatchName>{th.name}</ThemeSwatchName>
+              </ThemeSwatch>
+            )}
+          </For>
+        </ThemeSwatches>
+      </ThemesSection>
 
       {/* DOWNLOAD */}
       <Section id="download">
         <SectionHeader>
           <SectionEyebrow>Get the app</SectionEyebrow>
           <SectionTitle>
-            Gangio on every screen.{" "}
-            <SectionTitleMuted>Wherever you are.</SectionTitleMuted>
+            Gangio on every screen.<br />
+            <Muted>Wherever you are.</Muted>
           </SectionTitle>
-          <SectionLead>
-            One account, everywhere. Native apps for desktop and iOS, plus a
-            fast web client.
-          </SectionLead>
         </SectionHeader>
 
         <DownloadGrid>
-          {/* Phone mockup with iOS screenshot */}
           <PhoneCol>
             <Phone>
               <PhoneNotch />
               <PhoneScreen
-                src={iosScreenshot}
+                src={iosShot}
                 alt="Gangio iOS app"
                 loading="lazy"
               />
-              <PhoneSide data-side="right" />
-              <PhoneSide data-side="left-1" />
-              <PhoneSide data-side="left-2" />
-              <PhoneSide data-side="left-3" />
             </Phone>
           </PhoneCol>
 
@@ -533,7 +417,7 @@ export function Landing() {
                   rel="noopener noreferrer"
                 >
                   Join TestFlight
-                  <HiOutlineArrowRight size={18} />
+                  <FiArrowUpRight size={18} />
                 </a>
               </IosBanner>
             </Show>
@@ -565,10 +449,12 @@ export function Landing() {
                 </DownloadItemIcon>
                 <DownloadItemBody>
                   <DownloadItemTitle>Windows</DownloadItemTitle>
-                  <DownloadItemDesc>Native installer for Windows 10 and 11.</DownloadItemDesc>
+                  <DownloadItemDesc>
+                    Native installer for Windows 10 and 11.
+                  </DownloadItemDesc>
                 </DownloadItemBody>
                 <a
-                  class={ghostBtnSm()}
+                  class={outlineBtn()}
                   href={URLS.windows}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -583,10 +469,12 @@ export function Landing() {
                 </DownloadItemIcon>
                 <DownloadItemBody>
                   <DownloadItemTitle>macOS</DownloadItemTitle>
-                  <DownloadItemDesc>Universal DMG for Apple Silicon and Intel.</DownloadItemDesc>
+                  <DownloadItemDesc>
+                    Universal DMG for Apple Silicon and Intel.
+                  </DownloadItemDesc>
                 </DownloadItemBody>
                 <a
-                  class={ghostBtnSm()}
+                  class={outlineBtn()}
                   href={URLS.macos}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -605,7 +493,7 @@ export function Landing() {
                     Use Gangio in any modern browser — no install required.
                   </DownloadItemDesc>
                 </DownloadItemBody>
-                <a class={ghostBtnSm()} href={URLS.login}>
+                <a class={outlineBtn()} href={URLS.login}>
                   Open
                 </a>
               </DownloadItem>
@@ -615,45 +503,55 @@ export function Landing() {
       </Section>
 
       {/* FINAL CTA */}
-      <Section>
-        <FinalCta>
-          <FinalCtaInner>
-            <SectionEyebrow>Ready when you are</SectionEyebrow>
-            <FinalTitle>Find your people.</FinalTitle>
-            <FinalLead>
-              Create an account in seconds. Bring your friends. Build the place
-              you've always wanted to hang out.
-            </FinalLead>
-            <CtaRow>
-              <a class={primaryBtnLg()} href={URLS.signup}>
-                Get started
-                <HiOutlineArrowRight size={18} />
-              </a>
-              <a class={ghostBtnLg()} href="#download">
-                Download for desktop
-              </a>
-            </CtaRow>
-          </FinalCtaInner>
-        </FinalCta>
-      </Section>
+      <FinalSection>
+        <FinalWrap>
+          <FinalEyebrow>Ready?</FinalEyebrow>
+          <FinalTitle>
+            Find your <Accent>people.</Accent>
+          </FinalTitle>
+          <FinalLead>
+            Create an account in seconds. Bring your friends. Build the place
+            you've always wanted to hang out.
+          </FinalLead>
+          <CtaRow>
+            <a class={primaryBtnLg()} href={URLS.signup}>
+              Create your account
+            </a>
+            <a class={ghostBtnLg()} href="#download">
+              Download for desktop
+            </a>
+          </CtaRow>
+        </FinalWrap>
+      </FinalSection>
 
+      {/* FOOTER */}
       <Footer>
         <FooterTop>
           <FooterBrand>
             <Wordmark
-              class={css({ height: "30px", width: "auto", color: "#fff" })}
+              class={css({ height: "28px", width: "auto", color: "#0a0a0a" })}
             />
             <FooterTag>
               A free and open-source chat platform for communities.
             </FooterTag>
+            <FooterBadges>
+              <FooterBadge>
+                <BiRegularLock size={12} /> Encrypted
+              </FooterBadge>
+              <FooterBadge>
+                <BiRegularCode size={12} /> Open source
+              </FooterBadge>
+            </FooterBadges>
           </FooterBrand>
 
           <FooterCols>
             <FooterCol>
               <FooterColTitle>Product</FooterColTitle>
               <a href="#features">Features</a>
-              <a href="/discover/servers">Discover</a>
+              <a href="#voice">Voice & video</a>
+              <a href="#themes">Themes</a>
               <a href="#download">Download</a>
+              <a href="/discover/servers">Discover</a>
             </FooterCol>
             <FooterCol>
               <FooterColTitle>Account</FooterColTitle>
@@ -662,11 +560,11 @@ export function Landing() {
             </FooterCol>
             <FooterCol>
               <FooterColTitle>Legal</FooterColTitle>
-              <a href="/terms">Terms of Service</a>
-              <a href="/privacy">Privacy Policy</a>
+              <a href="/terms">Terms</a>
+              <a href="/privacy">Privacy</a>
             </FooterCol>
             <FooterCol>
-              <FooterColTitle>Connect</FooterColTitle>
+              <FooterColTitle>Community</FooterColTitle>
               <a
                 href="https://github.com"
                 target="_blank"
@@ -689,57 +587,42 @@ export function Landing() {
 
 /* ---------------- styles ---------------- */
 
+/* base */
+
 const Root = styled("div", {
   base: {
-    position: "relative",
     width: "100%",
     height: "100%",
     overflowY: "auto",
     overflowX: "hidden",
-    background: "#0c0d12",
-    color: "#fff",
+    background: "#ffffff",
+    color: "#0a0a0a",
     fontFamily:
       "'Plus Jakarta Sans Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     WebkitFontSmoothing: "antialiased",
     MozOsxFontSmoothing: "grayscale",
+    fontSynthesis: "none",
   },
 });
 
-const BackgroundLayer = styled("div", {
-  base: {
-    position: "absolute",
-    inset: 0,
-    background:
-      "radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124,92,255,0.18), transparent 60%), linear-gradient(180deg, #0c0d12 0%, #0a0b10 100%)",
-    pointerEvents: "none",
-    zIndex: 0,
-  },
+const Accent = styled("span", {
+  base: { color: "#7c5cff" },
 });
 
-const Grid = styled("div", {
-  base: {
-    position: "absolute",
-    inset: 0,
-    backgroundImage:
-      "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)",
-    backgroundSize: "48px 48px",
-    maskImage:
-      "radial-gradient(ellipse 70% 50% at 50% 0%, black, transparent 70%)",
-    WebkitMaskImage:
-      "radial-gradient(ellipse 70% 50% at 50% 0%, black, transparent 70%)",
-    pointerEvents: "none",
-    zIndex: 0,
-  },
+const Muted = styled("span", {
+  base: { color: "#9a9a9a" },
 });
+
+/* nav */
 
 const Nav = styled("header", {
   base: {
     position: "sticky",
     top: 0,
     zIndex: 50,
+    background: "rgba(255,255,255,0.85)",
     backdropFilter: "blur(14px) saturate(180%)",
-    background: "rgba(12, 13, 18, 0.65)",
-    borderBottom: "1px solid rgba(255,255,255,0.06)",
+    borderBottom: "1px solid rgba(0,0,0,0.06)",
   },
 });
 
@@ -748,10 +631,10 @@ const NavInner = styled("div", {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "14px 32px",
-    maxWidth: "1280px",
+    padding: "16px 32px",
+    maxWidth: "1320px",
     margin: "0 auto",
-    "@media (max-width: 768px)": { padding: "12px 20px" },
+    "@media (max-width: 768px)": { padding: "14px 20px" },
   },
 });
 
@@ -760,22 +643,21 @@ const brandLink = () =>
     display: "flex",
     alignItems: "center",
     textDecoration: "none",
-    color: "#fff",
   });
 
 const NavLinks = styled("nav", {
   base: {
     display: "flex",
-    gap: "30px",
+    gap: "28px",
     "& a": {
-      color: "rgba(255,255,255,0.68)",
+      color: "#555",
       textDecoration: "none",
       fontSize: "0.9rem",
       fontWeight: 500,
-      transition: "color 0.2s",
-      "&:hover": { color: "#fff" },
+      transition: "color 0.15s",
+      "&:hover": { color: "#0a0a0a" },
     },
-    "@media (max-width: 900px)": { display: "none" },
+    "@media (max-width: 960px)": { display: "none" },
   },
 });
 
@@ -783,52 +665,57 @@ const NavCtas = styled("div", {
   base: { display: "flex", gap: "8px", alignItems: "center" },
 });
 
+/* buttons */
+
 const ghostBtn = () =>
   css({
     display: "inline-flex",
     alignItems: "center",
     gap: "6px",
-    padding: "8px 16px",
+    padding: "9px 16px",
     borderRadius: "10px",
-    color: "#fff",
+    color: "#0a0a0a",
     textDecoration: "none",
     fontSize: "0.9rem",
     fontWeight: 600,
-    transition: "background 0.2s",
-    "&:hover": { background: "rgba(255,255,255,0.06)" },
+    transition: "background 0.15s",
+    "&:hover": { background: "rgba(0,0,0,0.05)" },
   });
-
-const ghostBtnSm = () =>
-  cx(
-    ghostBtn(),
-    css({
-      padding: "8px 14px",
-      fontSize: "0.85rem",
-      border: "1px solid rgba(255,255,255,0.12)",
-      "&:hover": {
-        background: "rgba(255,255,255,0.06)",
-        borderColor: "rgba(255,255,255,0.22)",
-      },
-    }),
-  );
 
 const primaryBtn = () =>
   css({
     display: "inline-flex",
     alignItems: "center",
     gap: "6px",
-    padding: "8px 16px",
+    padding: "9px 18px",
     borderRadius: "10px",
-    background: "#fff",
-    color: "#0a0a0f",
+    background: "#0a0a0a",
+    color: "#fff",
     textDecoration: "none",
     fontSize: "0.9rem",
     fontWeight: 700,
-    transition: "transform 0.15s, background 0.15s, box-shadow 0.15s",
-    boxShadow: "0 1px 0 rgba(255,255,255,0.4) inset",
+    transition: "transform 0.15s, background 0.15s",
+    "&:hover": { background: "#1a1a1a", transform: "translateY(-1px)" },
+  });
+
+const outlineBtn = () =>
+  css({
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    padding: "9px 16px",
+    borderRadius: "10px",
+    color: "#0a0a0a",
+    textDecoration: "none",
+    fontSize: "0.88rem",
+    fontWeight: 600,
+    border: "1px solid rgba(0,0,0,0.12)",
+    background: "#fff",
+    transition: "all 0.15s",
     "&:hover": {
-      background: "#ececf4",
-      transform: "translateY(-1px)",
+      background: "#0a0a0a",
+      color: "#fff",
+      borderColor: "#0a0a0a",
     },
   });
 
@@ -836,66 +723,54 @@ const primaryBtnLg = () =>
   cx(
     primaryBtn(),
     css({
-      padding: "13px 22px",
-      fontSize: "0.95rem",
+      padding: "14px 24px",
+      fontSize: "0.98rem",
       borderRadius: "12px",
     }),
   );
 
 const ghostBtnLg = () =>
-  cx(
-    ghostBtn(),
-    css({
-      padding: "13px 22px",
-      fontSize: "0.95rem",
-      borderRadius: "12px",
-      border: "1px solid rgba(255,255,255,0.14)",
-      "&:hover": {
-        background: "rgba(255,255,255,0.06)",
-        borderColor: "rgba(255,255,255,0.22)",
-      },
-    }),
-  );
+  css({
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    padding: "14px 24px",
+    borderRadius: "12px",
+    color: "#0a0a0a",
+    textDecoration: "none",
+    fontSize: "0.98rem",
+    fontWeight: 600,
+    border: "1px solid rgba(0,0,0,0.12)",
+    background: "#fff",
+    transition: "all 0.15s",
+    "&:hover": {
+      background: "rgba(0,0,0,0.04)",
+      borderColor: "rgba(0,0,0,0.22)",
+    },
+  });
+
+/* hero */
 
 const Hero = styled("section", {
   base: {
     position: "relative",
     display: "grid",
-    gridTemplateColumns: "1.05fr 1fr",
+    gridTemplateColumns: "1fr 1.1fr",
     gap: "56px",
     alignItems: "center",
-    padding: "96px 32px 112px",
-    maxWidth: "1280px",
+    padding: "96px 32px 80px",
+    maxWidth: "1320px",
     margin: "0 auto",
-    zIndex: 1,
     "@media (max-width: 1024px)": {
       gridTemplateColumns: "1fr",
-      padding: "64px 24px 80px",
-      gap: "56px",
+      padding: "64px 24px 56px",
+      gap: "48px",
     },
   },
 });
 
-const Glow = styled("div", {
+const HeroCopy = styled("div", {
   base: {
-    position: "absolute",
-    top: "-120px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    width: "1100px",
-    height: "560px",
-    background:
-      "radial-gradient(closest-side, rgba(124,92,255,0.4), transparent 70%)",
-    filter: "blur(20px)",
-    pointerEvents: "none",
-    zIndex: 0,
-  },
-});
-
-const HeroContent = styled("div", {
-  base: {
-    position: "relative",
-    zIndex: 1,
     display: "flex",
     flexDirection: "column",
     gap: "22px",
@@ -904,46 +779,44 @@ const HeroContent = styled("div", {
 
 const Eyebrow = styled("div", {
   base: {
-    display: "inline-flex",
+    display: "flex",
     alignItems: "center",
-    gap: "8px",
-    width: "fit-content",
-    padding: "6px 12px",
+    gap: "10px",
+    color: "#555",
+    fontSize: "0.88rem",
+    flexWrap: "wrap",
+  },
+});
+
+const Pill = styled("span", {
+  base: {
+    padding: "3px 10px",
     borderRadius: "999px",
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    color: "rgba(255,255,255,0.85)",
-    fontSize: "0.8rem",
-    fontWeight: 500,
+    background: "#0a0a0a",
+    color: "#fff",
+    fontSize: "0.72rem",
+    fontWeight: 700,
+    letterSpacing: "0.04em",
+    textTransform: "uppercase",
   },
 });
 
 const H1 = styled("h1", {
   base: {
-    fontSize: "clamp(2.5rem, 5.5vw, 4.5rem)",
+    fontSize: "clamp(3rem, 7vw, 6rem)",
     fontWeight: 800,
-    lineHeight: 1.02,
-    letterSpacing: "-0.035em",
+    lineHeight: 0.96,
+    letterSpacing: "-0.045em",
     margin: 0,
-  },
-});
-
-const Gradient = styled("span", {
-  base: {
-    background:
-      "linear-gradient(135deg, #c4b5fd 0%, #7c5cff 45%, #5865f2 100%)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
-    backgroundClip: "text",
   },
 });
 
 const Sub = styled("p", {
   base: {
-    fontSize: "1.1rem",
-    color: "rgba(255,255,255,0.65)",
-    lineHeight: 1.55,
-    maxWidth: "540px",
+    fontSize: "1.15rem",
+    color: "#555",
+    lineHeight: 1.5,
+    maxWidth: "520px",
     margin: 0,
   },
 });
@@ -953,19 +826,18 @@ const CtaRow = styled("div", {
     display: "flex",
     gap: "10px",
     flexWrap: "wrap",
-    marginTop: "8px",
+    marginTop: "6px",
   },
 });
 
 const TrustRow = styled("div", {
   base: {
     display: "flex",
-    alignItems: "center",
-    gap: "20px",
+    gap: "22px",
     flexWrap: "wrap",
-    marginTop: "16px",
-    color: "rgba(255,255,255,0.5)",
-    fontSize: "0.82rem",
+    marginTop: "14px",
+    color: "#777",
+    fontSize: "0.85rem",
   },
 });
 
@@ -974,282 +846,280 @@ const TrustItem = styled("span", {
     display: "inline-flex",
     alignItems: "center",
     gap: "6px",
+    "& svg": { color: "#0a0a0a" },
   },
 });
 
-/* ---- desktop mock ---- */
-
-const HeroMock = styled("div", {
+const HeroShot = styled("div", {
   base: {
     position: "relative",
-    zIndex: 1,
     width: "100%",
-    aspectRatio: "5 / 4",
+  },
+});
+
+const HeroShotFrame = styled("div", {
+  base: {
+    width: "100%",
     borderRadius: "14px",
-    background: "linear-gradient(180deg, #14161f 0%, #0f1118 100%)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    boxShadow:
-      "0 50px 120px -30px rgba(0,0,0,0.65), 0 0 0 1px rgba(124,92,255,0.08), inset 0 1px 0 rgba(255,255,255,0.04)",
     overflow: "hidden",
-    display: "flex",
-    flexDirection: "column",
+    border: "1px solid rgba(0,0,0,0.08)",
+    boxShadow:
+      "0 40px 80px -20px rgba(0,0,0,0.18), 0 8px 24px -8px rgba(0,0,0,0.08)",
+    background: "#f5f5f5",
   },
 });
 
-const MockChrome = styled("div", {
+/* big statement */
+
+const BigStatement = styled("section", {
   base: {
-    display: "flex",
+    padding: "120px 32px",
+    maxWidth: "1100px",
+    margin: "0 auto",
+    textAlign: "left",
+    "@media (max-width: 768px)": { padding: "80px 24px" },
+  },
+});
+
+const BigStatementText = styled("h2", {
+  base: {
+    fontSize: "clamp(2.5rem, 7vw, 6rem)",
+    fontWeight: 800,
+    lineHeight: 0.98,
+    letterSpacing: "-0.045em",
+    margin: 0,
+    maxWidth: "14ch",
+  },
+});
+
+const BigStatementSub = styled("p", {
+  base: {
+    marginTop: "28px",
+    fontSize: "1.15rem",
+    color: "#555",
+    lineHeight: 1.5,
+    maxWidth: "540px",
+  },
+});
+
+/* dark section (voice) */
+
+const DarkSection = styled("section", {
+  base: {
+    background: "#0a0a0a",
+    color: "#fff",
+    padding: "128px 32px",
+    "@media (max-width: 768px)": { padding: "80px 24px" },
+  },
+});
+
+const VoiceGrid = styled("div", {
+  base: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: "72px",
     alignItems: "center",
-    gap: "8px",
-    padding: "11px 14px",
-    borderBottom: "1px solid rgba(255,255,255,0.06)",
-    background: "rgba(0,0,0,0.25)",
+    maxWidth: "1280px",
+    margin: "0 auto",
+    "@media (max-width: 1024px)": {
+      gridTemplateColumns: "1fr",
+      gap: "56px",
+    },
   },
 });
 
-const MockDot = styled("div", {
-  base: { width: "11px", height: "11px", borderRadius: "50%" },
+const VoiceCopy = styled("div", {
+  base: { display: "flex", flexDirection: "column", gap: "20px" },
 });
 
-const MockChromeAddress = styled("div", {
+const VoiceTitle = styled("h2", {
   base: {
-    marginLeft: "auto",
-    marginRight: "auto",
-    fontSize: "0.74rem",
-    color: "rgba(255,255,255,0.4)",
-    fontFamily: "ui-monospace, SFMono-Regular, monospace",
+    fontSize: "clamp(2.5rem, 5.5vw, 4.5rem)",
+    fontWeight: 800,
+    lineHeight: 0.96,
+    letterSpacing: "-0.04em",
+    margin: 0,
   },
 });
 
-const MockBody = styled("div", {
-  base: { display: "flex", flex: 1, minHeight: 0 },
+const VoiceLead = styled("p", {
+  base: {
+    fontSize: "1.1rem",
+    color: "rgba(255,255,255,0.65)",
+    lineHeight: 1.55,
+    maxWidth: "520px",
+    margin: 0,
+  },
 });
 
-const MockSidebar = styled("div", {
+const VoiceFeatures = styled("div", {
   base: {
-    width: "56px",
-    padding: "12px 10px",
     display: "flex",
     flexDirection: "column",
-    gap: "8px",
-    borderRight: "1px solid rgba(255,255,255,0.04)",
-    background: "rgba(0,0,0,0.25)",
+    gap: "20px",
+    marginTop: "16px",
   },
 });
 
-const MockServer = styled("div", {
+const VoiceFeature = styled("div", {
   base: {
-    width: "36px",
-    height: "36px",
-    borderRadius: "12px",
-    background: "rgba(255,255,255,0.06)",
+    paddingTop: "20px",
+    borderTop: "1px solid rgba(255,255,255,0.1)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "6px",
+  },
+});
+
+const VoiceFeatureTitle = styled("h3", {
+  base: {
+    fontSize: "1.1rem",
+    fontWeight: 700,
+    margin: 0,
+  },
+});
+
+const VoiceFeatureDesc = styled("p", {
+  base: {
+    color: "rgba(255,255,255,0.6)",
+    fontSize: "0.95rem",
+    lineHeight: 1.55,
+    margin: 0,
+    maxWidth: "480px",
+  },
+});
+
+const VoiceVisual = styled("div", {
+  base: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gridTemplateRows: "auto auto",
+    gap: "14px",
+    "@media (max-width: 540px)": {
+      gridTemplateColumns: "1fr",
+    },
+  },
+});
+
+const VoiceTile = styled("div", {
+  base: {
+    position: "relative",
+    aspectRatio: "4 / 3",
+    borderRadius: "16px",
+    background: "#15161d",
+    border: "1px solid rgba(255,255,255,0.08)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "10px",
+    padding: "20px",
+    overflow: "hidden",
+    "&[data-share='true']": {
+      gridColumn: "1 / -1",
+      aspectRatio: "16 / 7",
+      background:
+        "repeating-linear-gradient(45deg, #1a1b24 0, #1a1b24 10px, #15161d 10px, #15161d 20px)",
+      justifyContent: "flex-start",
+      alignItems: "flex-start",
+    },
+  },
+});
+
+const VoiceAvatar = styled("div", {
+  base: {
+    width: "52px",
+    height: "52px",
+    borderRadius: "50%",
     display: "grid",
     placeItems: "center",
     fontWeight: 800,
-    color: "rgba(255,255,255,0.55)",
-    fontSize: "0.9rem",
-    transition: "all 0.2s",
-    "&[data-active='true']": {
-      background: "linear-gradient(135deg,#7c5cff,#5865f2)",
-      color: "#fff",
-      borderRadius: "10px",
-      boxShadow: "0 4px 12px rgba(124,92,255,0.45)",
-    },
-  },
-});
-
-const MockChannels = styled("div", {
-  base: {
-    width: "170px",
-    padding: "12px 8px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px",
-    borderRight: "1px solid rgba(255,255,255,0.04)",
-    background: "rgba(255,255,255,0.015)",
-    "@media (max-width: 540px)": { display: "none" },
-  },
-});
-
-const MockServerName = styled("div", {
-  base: {
-    fontSize: "0.84rem",
     color: "#fff",
-    padding: "8px 8px 12px",
-    borderBottom: "1px solid rgba(255,255,255,0.06)",
-    marginBottom: "8px",
   },
 });
 
-const MockChannelHeader = styled("div", {
+const VoiceName = styled("div", {
   base: {
-    fontSize: "0.62rem",
     fontWeight: 700,
-    color: "rgba(255,255,255,0.4)",
-    textTransform: "uppercase",
-    letterSpacing: "0.08em",
-    padding: "10px 8px 4px",
+    fontSize: "0.95rem",
   },
 });
 
-const MockChannel = styled("button", {
+const VoiceWave = styled("div", {
   base: {
     display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    padding: "6px 8px",
+    alignItems: "flex-end",
+    gap: "3px",
+    height: "18px",
+  },
+});
+
+const WaveBar = styled("span", {
+  base: {
+    width: "3px",
+    height: "var(--h)",
+    background: "#7c5cff",
+    borderRadius: "2px",
+    animation: "landing-wave 1s ease-in-out infinite",
+    "&:nth-child(2)": { animationDelay: "0.1s" },
+    "&:nth-child(3)": { animationDelay: "0.2s" },
+    "&:nth-child(4)": { animationDelay: "0.3s" },
+    "&:nth-child(5)": { animationDelay: "0.4s" },
+  },
+});
+
+const VoiceBadge = styled("div", {
+  base: {
+    fontSize: "0.72rem",
+    padding: "3px 10px",
+    borderRadius: "999px",
+    background: "rgba(124,92,255,0.18)",
+    color: "#c4b5fd",
+    fontWeight: 600,
+    "&[data-muted]": {
+      background: "rgba(255,255,255,0.06)",
+      color: "rgba(255,255,255,0.6)",
+    },
+  },
+});
+
+const VoiceShareLabel = styled("div", {
+  base: {
+    fontSize: "0.72rem",
+    padding: "4px 10px",
     borderRadius: "6px",
-    fontSize: "0.82rem",
-    color: "rgba(255,255,255,0.55)",
-    fontWeight: 500,
-    border: "none",
-    background: "transparent",
-    cursor: "pointer",
-    textAlign: "left",
-    fontFamily: "inherit",
-    transition: "background 0.15s, color 0.15s",
-    "&:hover:not(:disabled)": {
-      background: "rgba(255,255,255,0.04)",
-      color: "rgba(255,255,255,0.85)",
-    },
-    "&[data-active='true']": {
-      background: "rgba(255,255,255,0.08)",
-      color: "#fff",
-    },
-    "&:disabled": { cursor: "default", opacity: 0.7 },
+    background: "rgba(124,92,255,0.2)",
+    color: "#c4b5fd",
+    fontWeight: 600,
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
   },
 });
 
-const MockVoiceCount = styled("span", {
-  base: {
-    marginLeft: "auto",
-    fontSize: "0.7rem",
-    color: "rgba(255,255,255,0.4)",
-  },
-});
-
-const MockMain = styled("div", {
-  base: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    minWidth: 0,
-  },
-});
-
-const MockMainHeader = styled("div", {
+const VoiceShareInner = styled("div", {
   base: {
     display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    padding: "14px 20px",
-    borderBottom: "1px solid rgba(255,255,255,0.06)",
-    fontSize: "0.92rem",
-    color: "#fff",
-    "& strong": { fontWeight: 700 },
-  },
-});
-
-const MockTopic = styled("span", {
-  base: {
-    marginLeft: "8px",
-    paddingLeft: "10px",
-    borderLeft: "1px solid rgba(255,255,255,0.1)",
-    fontSize: "0.78rem",
-    color: "rgba(255,255,255,0.45)",
-    fontWeight: 400,
-    "@media (max-width: 760px)": { display: "none" },
-  },
-});
-
-const MockMessages = styled("div", {
-  base: {
-    flex: 1,
-    padding: "18px 20px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "14px",
-    minHeight: 0,
-  },
-});
-
-const MockMessage = styled("div", {
-  base: { display: "flex", gap: "12px", alignItems: "flex-start" },
-});
-
-const MockAvatar = styled("div", {
-  base: {
-    width: "32px",
-    height: "32px",
-    borderRadius: "50%",
-    flexShrink: 0,
-  },
-});
-
-const MockMessageBody = styled("div", {
-  base: { display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 },
-});
-
-const MockMeta = styled("div", {
-  base: { display: "flex", alignItems: "baseline", gap: "8px" },
-});
-
-const MockName = styled("div", {
-  base: { fontWeight: 700, fontSize: "0.85rem", color: "#fff" },
-});
-
-const MockTime = styled("div", {
-  base: { fontSize: "0.7rem", color: "rgba(255,255,255,0.35)" },
-});
-
-const MockText = styled("div", {
-  base: { fontSize: "0.85rem", color: "rgba(255,255,255,0.72)" },
-});
-
-const MockTyping = styled("div", {
-  base: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    fontSize: "0.75rem",
-    color: "rgba(255,255,255,0.4)",
+    gap: "6px",
     marginTop: "auto",
-    paddingTop: "12px",
   },
 });
 
-const MockTypingDot = styled("span", {
+const VoiceShareDot = styled("span", {
   base: {
-    width: "5px",
-    height: "5px",
+    width: "8px",
+    height: "8px",
     borderRadius: "50%",
-    background: "rgba(255,255,255,0.5)",
-    animation: "landing-typing 1.2s infinite ease-in-out",
   },
 });
 
-/* ---- sections ---- */
-
-const Divider = styled("div", {
-  base: {
-    maxWidth: "1280px",
-    height: "1px",
-    margin: "0 auto",
-    background:
-      "linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent)",
-    position: "relative",
-    zIndex: 1,
-  },
-});
+/* sections */
 
 const Section = styled("section", {
   base: {
-    position: "relative",
-    padding: "112px 32px",
-    maxWidth: "1200px",
+    padding: "128px 32px",
+    maxWidth: "1280px",
     margin: "0 auto",
-    zIndex: 1,
-    "@media (max-width: 768px)": { padding: "72px 24px" },
+    "@media (max-width: 768px)": { padding: "80px 24px" },
   },
 });
 
@@ -1257,16 +1127,16 @@ const SectionHeader = styled("div", {
   base: {
     display: "flex",
     flexDirection: "column",
-    gap: "16px",
-    marginBottom: "56px",
-    maxWidth: "680px",
+    gap: "18px",
+    marginBottom: "64px",
+    maxWidth: "720px",
   },
 });
 
 const SectionEyebrow = styled("div", {
   base: {
-    color: "#c4b5fd",
-    fontSize: "0.76rem",
+    color: "#7c5cff",
+    fontSize: "0.78rem",
     fontWeight: 700,
     textTransform: "uppercase",
     letterSpacing: "0.14em",
@@ -1275,129 +1145,288 @@ const SectionEyebrow = styled("div", {
 
 const SectionTitle = styled("h2", {
   base: {
-    fontSize: "clamp(2rem, 4.5vw, 3rem)",
+    fontSize: "clamp(2.25rem, 5.5vw, 4.25rem)",
     fontWeight: 800,
-    lineHeight: 1.05,
-    letterSpacing: "-0.03em",
+    lineHeight: 0.98,
+    letterSpacing: "-0.04em",
     margin: 0,
   },
-});
-
-const SectionTitleMuted = styled("span", {
-  base: { color: "rgba(255,255,255,0.4)" },
 });
 
 const SectionLead = styled("p", {
   base: {
     fontSize: "1.05rem",
-    color: "rgba(255,255,255,0.6)",
+    color: "#555",
     lineHeight: 1.6,
     margin: 0,
-    maxWidth: "580px",
+    maxWidth: "560px",
   },
 });
+
+/* feature grid */
 
 const FeatureGrid = styled("div", {
   base: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gridTemplateColumns: "repeat(2, 1fr)",
     gap: "1px",
-    background: "rgba(255,255,255,0.06)",
-    borderRadius: "18px",
-    border: "1px solid rgba(255,255,255,0.06)",
+    background: "rgba(0,0,0,0.08)",
+    border: "1px solid rgba(0,0,0,0.08)",
+    borderRadius: "20px",
     overflow: "hidden",
+    "@media (max-width: 720px)": {
+      gridTemplateColumns: "1fr",
+    },
   },
 });
 
 const FeatureCard = styled("div", {
   base: {
-    padding: "30px 28px",
-    background: "#0e0f15",
+    padding: "40px 36px",
+    background: "#fff",
     display: "flex",
     flexDirection: "column",
-    gap: "14px",
-    transition: "background 0.3s",
-    "&:hover": { background: "rgba(124,92,255,0.05)" },
+    gap: "12px",
+    minHeight: "220px",
+    transition: "background 0.2s",
+    "&:hover": { background: "#fafaf7" },
+    "@media (max-width: 540px)": { padding: "32px 28px" },
   },
 });
 
-const FeatureIcon = styled("div", {
+const FeatureNum = styled("div", {
   base: {
-    width: "44px",
-    height: "44px",
-    borderRadius: "12px",
-    display: "grid",
-    placeItems: "center",
-    background:
-      "linear-gradient(135deg, rgba(124,92,255,0.18), rgba(88,101,242,0.12))",
-    border: "1px solid rgba(124,92,255,0.25)",
-    color: "#c4b5fd",
-    marginBottom: "4px",
+    fontSize: "0.78rem",
+    fontWeight: 700,
+    color: "#7c5cff",
+    letterSpacing: "0.1em",
+    marginBottom: "8px",
   },
 });
 
 const FeatureTitle = styled("h3", {
   base: {
-    fontSize: "1.08rem",
-    fontWeight: 700,
-    margin: 0,
-    letterSpacing: "-0.01em",
-  },
-});
-
-const FeatureDesc = styled("p", {
-  base: {
-    color: "rgba(255,255,255,0.6)",
-    lineHeight: 1.6,
-    fontSize: "0.92rem",
-    margin: 0,
-  },
-});
-
-const WhyGrid = styled("div", {
-  base: {
-    display: "grid",
-    gridTemplateColumns: "repeat(2, 1fr)",
-    gap: "32px",
-    "@media (max-width: 768px)": { gridTemplateColumns: "1fr" },
-  },
-});
-
-const WhyCard = styled("div", {
-  base: {
-    padding: "28px 0",
-    borderTop: "1px solid rgba(255,255,255,0.08)",
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-});
-
-const WhyTitle = styled("h3", {
-  base: {
-    fontSize: "1.2rem",
+    fontSize: "1.35rem",
     fontWeight: 700,
     margin: 0,
     letterSpacing: "-0.015em",
   },
 });
 
-const WhyDesc = styled("p", {
+const FeatureDesc = styled("p", {
   base: {
-    color: "rgba(255,255,255,0.6)",
+    color: "#555",
     lineHeight: 1.6,
-    fontSize: "0.95rem",
+    fontSize: "0.98rem",
     margin: 0,
     maxWidth: "440px",
   },
 });
 
-/* ---- download ---- */
+/* themes */
+
+const ThemesSection = styled("section", {
+  base: {
+    padding: "128px 32px",
+    maxWidth: "1280px",
+    margin: "0 auto",
+    "@media (max-width: 768px)": { padding: "80px 24px" },
+  },
+});
+
+const ThemesHeader = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "18px",
+    marginBottom: "48px",
+    maxWidth: "720px",
+  },
+});
+
+const ThemePreview = styled("div", {
+  base: {
+    width: "100%",
+    borderRadius: "20px",
+    border: "1px solid rgba(0,0,0,0.08)",
+    overflow: "hidden",
+    transition: "background 0.4s, color 0.4s",
+    boxShadow:
+      "0 30px 60px -20px rgba(0,0,0,0.15), 0 8px 20px -6px rgba(0,0,0,0.06)",
+  },
+});
+
+const ThemePreviewBody = styled("div", {
+  base: {
+    display: "grid",
+    gridTemplateColumns: "64px 180px 1fr",
+    minHeight: "300px",
+    "@media (max-width: 640px)": {
+      gridTemplateColumns: "56px 1fr",
+      "& > :nth-child(2)": { display: "none" },
+    },
+  },
+});
+
+const ThemePreviewSidebar = styled("div", {
+  base: {
+    padding: "14px 10px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    borderRight: "1px solid",
+  },
+});
+
+const ThemePreviewServer = styled("div", {
+  base: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "12px",
+    display: "grid",
+    placeItems: "center",
+    fontWeight: 800,
+    color: "#fff",
+    fontSize: "0.9rem",
+  },
+});
+
+const ThemePreviewChannels = styled("div", {
+  base: {
+    padding: "16px 10px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+    borderRight: "1px solid",
+  },
+});
+
+const ThemePreviewLabel = styled("div", {
+  base: {
+    fontSize: "0.62rem",
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.1em",
+    padding: "8px 10px 4px",
+  },
+});
+
+const ThemePreviewChannel = styled("div", {
+  base: {
+    padding: "7px 10px",
+    borderRadius: "6px",
+    fontSize: "0.82rem",
+    fontWeight: 500,
+    transition: "all 0.3s",
+  },
+});
+
+const ThemePreviewMain = styled("div", {
+  base: {
+    padding: "22px 26px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "14px",
+  },
+});
+
+const ThemePreviewMessage = styled("div", {
+  base: { display: "flex", gap: "12px", alignItems: "flex-start" },
+});
+
+const ThemePreviewAvatar = styled("div", {
+  base: {
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    flexShrink: 0,
+    transition: "background 0.3s",
+  },
+});
+
+const ThemePreviewMessageBody = styled("div", {
+  base: { display: "flex", flexDirection: "column", gap: "2px" },
+});
+
+const ThemePreviewName = styled("div", {
+  base: {
+    fontWeight: 700,
+    fontSize: "0.88rem",
+    transition: "color 0.3s",
+  },
+});
+
+const ThemePreviewText = styled("div", {
+  base: {
+    fontSize: "0.85rem",
+    transition: "color 0.3s",
+  },
+});
+
+const ThemeSwatches = styled("div", {
+  base: {
+    display: "flex",
+    gap: "12px",
+    marginTop: "32px",
+    flexWrap: "wrap",
+  },
+});
+
+const ThemeSwatch = styled("button", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "8px 14px 8px 8px",
+    borderRadius: "999px",
+    border: "1px solid rgba(0,0,0,0.1)",
+    background: "#fff",
+    cursor: "pointer",
+    fontFamily: "inherit",
+    transition: "all 0.15s",
+    "&:hover": { borderColor: "rgba(0,0,0,0.25)" },
+    "&[data-active='true']": {
+      background: "#0a0a0a",
+      borderColor: "#0a0a0a",
+      color: "#fff",
+    },
+  },
+});
+
+const ThemeSwatchDot = styled("span", {
+  base: {
+    position: "relative",
+    width: "24px",
+    height: "24px",
+    borderRadius: "50%",
+    overflow: "hidden",
+    border: "1px solid rgba(0,0,0,0.1)",
+  },
+});
+
+const ThemeSwatchAccent = styled("span", {
+  base: {
+    position: "absolute",
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: "50%",
+  },
+});
+
+const ThemeSwatchName = styled("span", {
+  base: {
+    fontSize: "0.85rem",
+    fontWeight: 600,
+  },
+});
+
+/* download */
 
 const DownloadGrid = styled("div", {
   base: {
     display: "grid",
-    gridTemplateColumns: "minmax(280px, 420px) 1fr",
+    gridTemplateColumns: "minmax(280px, 360px) 1fr",
     gap: "64px",
     alignItems: "center",
     "@media (max-width: 900px)": {
@@ -1409,24 +1438,20 @@ const DownloadGrid = styled("div", {
 });
 
 const PhoneCol = styled("div", {
-  base: {
-    display: "flex",
-    justifyContent: "center",
-  },
+  base: { display: "flex", justifyContent: "center" },
 });
 
 const Phone = styled("div", {
   base: {
     position: "relative",
     width: "100%",
-    maxWidth: "320px",
+    maxWidth: "300px",
     aspectRatio: "9 / 19.5",
     borderRadius: "44px",
     padding: "12px",
-    background:
-      "linear-gradient(180deg, #2a2c38 0%, #15161d 50%, #2a2c38 100%)",
+    background: "linear-gradient(180deg, #2a2c38 0%, #15161d 100%)",
     boxShadow:
-      "0 50px 100px -30px rgba(124,92,255,0.4), 0 30px 80px -20px rgba(0,0,0,0.6), 0 0 0 2px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.1)",
+      "0 40px 80px -20px rgba(124,92,255,0.3), 0 30px 70px -20px rgba(0,0,0,0.4), 0 0 0 2px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.1)",
   },
 });
 
@@ -1436,8 +1461,8 @@ const PhoneNotch = styled("div", {
     top: "22px",
     left: "50%",
     transform: "translateX(-50%)",
-    width: "100px",
-    height: "28px",
+    width: "96px",
+    height: "26px",
     borderRadius: "20px",
     background: "#000",
     zIndex: 2,
@@ -1455,64 +1480,31 @@ const PhoneScreen = styled("img", {
   },
 });
 
-const PhoneSide = styled("div", {
-  base: {
-    position: "absolute",
-    background: "#1e1f28",
-    borderRadius: "2px",
-    "&[data-side='right']": {
-      right: "-2px",
-      top: "180px",
-      width: "3px",
-      height: "70px",
-    },
-    "&[data-side='left-1']": {
-      left: "-2px",
-      top: "110px",
-      width: "3px",
-      height: "30px",
-    },
-    "&[data-side='left-2']": {
-      left: "-2px",
-      top: "160px",
-      width: "3px",
-      height: "50px",
-    },
-    "&[data-side='left-3']": {
-      left: "-2px",
-      top: "220px",
-      width: "3px",
-      height: "50px",
-    },
-  },
-});
-
 const DownloadCol = styled("div", {
-  base: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "20px",
-    width: "100%",
-  },
+  base: { display: "flex", flexDirection: "column", gap: "20px", width: "100%" },
 });
 
 const IosBanner = styled("div", {
   base: {
     padding: "20px 22px",
     borderRadius: "16px",
-    background:
-      "linear-gradient(135deg, rgba(124,92,255,0.18), rgba(88,101,242,0.1))",
-    border: "1px solid rgba(124,92,255,0.35)",
+    background: "#0a0a0a",
+    color: "#fff",
     display: "flex",
     flexDirection: "column",
     gap: "12px",
     "& p": {
       margin: 0,
-      color: "rgba(255,255,255,0.75)",
+      color: "rgba(255,255,255,0.7)",
       fontSize: "0.95rem",
       lineHeight: 1.5,
     },
-    "& a": { width: "fit-content" },
+    "& a": {
+      width: "fit-content",
+      background: "#fff",
+      color: "#0a0a0a",
+      "&:hover": { background: "#ececf4" },
+    },
   },
 });
 
@@ -1521,8 +1513,7 @@ const IosBannerHeader = styled("div", {
     display: "flex",
     alignItems: "center",
     gap: "8px",
-    fontSize: "0.9rem",
-    color: "#fff",
+    fontSize: "0.95rem",
   },
 });
 
@@ -1531,8 +1522,8 @@ const DownloadList = styled("div", {
     display: "flex",
     flexDirection: "column",
     gap: "1px",
-    background: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.06)",
+    background: "rgba(0,0,0,0.08)",
+    border: "1px solid rgba(0,0,0,0.08)",
     borderRadius: "16px",
     overflow: "hidden",
   },
@@ -1543,10 +1534,10 @@ const DownloadItem = styled("div", {
     display: "flex",
     alignItems: "center",
     gap: "16px",
-    padding: "18px 22px",
-    background: "#0e0f15",
-    transition: "background 0.2s",
-    "&:hover": { background: "rgba(124,92,255,0.04)" },
+    padding: "20px 22px",
+    background: "#fff",
+    transition: "background 0.15s",
+    "&:hover": { background: "#fafaf7" },
     "@media (max-width: 540px)": { padding: "16px 18px", gap: "12px" },
   },
 });
@@ -1558,68 +1549,62 @@ const DownloadItemIcon = styled("div", {
     borderRadius: "10px",
     display: "grid",
     placeItems: "center",
-    background: "rgba(255,255,255,0.05)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    color: "#fff",
+    background: "#f5f5f0",
+    border: "1px solid rgba(0,0,0,0.06)",
+    color: "#0a0a0a",
     flexShrink: 0,
   },
 });
 
 const DownloadItemBody = styled("div", {
-  base: {
-    flex: 1,
-    minWidth: 0,
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px",
-  },
+  base: { flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "2px" },
 });
 
 const DownloadItemTitle = styled("div", {
-  base: {
-    fontWeight: 700,
-    fontSize: "0.95rem",
-    color: "#fff",
-  },
+  base: { fontWeight: 700, fontSize: "0.98rem" },
 });
 
 const DownloadItemDesc = styled("div", {
+  base: { fontSize: "0.85rem", color: "#666" },
+});
+
+/* final cta */
+
+const FinalSection = styled("section", {
   base: {
-    fontSize: "0.82rem",
-    color: "rgba(255,255,255,0.55)",
+    background: "#0a0a0a",
+    color: "#fff",
+    padding: "140px 32px",
+    "@media (max-width: 768px)": { padding: "88px 24px" },
   },
 });
 
-/* ---- final cta ---- */
-
-const FinalCta = styled("div", {
+const FinalWrap = styled("div", {
   base: {
-    position: "relative",
-    padding: "80px 48px",
-    borderRadius: "24px",
-    background:
-      "radial-gradient(circle at 25% 20%, rgba(124,92,255,0.22), transparent 60%), radial-gradient(circle at 75% 80%, rgba(88,101,242,0.14), transparent 60%), rgba(255,255,255,0.02)",
-    border: "1px solid rgba(124,92,255,0.22)",
-    overflow: "hidden",
-    "@media (max-width: 768px)": { padding: "56px 28px" },
-  },
-});
-
-const FinalCtaInner = styled("div", {
-  base: {
+    maxWidth: "900px",
+    margin: "0 auto",
     display: "flex",
     flexDirection: "column",
-    gap: "16px",
-    maxWidth: "640px",
+    gap: "20px",
+  },
+});
+
+const FinalEyebrow = styled("div", {
+  base: {
+    color: "#c4b5fd",
+    fontSize: "0.78rem",
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.14em",
   },
 });
 
 const FinalTitle = styled("h2", {
   base: {
-    fontSize: "clamp(2.25rem, 5vw, 3.5rem)",
+    fontSize: "clamp(2.75rem, 7vw, 6rem)",
     fontWeight: 800,
-    lineHeight: 1.05,
-    letterSpacing: "-0.03em",
+    lineHeight: 0.96,
+    letterSpacing: "-0.045em",
     margin: 0,
   },
 });
@@ -1627,23 +1612,21 @@ const FinalTitle = styled("h2", {
 const FinalLead = styled("p", {
   base: {
     color: "rgba(255,255,255,0.65)",
-    fontSize: "1.05rem",
+    fontSize: "1.1rem",
     lineHeight: 1.55,
-    maxWidth: "520px",
+    maxWidth: "540px",
     margin: 0,
   },
 });
 
-/* ---- footer ---- */
+/* footer */
 
 const Footer = styled("footer", {
   base: {
-    position: "relative",
-    borderTop: "1px solid rgba(255,255,255,0.06)",
     padding: "64px 32px 32px",
-    maxWidth: "1280px",
+    maxWidth: "1320px",
     margin: "0 auto",
-    zIndex: 1,
+    borderTop: "1px solid rgba(0,0,0,0.06)",
     "@media (max-width: 768px)": { padding: "48px 24px 24px" },
   },
 });
@@ -1651,10 +1634,10 @@ const Footer = styled("footer", {
 const FooterTop = styled("div", {
   base: {
     display: "grid",
-    gridTemplateColumns: "1.2fr 2fr",
+    gridTemplateColumns: "1.3fr 2fr",
     gap: "48px",
     paddingBottom: "48px",
-    borderBottom: "1px solid rgba(255,255,255,0.06)",
+    borderBottom: "1px solid rgba(0,0,0,0.06)",
     "@media (max-width: 900px)": { gridTemplateColumns: "1fr", gap: "40px" },
   },
 });
@@ -1663,17 +1646,36 @@ const FooterBrand = styled("div", {
   base: {
     display: "flex",
     flexDirection: "column",
-    gap: "12px",
-    maxWidth: "320px",
+    gap: "14px",
+    maxWidth: "340px",
   },
 });
 
 const FooterTag = styled("p", {
   base: {
-    color: "rgba(255,255,255,0.5)",
-    fontSize: "0.9rem",
+    color: "#666",
+    fontSize: "0.92rem",
     lineHeight: 1.55,
     margin: 0,
+  },
+});
+
+const FooterBadges = styled("div", {
+  base: { display: "flex", gap: "8px", marginTop: "4px", flexWrap: "wrap" },
+});
+
+const FooterBadge = styled("span", {
+  base: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    padding: "5px 10px",
+    borderRadius: "999px",
+    background: "#f5f5f0",
+    border: "1px solid rgba(0,0,0,0.06)",
+    fontSize: "0.75rem",
+    fontWeight: 600,
+    color: "#333",
   },
 });
 
@@ -1692,18 +1694,18 @@ const FooterCol = styled("div", {
     flexDirection: "column",
     gap: "10px",
     "& a": {
-      color: "rgba(255,255,255,0.55)",
+      color: "#555",
       textDecoration: "none",
       fontSize: "0.88rem",
-      transition: "color 0.2s",
-      "&:hover": { color: "#fff" },
+      transition: "color 0.15s",
+      "&:hover": { color: "#0a0a0a" },
     },
   },
 });
 
 const FooterColTitle = styled("div", {
   base: {
-    color: "#fff",
+    color: "#0a0a0a",
     fontSize: "0.76rem",
     fontWeight: 700,
     textTransform: "uppercase",
@@ -1718,7 +1720,7 @@ const FooterBottom = styled("div", {
     justifyContent: "space-between",
     alignItems: "center",
     paddingTop: "24px",
-    color: "rgba(255,255,255,0.4)",
+    color: "#888",
     fontSize: "0.85rem",
     "@media (max-width: 540px)": {
       flexDirection: "column",
