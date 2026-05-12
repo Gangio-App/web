@@ -157,12 +157,12 @@ render(
         </Route>
         <Route path="/privacy" component={Privacy as never} />
         <Route path="/terms" component={Terms as never} />
+        <Route path="/download" component={Downloads as never} />
+        <Route path="/downloads" component={Downloads as never} />
         <Route path="/" component={Interface as never}>
           <Route path="/pwa" component={PWARedirect} />
           <Route path="/dev" component={DevelopmentPage} />
           <Route path="/discover/*" component={Discover} />
-          <Route path="/download" component={Downloads} />
-          <Route path="/downloads" component={Downloads} />
           <Route path="/settings" component={SettingsRedirect} />
           <Route path="/invite/:code" component={InviteRedirect} />
           <Route path="/bot/:code" component={BotRedirect} />
