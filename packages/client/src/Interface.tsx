@@ -98,6 +98,61 @@ const Interface = (props: { children: JSX.Element }) => {
     }
   });
 
+  // Claim a pending referral once the user is logged in.
+  // Reads the referrer ID stored by FlowCreate (?ref=... or /login/create/:code)
+  // and posts it to the admin-panel public endpoint along with the session token.
+  createEffect(async () => {
+    if (!isLoggedIn()) return;
+    if (!lifecycle.loadedOnce()) return;
+
+    const userId = client().user?.id;
+    if (!userId) return;
+
+    let referrerId: string | null = null;
+    try {
+      referrerId = localStorage.getItem("pending_referrer_id");
+    } catch {
+      return;
+    }
+    if (!referrerId) return;
+
+    // Don't refer yourself
+    if (referrerId === userId) {
+      try { localStorage.removeItem("pending_referrer_id"); } catch { /* ignore */ }
+      return;
+    }
+
+    const claimedKey = `referral_claimed:${userId}`;
+    try {
+      if (localStorage.getItem(claimedKey) === "1") {
+        localStorage.removeItem("pending_referrer_id");
+        return;
+      }
+    } catch { /* ignore */ }
+
+    const session = state.auth.getSession();
+    if (!session?.token) return;
+
+    try {
+      const res = await fetch("/api/referrals/public/claim", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: session.token,
+          referrerId,
+        }),
+      });
+      if (res.ok) {
+        try {
+          localStorage.setItem(claimedKey, "1");
+          localStorage.removeItem("pending_referrer_id");
+        } catch { /* ignore */ }
+      }
+    } catch {
+      // network errors: leave the pending entry so we retry next session
+    }
+  });
+
   useBeforeLeave((e) => {
     if (!e.defaultPrevented) {
       if (e.to === "/settings") {

@@ -2,12 +2,12 @@ import { Trans } from "@lingui-solid/solid/macro";
 
 import { useApi, useClient, useClientLifecycle } from "@revolt/client";
 import { CONFIGURATION } from "@revolt/common";
-import { useNavigate, useParams } from "@revolt/routing";
+import { useNavigate, useParams, useSearchParams } from "@revolt/routing";
 import { Button, Column, Row, Text, iconSize } from "@revolt/ui";
 
 import MdArrowBack from "@material-design-icons/svg/filled/arrow_back.svg?component-solid";
 
-import { onCleanup, Show } from "solid-js";
+import { onCleanup, onMount, Show } from "solid-js";
 import { FlowTitle } from "./Flow";
 import { setFlowCheckEmail } from "./FlowCheck";
 import { Fields, Form } from "./Form";
@@ -23,8 +23,39 @@ export default function FlowCreate() {
   const getClient = useClient();
   const navigate = useNavigate();
   const { code } = useParams();
+  const [searchParams] = useSearchParams();
   const state = useState();
   const { lifecycle } = useClientLifecycle();
+
+  /**
+   * Persist a referral code (referrer userId) so we can claim it after login.
+   * Accepts ?ref=<userId> query param, or treats /login/create/:code as a
+   * referral when invite-only is disabled (so the same shareable URL works
+   * in both cases).
+   */
+  onMount(() => {
+    try {
+      const refParam = (searchParams as { ref?: string }).ref;
+      if (refParam && typeof refParam === "string") {
+        localStorage.setItem("pending_referrer_id", refParam.trim());
+        return;
+      }
+
+      // Fallback: treat /login/create/:code as a referral when not invite-only.
+      // ULIDs are 26 chars [0-9A-HJKMNP-TV-Z] and we never use them as invite codes.
+      const cl = getClient();
+      const inviteOnly = cl.configured() ? cl.configuration?.features.invite_only : false;
+      if (
+        !inviteOnly &&
+        typeof code === "string" &&
+        /^[0-9A-HJKMNP-TV-Z]{26}$/i.test(code)
+      ) {
+        localStorage.setItem("pending_referrer_id", code.toUpperCase());
+      }
+    } catch {
+      /* ignore storage errors */
+    }
+  });
 
   /**
    * Listen for Steam login messages

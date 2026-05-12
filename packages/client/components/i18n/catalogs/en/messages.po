@@ -4552,3 +4552,62 @@ msgstr "Preview paused to save resources"
 
 msgid "LIVE"
 msgstr "LIVE"
+
+#: components/app/interface/settings/UserSettings.tsx
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Referrals"
+msgstr "Referrals"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Invite friends to Gangio"
+msgstr "Invite friends to Gangio"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Share your personal referral link. When your friends sign up, you'll earn exclusive profile badges as a thank you."
+msgstr "Share your personal referral link. When your friends sign up, you'll earn exclusive profile badges as a thank you."
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Copied!"
+msgstr "Copied!"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Share"
+msgstr "Share"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "People referred"
+msgstr "People referred"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Badges earned"
+msgstr "Badges earned"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Next milestone"
+msgstr "Next milestone"
+
+#. placeholder {0}: next().referral_threshold - d().count
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "{0} more referrals to unlock this badge"
+msgstr "{0} more referrals to unlock this badge"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Milestones"
+msgstr "Milestones"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Unlocked"
+msgstr "Unlocked"
+
+#. placeholder {0}: m.referral_threshold
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Refer {0} people to unlock"
+msgstr "Refer {0} people to unlock"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Could not load referral data. Please try again later."
+msgstr "Could not load referral data. Please try again later."
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Refresh"
+msgstr "Refresh"

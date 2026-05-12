@@ -4663,3 +4663,62 @@ msgstr "Kaynak tasarrufu için önizleme duraklatıldı"
 
 msgid "LIVE"
 msgstr "CANLI"
+
+#: components/app/interface/settings/UserSettings.tsx
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Referrals"
+msgstr "Davetler"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Invite friends to Gangio"
+msgstr "Arkadaşlarını Gangio'ya davet et"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Share your personal referral link. When your friends sign up, you'll earn exclusive profile badges as a thank you."
+msgstr "Kişisel davet bağlantını paylaş. Arkadaşların kaydolduğunda, teşekkür olarak özel profil rozetleri kazanırsın."
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Copied!"
+msgstr "Kopyalandı!"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Share"
+msgstr "Paylaş"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "People referred"
+msgstr "Davet edilen kişi"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Badges earned"
+msgstr "Kazanılan rozet"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Next milestone"
+msgstr "Sonraki hedef"
+
+#. placeholder {0}: next().referral_threshold - d().count
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "{0} more referrals to unlock this badge"
+msgstr "Bu rozeti açmak için {0} davet daha gerekiyor"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Milestones"
+msgstr "Hedefler"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Unlocked"
+msgstr "Açıldı"
+
+#. placeholder {0}: m.referral_threshold
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Refer {0} people to unlock"
+msgstr "Açmak için {0} kişi davet et"
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Could not load referral data. Please try again later."
+msgstr "Davet bilgileri yüklenemedi. Lütfen daha sonra tekrar dene."
+
+#: components/app/interface/settings/user/Referrals.tsx
+msgid "Refresh"
+msgstr "Yenile"

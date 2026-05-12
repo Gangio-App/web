@@ -21,6 +21,7 @@ import MdNotifications from "@material-design-icons/svg/outlined/notifications.s
 import MdPalette from "@material-design-icons/svg/outlined/palette.svg?component-solid";
 import MdPrivacyTip from "@material-design-icons/svg/outlined/privacy_tip.svg?component-solid";
 import MdRateReview from "@material-design-icons/svg/outlined/rate_review.svg?component-solid";
+import MdGroupAdd from "@material-design-icons/svg/outlined/group_add.svg?component-solid";
 import MdScience from "@material-design-icons/svg/outlined/science.svg?component-solid";
 import MdSmartToy from "@material-design-icons/svg/outlined/smart_toy.svg?component-solid";
 import MdVerifiedUser from "@material-design-icons/svg/outlined/verified_user.svg?component-solid";
@@ -33,6 +34,7 @@ import { MyAccount } from "./user/Account";
 import AdvancedSettings from "./user/Advanced";
 import DataPrivacy from "./user/DataPrivacy";
 import { Feedback } from "./user/Feedback";
+import { Referrals } from "./user/Referrals";
 import { LanguageSettings } from "./user/Language";
 import Native from "./user/Native";
 import Notifications from "./user/Notifications";
@@ -97,6 +99,8 @@ const Config: SettingsConfiguration<{ server: Server }> = {
         return <LanguageSettings />;
       case "feedback":
         return <Feedback />;
+      case "referrals":
+        return <Referrals />;
       case "subscribe":
         return <EditSubscription />;
       case "native":
@@ -195,6 +199,11 @@ const Config: SettingsConfiguration<{ server: Server }> = {
               id: "bots",
               icon: <MdSmartToy {...iconSize(20)} />,
               title: <Trans>My Bots</Trans>,
+            },
+            {
+              id: "referrals",
+              icon: <MdGroupAdd {...iconSize(20)} />,
+              title: <Trans>Referrals</Trans>,
             },
             {
               id: "feedback",
