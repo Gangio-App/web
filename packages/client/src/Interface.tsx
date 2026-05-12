@@ -21,6 +21,7 @@ import { LAYOUT_SECTIONS } from "@revolt/state/stores/Layout";
 import { CircularProgress } from "@revolt/ui";
 
 import { useLingui } from "@lingui-solid/solid/macro";
+import { Landing } from "./interface/Landing";
 import { Sidebar } from "./interface/Sidebar";
 import { MobileNavbar } from "./interface/navigation/MobileNavbar";
 
@@ -33,7 +34,8 @@ const Interface = (props: { children: JSX.Element }) => {
   const client = useClient();
   const { openModal } = useModals();
   const { isLoggedIn, lifecycle } = useClientLifecycle();
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const { pathname } = location;
   const params = useSmartParams();
 
   const baseTitle = createMemo(() => document.title || "Gangio");
@@ -258,6 +260,9 @@ const Interface = (props: { children: JSX.Element }) => {
       >
         <Titlebar />
         <Switch fallback={<CircularProgress />}>
+          <Match when={!isLoggedIn() && location.pathname === "/"}>
+            <Landing />
+          </Match>
           <Match when={!isLoggedIn()}>
             <Navigate href="/login" />
           </Match>

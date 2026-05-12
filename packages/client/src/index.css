@@ -1,1 +1,12 @@
 @layer reset, base, tokens, recipes, utilities;
+
+@keyframes landing-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(124, 92, 255, 0.6); }
+  70%  { box-shadow: 0 0 0 12px rgba(124, 92, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(124, 92, 255, 0); }
+}
+
+@keyframes landing-typing {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.5; }
+  40%           { transform: translateY(-4px); opacity: 1; }
+}
