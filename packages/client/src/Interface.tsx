@@ -260,7 +260,13 @@ const Interface = (props: { children: JSX.Element }) => {
       >
         <Titlebar />
         <Switch fallback={<CircularProgress />}>
-          <Match when={!isLoggedIn() && location.pathname === "/"}>
+          <Match
+            when={
+              !isLoggedIn() &&
+              location.pathname === "/" &&
+              !/Electron/i.test(navigator.userAgent)
+            }
+          >
             <Landing />
           </Match>
           <Match when={!isLoggedIn()}>
