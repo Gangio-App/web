@@ -42,7 +42,7 @@ import { Contact } from "./interface/Contact";
 import { Cookies } from "./interface/Cookies";
 import { DevelopmentPage } from "./interface/Development";
 import { Discover } from "./interface/Discover";
-import { Downloads } from "./interface/Downloads";
+import { DownloadPage } from "./interface/DownloadPage";
 import { Friends } from "./interface/Friends";
 import { HomePage } from "./interface/Home";
 import { Privacy } from "./interface/Privacy";
