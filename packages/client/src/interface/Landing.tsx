@@ -24,6 +24,7 @@ import {
   FiCompass,
   FiDownload,
   FiDroplet,
+  FiGithub,
   FiHash,
   FiHeadphones,
   FiHeart,
@@ -55,6 +56,8 @@ const URLS = {
   signup: "/login/create",
   login: "/login/auth",
   donate: "https://buymeacoffee.com/korybantes",
+  bluesky: "https://bsky.app/profile/gangio.pro",
+  github: "https://github.com/Gangio-App",
 };
 
 const THEMES: { name: string; bg: string; accent: string; text: string }[] = [
@@ -181,6 +184,23 @@ const MEGAMENU: Record<
 };
 
 const MENU_KEYS = Object.keys(MEGAMENU);
+
+/* Inline Bluesky butterfly logo (solid-icons has no stable Bluesky export). */
+function BlueskyIcon(props: { size?: number }) {
+  const s = props.size ?? 16;
+  return (
+    <svg
+      width={s}
+      height={s}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path d="M5.9 3.7c2.7 2 5.6 6.2 6.7 8.4 1-2.2 4-6.4 6.7-8.4 1.9-1.4 5.1-2.6 5.1 1.1 0 .7-.4 6.1-.7 7-1 3-4 3.7-6.7 3.3 4.7.8 5.9 3.5 3.3 6.2-5 5.1-7.2-1.3-7.7-2.9-.1-.3-.2-.5-.2-.5s-.1.2-.2.5c-.5 1.7-2.7 8.1-7.7 3-2.6-2.7-1.4-5.4 3.3-6.2-2.7.4-5.7-.3-6.6-3.3-.3-.9-.7-6.3-.7-7C.5 1.1 3.7 2.3 5.6 3.7h.3z" />
+    </svg>
+  );
+}
 
 /* ---------------- component ---------------- */
 
@@ -1082,19 +1102,33 @@ export function Landing() {
               </a>
             </Show>
           </CtaRow>
-          <FinalSupport>
-            <a
-              class={finalSupportLink()}
-              href={URLS.donate}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <FiHeart size={14} />
-              Like Gangio? <span>Buy me a coffee</span>
-            </a>
-          </FinalSupport>
         </FinalWrap>
       </FinalSection>
+
+      {/* DONATION BANNER */}
+      <DonateBanner data-reveal>
+        <DonateInner>
+          <DonateLeft>
+            <DonateIconCircle>
+              <FiHeart size={18} />
+            </DonateIconCircle>
+            <DonateCopy>
+              <DonateTitle>Support an independent platform</DonateTitle>
+              <DonateText>
+                Gangio is built by a tiny team. Your donation funds servers,
+                development, and keeps the app free forever.
+              </DonateText>
+            </DonateCopy>
+          </DonateLeft>
+          <DonateCta
+            href={URLS.donate}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Donate <FiArrowRight size={14} />
+          </DonateCta>
+        </DonateInner>
+      </DonateBanner>
 
       {/* FOOTER */}
       <Footer>
@@ -1138,20 +1172,27 @@ export function Landing() {
               <a href="/privacy">Privacy</a>
             </FooterCol>
             <FooterCol>
-              <FooterColTitle>Support</FooterColTitle>
+              <FooterColTitle>Connect</FooterColTitle>
+              <a
+                href={URLS.bluesky}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Bluesky
+              </a>
+              <a
+                href={URLS.github}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                GitHub
+              </a>
               <a
                 href={URLS.donate}
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                Buy me a coffee
-              </a>
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                GitHub
+                Donate Gangio
               </a>
             </FooterCol>
           </FooterCols>
@@ -1159,14 +1200,32 @@ export function Landing() {
 
         <FooterBottom>
           <span>© {new Date().getFullYear()} Gangio</span>
-          <FooterDonate
-            href={URLS.donate}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <FiCoffee size={14} />
-            Buy me a coffee
-          </FooterDonate>
+          <FooterSocials>
+            <FooterSocial
+              href={URLS.bluesky}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Bluesky"
+            >
+              <BlueskyIcon size={16} />
+            </FooterSocial>
+            <FooterSocial
+              href={URLS.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="GitHub"
+            >
+              <FiGithub size={16} />
+            </FooterSocial>
+            <FooterSocial
+              href={URLS.donate}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Donate Gangio"
+            >
+              <FiCoffee size={16} />
+            </FooterSocial>
+          </FooterSocials>
         </FooterBottom>
       </Footer>
     </Root>
@@ -3043,36 +3102,98 @@ const FinalLead = styled("p", {
   },
 });
 
-const FinalSupport = styled("div", {
+/* donation banner — sits between FinalSection and Footer */
+
+const DonateBanner = styled("section", {
   base: {
-    marginTop: "20px",
-    display: "flex",
-    justifyContent: "center",
+    background: "linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%)",
+    color: "#fff",
+    padding: "32px",
+    "@media (max-width: 768px)": { padding: "28px 20px" },
   },
 });
 
-const finalSupportLink = () =>
-  css({
+const DonateInner = styled("div", {
+  base: {
+    maxWidth: "1320px",
+    margin: "0 auto",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "24px",
+    "@media (max-width: 768px)": {
+      flexDirection: "column",
+      alignItems: "flex-start",
+      gap: "20px",
+    },
+  },
+});
+
+const DonateLeft = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "16px",
+    maxWidth: "640px",
+  },
+});
+
+const DonateIconCircle = styled("div", {
+  base: {
+    flexShrink: 0,
+    width: "40px",
+    height: "40px",
+    borderRadius: "999px",
+    background: "rgba(255,255,255,0.15)",
     display: "inline-flex",
     alignItems: "center",
-    gap: "8px",
-    color: "rgba(255,255,255,0.55)",
-    fontSize: "0.85rem",
-    textDecoration: "none",
-    padding: "6px 12px",
+    justifyContent: "center",
+    color: "#fff",
+  },
+});
+
+const DonateCopy = styled("div", {
+  base: { display: "flex", flexDirection: "column", gap: "4px" },
+});
+
+const DonateTitle = styled("h3", {
+  base: {
+    margin: 0,
+    fontSize: "1.05rem",
+    fontWeight: 700,
+    letterSpacing: "-0.01em",
+  },
+});
+
+const DonateText = styled("p", {
+  base: {
+    margin: 0,
+    fontSize: "0.9rem",
+    lineHeight: 1.5,
+    color: "rgba(255,255,255,0.78)",
+  },
+});
+
+const DonateCta = styled("a", {
+  base: {
+    flexShrink: 0,
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    padding: "11px 22px",
     borderRadius: "999px",
-    transition: "color 0.15s, background 0.15s",
-    "& svg": { color: "#f472b6" },
-    "& span": {
-      color: "#fff",
-      fontWeight: 600,
-      borderBottom: "1px solid rgba(255,255,255,0.3)",
-    },
+    background: "#fff",
+    color: "#4f46e5",
+    fontSize: "0.92rem",
+    fontWeight: 700,
+    textDecoration: "none",
+    transition: "transform 0.15s, box-shadow 0.15s",
     "&:hover": {
-      color: "rgba(255,255,255,0.85)",
-      background: "rgba(255,255,255,0.05)",
+      transform: "translateY(-1px)",
+      boxShadow: "0 12px 28px -10px rgba(0,0,0,0.35)",
     },
-  });
+  },
+});
 
 /* footer */
 
@@ -3185,23 +3306,31 @@ const FooterBottom = styled("div", {
   },
 });
 
-const FooterDonate = styled("a", {
+const FooterSocials = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+});
+
+const FooterSocial = styled("a", {
   base: {
     display: "inline-flex",
     alignItems: "center",
-    gap: "8px",
-    padding: "8px 14px",
+    justifyContent: "center",
+    width: "34px",
+    height: "34px",
     borderRadius: "999px",
-    background: "#fff5e6",
-    color: "#b45309",
-    fontSize: "0.84rem",
-    fontWeight: 600,
+    background: "transparent",
+    border: "1px solid rgba(0,0,0,0.1)",
+    color: "#444",
     textDecoration: "none",
-    border: "1px solid #fde4b5",
     transition: "all 0.15s",
     "&:hover": {
-      background: "#ffe8c2",
-      borderColor: "#f59e0b",
+      background: "#0a0a0a",
+      borderColor: "#0a0a0a",
+      color: "#fff",
       transform: "translateY(-1px)",
     },
   },
