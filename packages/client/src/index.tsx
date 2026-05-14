@@ -167,8 +167,8 @@ render(
         <Route path="/guidelines" component={CommunityGuidelines as never} />
         <Route path="/safety" component={Safety as never} />
         <Route path="/contact" component={Contact as never} />
-        <Route path="/download" component={Downloads as never} />
-        <Route path="/downloads" component={Downloads as never} />
+        <Route path="/download" component={DownloadPage as never} />
+        <Route path="/downloads" component={DownloadPage as never} />
         <Route path="/" component={Interface as never}>
           <Route path="/pwa" component={PWARedirect} />
           <Route path="/dev" component={DevelopmentPage} />

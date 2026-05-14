@@ -25,6 +25,7 @@ import {
   FiDownload,
   FiDroplet,
   FiGithub,
+  FiHardDrive,
   FiHash,
   FiHeadphones,
   FiHeart,
@@ -130,6 +131,63 @@ const MEGAMENU: Record<
       desc: "Crystal-clear voice, 1080p video, and game-ready screen sharing — all built in.",
       href: "#voice",
       cta: "See it in action",
+    },
+  },
+  download: {
+    title: "Download",
+    columns: [
+      {
+        heading: "Desktop",
+        items: [
+          {
+            icon: IoLogoMicrosoft,
+            label: "Windows",
+            desc: "Native installer for Windows 10 & 11.",
+            href: "/download#windows",
+          },
+          {
+            icon: IoLogoApple,
+            label: "macOS",
+            desc: "Universal DMG — Apple Silicon & Intel.",
+            href: "/download#macos",
+          },
+          {
+            icon: FiHardDrive,
+            label: "Linux",
+            desc: "AppImage, .deb, .rpm builds.",
+            href: "/download#linux",
+          },
+        ],
+      },
+      {
+        heading: "Mobile & Web",
+        items: [
+          {
+            icon: IoLogoApple,
+            label: "iOS — TestFlight",
+            desc: "Public beta on iPhone and iPad.",
+            href: "/download#ios",
+          },
+          {
+            icon: BiRegularGlobe,
+            label: "Web app",
+            desc: "Use Gangio in any modern browser.",
+            href: URLS.login,
+          },
+          {
+            icon: FiGithub,
+            label: "All releases",
+            desc: "Source builds and changelogs on GitHub.",
+            href: "https://github.com/Gangio-App/for-desktop/releases",
+          },
+        ],
+      },
+    ],
+    feature: {
+      title: "We'll pick the right build for you",
+      desc: "The download page auto-detects your OS so you never grab the wrong installer.",
+      href: "/download",
+      cta: "Open download page",
     },
   },
   resources: {

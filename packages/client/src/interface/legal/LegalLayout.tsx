@@ -401,7 +401,6 @@ const Root = styled("div", {
       "'Plus Jakarta Sans Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
     WebkitFontSmoothing: "antialiased",
     MozOsxFontSmoothing: "grayscale",
-    "& a": { color: "inherit" },
   },
 });
 
@@ -480,12 +479,13 @@ const navOpenAppBtn = () =>
     padding: "10px 16px",
     borderRadius: "999px",
     background: "#0a0a0a",
-    color: "#fff",
+    color: "#ffffff !important",
     fontSize: "0.88rem",
     fontWeight: 700,
     textDecoration: "none",
     transition: "transform 0.15s, background 0.15s",
     "&:hover": { background: "#1a1a1a", transform: "translateY(-1px)" },
+    "& svg": { color: "#ffffff" },
   });
 
 const NavBurger = styled("button", {
