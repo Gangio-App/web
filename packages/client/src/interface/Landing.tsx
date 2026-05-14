@@ -22,7 +22,7 @@ import {
   BiSolidVolumeFull,
 } from "solid-icons/bi";
 import { FiArrowUpRight, FiHash } from "solid-icons/fi";
-import { HiOutlineMenu, HiOutlineX } from "solid-icons/hi";
+import { HiOutlineBars3 as HiOutlineMenu, HiOutlineXMark as HiOutlineX } from "solid-icons/hi";
 import {
   IoLogoApple,
   IoLogoGithub,
