@@ -22,12 +22,12 @@ import {
   FiCode,
   FiCompass,
   FiDownload,
+  FiDroplet,
   FiHash,
   FiHeadphones,
   FiMenu,
   FiMic,
   FiMonitor,
-  FiPalette,
   FiPhoneOff,
   FiShield,
   FiVideo,
@@ -103,7 +103,7 @@ const MEGAMENU: Record<
         heading: "Make it yours",
         items: [
           {
-            icon: FiPalette,
+            icon: FiDroplet,
             label: "Themes",
             desc: "Six built-in themes plus full CSS support.",
             href: "#themes",
