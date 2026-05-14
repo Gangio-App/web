@@ -239,6 +239,7 @@ export function Landing() {
 
   const t = () => THEMES[theme()];
 
+  let rootRef: HTMLDivElement | undefined;
   let heroShotRef: HTMLDivElement | undefined;
   let heroSectionRef: HTMLDivElement | undefined;
   const triggers: ScrollTrigger[] = [];
@@ -257,6 +258,10 @@ export function Landing() {
   onMount(() => {
     gsap.registerPlugin(ScrollTrigger);
 
+    // The Landing root is itself the scroll container (height:100%; overflow:auto),
+    // so ScrollTrigger needs to read scroll events from it, not from window.
+    const scroller = rootRef;
+
     // Hero screenshot scales up + flattens as the user scrolls through the hero.
     if (heroShotRef && heroSectionRef) {
       gsap.set(heroShotRef, {
@@ -268,6 +273,7 @@ export function Landing() {
       });
 
       const t1 = ScrollTrigger.create({
+        scroller,
         trigger: heroSectionRef,
         start: "top top",
         end: "bottom top",
@@ -283,12 +289,13 @@ export function Landing() {
 
     // Subtle scroll-driven reveal for sections (translateY only — no opacity
     // hiding, so content stays visible if JS fails).
-    const revealTargets = document.querySelectorAll<HTMLElement>(
-      "[data-reveal]",
-    );
+    const revealTargets =
+      rootRef?.querySelectorAll<HTMLElement>("[data-reveal]") ??
+      document.querySelectorAll<HTMLElement>("[data-reveal]");
     revealTargets.forEach((el) => {
       gsap.set(el, { y: 28 });
       const t = ScrollTrigger.create({
+        scroller,
         trigger: el,
         start: "top 85%",
         once: true,
@@ -296,6 +303,10 @@ export function Landing() {
       });
       triggers.push(t);
     });
+
+    // Recompute positions after fonts/images settle (otherwise start/end
+    // can be measured before layout stabilises and the hero never fires).
+    ScrollTrigger.refresh();
   });
 
   onCleanup(() => {
@@ -303,7 +314,7 @@ export function Landing() {
   });
 
   return (
-    <Root>
+    <Root ref={rootRef}>
       {/* NAV */}
       <Nav data-menu-open={openMenu() !== null ? "true" : undefined}>
         <NavInner>

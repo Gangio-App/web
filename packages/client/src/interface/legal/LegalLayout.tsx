@@ -1,16 +1,21 @@
-import { JSX, For } from "solid-js";
+import { JSX, For, Show, createSignal } from "solid-js";
 import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 import {
   FiArrowLeft,
-  FiArrowUpRight,
+  FiArrowRight,
   FiBookOpen,
+  FiChevronDown,
   FiCoffee,
+  FiCompass,
+  FiDownload,
   FiGithub,
   FiHeart,
+  FiMenu,
   FiShield,
   FiUsers,
+  FiX,
 } from "solid-icons/fi";
 import { BiRegularCode, BiRegularLock } from "solid-icons/bi";
 
@@ -34,6 +39,15 @@ export const LEGAL_PAGES: { href: string; label: string; desc: string }[] = [
   { href: "/guidelines", label: "Community Guidelines", desc: "How we keep communities healthy." },
   { href: "/safety", label: "Safety Center", desc: "Tools, reporting, and resources." },
   { href: "/contact", label: "Contact", desc: "Reach the team." },
+];
+
+/* Visual nav links shown in the LegalLayout top bar — these point at the
+ * Landing page anchors so people don't get stranded on legal pages. */
+const NAV_LINKS: { label: string; href: string }[] = [
+  { label: "Product", href: "/#features" },
+  { label: "Resources", href: "/#voice" },
+  { label: "Download", href: "/download" },
+  { label: "Discover", href: "/discover/servers" },
 ];
 
 /* Inline Bluesky butterfly logo. */
@@ -67,44 +81,125 @@ export type LegalLayoutProps = {
 };
 
 /**
- * LegalLayout — shared chrome for all legal/policy pages.
+ * LegalLayout — shared chrome for every legal/policy page.
  *
- * Renders a clean, branded top navbar (matching the Landing design),
- * a sidebar with quick links between every legal page, a long-form
- * content area with sensible typography defaults, and the same footer
- * used on the marketing site. Designed to be lightweight (no GSAP, no
- * megamenu) so it loads fast for compliance audits and crawlers.
+ * Visual goal: the navbar and footer must look identical to the marketing
+ * Landing page, so users moving from `/` to `/privacy` to `/terms` never
+ * feel like they've been thrown into a different (or older) site.
+ *
+ * On mobile the desktop sidebar would dump every legal title before the
+ * actual page content, which is awful — so on small viewports we collapse
+ * the side-nav into an accordion that opens on demand and the article
+ * starts immediately under the title.
  */
 export function LegalLayout(props: LegalLayoutProps) {
+  const [drawerOpen, setDrawerOpen] = createSignal(false);
+  const [mobileNavOpen, setMobileNavOpen] = createSignal(false);
+
+  const currentLabel = () =>
+    LEGAL_PAGES.find((p) => p.href === props.current)?.label ??
+    "Browse policies";
+
   return (
     <Root>
-      {/* NAV */}
+      {/* NAV — same look & feel as Landing */}
       <Nav>
         <NavInner>
           <NavLeft>
-            <a href="/" class={navHomeBtn()} aria-label="Back to home">
-              <FiArrowLeft size={16} />
-              <span>Home</span>
-            </a>
-            <NavBrand href="/">
+            <a href="/" class={brandLink()} aria-label="Gangio home">
               <Wordmark
-                class={css({ height: "22px", width: "auto", color: "#0a0a0a" })}
+                class={css({
+                  height: "26px",
+                  width: "auto",
+                  color: "#0a0a0a",
+                })}
               />
-            </NavBrand>
+            </a>
           </NavLeft>
+
+          <NavLinksDesktop>
+            <For each={NAV_LINKS}>
+              {(link) => <NavLink href={link.href}>{link.label}</NavLink>}
+            </For>
+          </NavLinksDesktop>
+
           <NavCtas>
             <a class={navOpenAppBtn()} href={URLS.login}>
               Open app
-              <FiArrowUpRight size={14} />
+              <FiArrowRight size={14} />
             </a>
+            <NavBurger
+              type="button"
+              aria-label="Open menu"
+              onClick={() => setDrawerOpen(true)}
+            >
+              <FiMenu size={22} />
+            </NavBurger>
           </NavCtas>
         </NavInner>
       </Nav>
 
+      {/* MOBILE DRAWER */}
+      <Show when={drawerOpen()}>
+        <DrawerScrim onClick={() => setDrawerOpen(false)} />
+        <Drawer>
+          <DrawerHeader>
+            <Wordmark class={css({ height: "24px", color: "#0a0a0a" })} />
+            <DrawerClose
+              type="button"
+              aria-label="Close menu"
+              onClick={() => setDrawerOpen(false)}
+            >
+              <FiX size={22} />
+            </DrawerClose>
+          </DrawerHeader>
+          <DrawerLinks>
+            <DrawerHeading>Browse</DrawerHeading>
+            <DrawerLink href="/" onClick={() => setDrawerOpen(false)}>
+              <FiArrowLeft size={18} /> Home
+            </DrawerLink>
+            <DrawerLink
+              href="/download"
+              onClick={() => setDrawerOpen(false)}
+            >
+              <FiDownload size={18} /> Download
+            </DrawerLink>
+            <DrawerLink
+              href="/discover/servers"
+              onClick={() => setDrawerOpen(false)}
+            >
+              <FiCompass size={18} /> Discover
+            </DrawerLink>
+
+            <DrawerHeading>Legal &amp; Policies</DrawerHeading>
+            <For each={LEGAL_PAGES}>
+              {(p) => (
+                <DrawerLink
+                  href={p.href}
+                  onClick={() => setDrawerOpen(false)}
+                  data-current={
+                    props.current === p.href ? "true" : undefined
+                  }
+                >
+                  <FiBookOpen size={18} /> {p.label}
+                </DrawerLink>
+              )}
+            </For>
+          </DrawerLinks>
+          <DrawerCta>
+            <a class={navOpenAppBtn()} href={URLS.login}>
+              Open app
+              <FiArrowRight size={16} />
+            </a>
+          </DrawerCta>
+        </Drawer>
+      </Show>
+
       {/* PAGE */}
       <Page>
-        <Aside aria-label="Legal navigation">
-          <AsideTitle>Legal & Policies</AsideTitle>
+        {/* Desktop sidebar */}
+        <AsideDesktop aria-label="Legal navigation">
+          <AsideTitle>Legal &amp; Policies</AsideTitle>
           <AsideList>
             <For each={LEGAL_PAGES}>
               {(page) => (
@@ -125,9 +220,49 @@ export function LegalLayout(props: LegalLayoutProps) {
             Have feedback?
             <a href="/contact">Contact us</a>
           </AsideHelp>
-        </Aside>
+        </AsideDesktop>
 
         <Article>
+          {/* Mobile-only: compact accordion of legal pages. Collapsed by
+              default so the article shows up immediately. */}
+          <MobileNav>
+            <MobileNavTrigger
+              type="button"
+              aria-expanded={mobileNavOpen()}
+              onClick={() => setMobileNavOpen((v) => !v)}
+            >
+              <span>
+                <FiBookOpen size={14} /> {currentLabel()}
+              </span>
+              <FiChevronDown
+                size={16}
+                style={{
+                  transform: mobileNavOpen()
+                    ? "rotate(180deg)"
+                    : "rotate(0deg)",
+                  transition: "transform 0.2s",
+                }}
+              />
+            </MobileNavTrigger>
+            <Show when={mobileNavOpen()}>
+              <MobileNavList>
+                <For each={LEGAL_PAGES}>
+                  {(p) => (
+                    <MobileNavItem
+                      href={p.href}
+                      data-current={
+                        props.current === p.href ? "true" : undefined
+                      }
+                      onClick={() => setMobileNavOpen(false)}
+                    >
+                      {p.label}
+                    </MobileNavItem>
+                  )}
+                </For>
+              </MobileNavList>
+            </Show>
+          </MobileNav>
+
           <Eyebrow>
             <FiBookOpen size={14} />
             <span>Legal</span>
@@ -150,6 +285,13 @@ export function LegalLayout(props: LegalLayoutProps) {
             </Summary>
           )}
           <Body>{props.children}</Body>
+
+          {/* Mobile-only: contact callout below body */}
+          <MobileHelp>
+            <FiHeart size={14} />
+            Have feedback?
+            <a href="/contact">Contact us</a>
+          </MobileHelp>
         </Article>
       </Page>
 
@@ -185,7 +327,13 @@ export function LegalLayout(props: LegalLayoutProps) {
             </FooterCol>
             <FooterCol>
               <FooterColTitle>Legal</FooterColTitle>
-              <For each={LEGAL_PAGES}>
+              <For each={LEGAL_PAGES.slice(0, 4)}>
+                {(p) => <a href={p.href}>{p.label}</a>}
+              </For>
+            </FooterCol>
+            <FooterCol>
+              <FooterColTitle>Trust &amp; Safety</FooterColTitle>
+              <For each={LEGAL_PAGES.slice(4)}>
                 {(p) => <a href={p.href}>{p.label}</a>}
               </For>
             </FooterCol>
@@ -243,82 +391,86 @@ export function LegalLayout(props: LegalLayoutProps) {
 const Root = styled("div", {
   base: {
     minHeight: "100vh",
+    width: "100%",
+    height: "100%",
+    overflowX: "hidden",
+    overflowY: "auto",
     background: "#fafaf7",
     color: "#0a0a0a",
     fontFamily:
-      'Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-    overflowX: "hidden",
-    overflowY: "auto",
-    "& a": { color: "#0a0a0a" },
+      "'Plus Jakarta Sans Variable', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    WebkitFontSmoothing: "antialiased",
+    MozOsxFontSmoothing: "grayscale",
+    "& a": { color: "inherit" },
   },
 });
 
-/* nav */
+/* nav (matches Landing) */
 
 const Nav = styled("header", {
   base: {
     position: "sticky",
     top: 0,
     zIndex: 60,
-    background: "rgba(250,250,247,0.85)",
-    backdropFilter: "saturate(160%) blur(14px)",
+    background: "rgba(255,255,255,0.85)",
+    backdropFilter: "blur(14px) saturate(180%)",
     borderBottom: "1px solid rgba(0,0,0,0.06)",
   },
 });
 
 const NavInner = styled("div", {
   base: {
-    maxWidth: "1320px",
-    margin: "0 auto",
-    padding: "14px 24px",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: "16px",
+    padding: "14px 32px",
+    maxWidth: "1320px",
+    margin: "0 auto",
+    gap: "24px",
+    "@media (max-width: 768px)": { padding: "12px 20px" },
   },
 });
 
 const NavLeft = styled("div", {
+  base: { display: "flex", alignItems: "center", gap: "16px", flexShrink: 0 },
+});
+
+const brandLink = () =>
+  css({
+    display: "flex",
+    alignItems: "center",
+    textDecoration: "none",
+    flexShrink: 0,
+  });
+
+const NavLinksDesktop = styled("nav", {
   base: {
     display: "flex",
     alignItems: "center",
-    gap: "16px",
+    gap: "4px",
+    flex: 1,
+    justifyContent: "center",
+    "@media (max-width: 960px)": { display: "none" },
   },
 });
 
-const NavBrand = styled("a", {
+const NavLink = styled("a", {
   base: {
-    display: "inline-flex",
-    alignItems: "center",
+    appearance: "none",
+    padding: "8px 14px",
+    borderRadius: "999px",
     color: "#0a0a0a",
+    fontSize: "0.92rem",
+    fontWeight: 600,
     textDecoration: "none",
+    transition: "background 0.15s, color 0.15s",
+    "&:hover": { background: "rgba(0,0,0,0.05)" },
   },
 });
 
 const NavCtas = styled("div", {
-  base: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-  },
+  base: { display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 },
 });
-
-const navHomeBtn = () =>
-  css({
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "6px",
-    padding: "8px 12px",
-    borderRadius: "999px",
-    fontSize: "0.85rem",
-    fontWeight: 600,
-    color: "#0a0a0a",
-    background: "rgba(0,0,0,0.04)",
-    textDecoration: "none",
-    transition: "background 0.15s",
-    "&:hover": { background: "rgba(0,0,0,0.08)" },
-    "@media (max-width: 540px)": { "& span": { display: "none" } },
-  });
 
 const navOpenAppBtn = () =>
   css({
@@ -336,6 +488,123 @@ const navOpenAppBtn = () =>
     "&:hover": { background: "#1a1a1a", transform: "translateY(-1px)" },
   });
 
+const NavBurger = styled("button", {
+  base: {
+    display: "none",
+    appearance: "none",
+    background: "transparent",
+    border: "none",
+    cursor: "pointer",
+    padding: "6px",
+    color: "#0a0a0a",
+    "@media (max-width: 960px)": { display: "inline-flex" },
+  },
+});
+
+/* drawer */
+
+const DrawerScrim = styled("div", {
+  base: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.4)",
+    zIndex: 80,
+    backdropFilter: "blur(2px)",
+  },
+});
+
+const Drawer = styled("aside", {
+  base: {
+    position: "fixed",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 81,
+    width: "min(86vw, 360px)",
+    background: "#fff",
+    boxShadow: "-20px 0 60px -20px rgba(0,0,0,0.25)",
+    display: "flex",
+    flexDirection: "column",
+  },
+});
+
+const DrawerHeader = styled("header", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "18px 22px",
+    borderBottom: "1px solid rgba(0,0,0,0.06)",
+  },
+});
+
+const DrawerClose = styled("button", {
+  base: {
+    appearance: "none",
+    background: "rgba(0,0,0,0.05)",
+    border: "none",
+    borderRadius: "999px",
+    width: "36px",
+    height: "36px",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "pointer",
+    color: "#0a0a0a",
+  },
+});
+
+const DrawerLinks = styled("nav", {
+  base: {
+    flex: 1,
+    overflowY: "auto",
+    padding: "12px 14px",
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+  },
+});
+
+const DrawerHeading = styled("div", {
+  base: {
+    fontSize: "0.7rem",
+    fontWeight: 700,
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
+    color: "#888",
+    padding: "14px 12px 6px",
+  },
+});
+
+const DrawerLink = styled("a", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "10px 12px",
+    borderRadius: "10px",
+    color: "#0a0a0a",
+    fontSize: "0.95rem",
+    fontWeight: 600,
+    textDecoration: "none",
+    transition: "background 0.12s",
+    "&:hover": { background: "rgba(0,0,0,0.04)" },
+    "&[data-current='true']": {
+      color: "#7c5cff",
+      background: "rgba(124,92,255,0.08)",
+    },
+    "& svg": { color: "#666", flexShrink: 0 },
+    "&[data-current='true'] svg": { color: "#7c5cff" },
+  },
+});
+
+const DrawerCta = styled("div", {
+  base: {
+    padding: "16px 22px 22px",
+    borderTop: "1px solid rgba(0,0,0,0.06)",
+  },
+});
+
 /* page */
 
 const Page = styled("div", {
@@ -348,20 +617,20 @@ const Page = styled("div", {
     padding: "48px 32px 96px",
     "@media (max-width: 960px)": {
       gridTemplateColumns: "1fr",
-      gap: "24px",
-      padding: "32px 20px 64px",
+      gap: "0",
+      padding: "24px 20px 64px",
     },
   },
 });
 
-/* aside / sidebar */
+/* desktop sidebar (hidden on mobile) */
 
-const Aside = styled("aside", {
+const AsideDesktop = styled("aside", {
   base: {
     position: "sticky",
     top: "88px",
     alignSelf: "start",
-    "@media (max-width: 960px)": { position: "static", top: "auto" },
+    "@media (max-width: 960px)": { display: "none" },
   },
 });
 
@@ -377,11 +646,7 @@ const AsideTitle = styled("div", {
 });
 
 const AsideList = styled("nav", {
-  base: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px",
-  },
+  base: { display: "flex", flexDirection: "column", gap: "2px" },
 });
 
 const AsideItem = styled("a", {
@@ -431,13 +696,99 @@ const AsideHelp = styled("div", {
   },
 });
 
+/* mobile-only nav (compact accordion above the article) */
+
+const MobileNav = styled("div", {
+  base: {
+    display: "none",
+    marginBottom: "20px",
+    "@media (max-width: 960px)": { display: "block" },
+  },
+});
+
+const MobileNavTrigger = styled("button", {
+  base: {
+    appearance: "none",
+    background: "#fff",
+    border: "1px solid rgba(0,0,0,0.08)",
+    borderRadius: "12px",
+    padding: "12px 14px",
+    width: "100%",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    color: "#0a0a0a",
+    fontSize: "0.92rem",
+    fontWeight: 700,
+    boxShadow: "0 2px 6px -3px rgba(0,0,0,0.1)",
+    "& > span": {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: "8px",
+      "& svg": { color: "#7c5cff" },
+    },
+  },
+});
+
+const MobileNavList = styled("nav", {
+  base: {
+    marginTop: "6px",
+    display: "flex",
+    flexDirection: "column",
+    background: "#fff",
+    border: "1px solid rgba(0,0,0,0.08)",
+    borderRadius: "12px",
+    overflow: "hidden",
+    boxShadow: "0 8px 24px -12px rgba(0,0,0,0.18)",
+  },
+});
+
+const MobileNavItem = styled("a", {
+  base: {
+    padding: "12px 14px",
+    color: "#0a0a0a",
+    fontSize: "0.92rem",
+    fontWeight: 600,
+    textDecoration: "none",
+    borderBottom: "1px solid rgba(0,0,0,0.05)",
+    "&:last-child": { borderBottom: "none" },
+    "&:hover": { background: "rgba(0,0,0,0.03)" },
+    "&[data-current='true']": {
+      color: "#7c5cff",
+      background: "rgba(124,92,255,0.06)",
+    },
+  },
+});
+
+const MobileHelp = styled("div", {
+  base: {
+    display: "none",
+    marginTop: "32px",
+    padding: "14px",
+    borderRadius: "12px",
+    background: "#fff",
+    border: "1px solid rgba(0,0,0,0.06)",
+    fontSize: "0.88rem",
+    color: "#444",
+    alignItems: "center",
+    gap: "6px",
+    flexWrap: "wrap",
+    "& svg": { color: "#e11d48" },
+    "& a": {
+      color: "#7c5cff",
+      fontWeight: 600,
+      textDecoration: "none",
+      marginLeft: "4px",
+    },
+    "@media (max-width: 960px)": { display: "flex" },
+  },
+});
+
 /* article */
 
 const Article = styled("article", {
-  base: {
-    maxWidth: "780px",
-    width: "100%",
-  },
+  base: { maxWidth: "780px", width: "100%" },
 });
 
 const Eyebrow = styled("div", {
@@ -639,9 +990,9 @@ const FooterBadge = styled("span", {
 const FooterCols = styled("div", {
   base: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
+    gridTemplateColumns: "repeat(4, 1fr)",
     gap: "24px",
-    "@media (max-width: 540px)": { gridTemplateColumns: "1fr 1fr" },
+    "@media (max-width: 640px)": { gridTemplateColumns: "repeat(2, 1fr)" },
   },
 });
 
