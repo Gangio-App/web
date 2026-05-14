@@ -20,11 +20,13 @@ import {
   FiArrowUpRight,
   FiBookOpen,
   FiCode,
+  FiCoffee,
   FiCompass,
   FiDownload,
   FiDroplet,
   FiHash,
   FiHeadphones,
+  FiHeart,
   FiMenu,
   FiMic,
   FiMonitor,
@@ -52,6 +54,7 @@ const URLS = {
   ios: "https://testflight.apple.com/join/4EqcbpG8",
   signup: "/login/create",
   login: "/login/auth",
+  donate: "https://buymeacoffee.com/korybantes",
 };
 
 const THEMES: { name: string; bg: string; accent: string; text: string }[] = [
@@ -145,7 +148,7 @@ const MEGAMENU: Record<
         ],
       },
       {
-        heading: "Learn",
+        heading: "Learn & Support",
         items: [
           {
             icon: FiBookOpen,
@@ -159,6 +162,12 @@ const MEGAMENU: Record<
             desc: "What we collect, what we don't.",
             href: "/privacy",
           },
+          {
+            icon: FiCoffee,
+            label: "Buy me a coffee",
+            desc: "Support development. Keep Gangio free forever.",
+            href: URLS.donate,
+          },
         ],
       },
     ],
@@ -170,6 +179,8 @@ const MEGAMENU: Record<
     },
   },
 };
+
+const MENU_KEYS = Object.keys(MEGAMENU);
 
 /* ---------------- component ---------------- */
 
@@ -188,7 +199,10 @@ export function Landing() {
 
   const [theme, setTheme] = createSignal(0);
   const [openMenu, setOpenMenu] = createSignal<string | null>(null);
+  const [lastMenu, setLastMenu] = createSignal<string>(MENU_KEYS[0]);
   const [drawerOpen, setDrawerOpen] = createSignal(false);
+
+  const activeMenuIndex = () => MENU_KEYS.indexOf(lastMenu());
 
   const isIOS = createMemo(() =>
     typeof navigator !== "undefined" &&
@@ -204,6 +218,7 @@ export function Landing() {
   let menuCloseTimer: ReturnType<typeof setTimeout> | undefined;
   const openMenuFor = (key: string) => {
     if (menuCloseTimer) clearTimeout(menuCloseTimer);
+    setLastMenu(key);
     setOpenMenu(key);
   };
   const scheduleClose = () => {
@@ -313,7 +328,7 @@ export function Landing() {
           </NavCtas>
         </NavInner>
 
-        {/* Megamenu panel */}
+        {/* Megamenu panel — renders ALL menus in a track for swipe transitions */}
         <MegamenuWrap
           data-open={openMenu() !== null ? "true" : undefined}
           onMouseEnter={() => {
@@ -321,66 +336,83 @@ export function Landing() {
           }}
           onMouseLeave={scheduleClose}
         >
-          <Show when={openMenu()}>
-            {(key) => {
-              const menu = MEGAMENU[key()];
-              return (
-                <MegamenuPanel>
-                  <MegamenuColumns>
-                    <For each={menu.columns}>
-                      {(col) => (
-                        <MegamenuCol>
-                          <MegamenuHeading>{col.heading}</MegamenuHeading>
-                          <For each={col.items}>
-                            {(item) => (
-                              <MegamenuItem
-                                href={item.href}
-                                onClick={() => setOpenMenu(null)}
-                              >
-                                <MegamenuItemIcon>
-                                  <item.icon size={18} />
-                                </MegamenuItemIcon>
-                                <div>
-                                  <MegamenuItemTitle>
-                                    {item.label}
-                                  </MegamenuItemTitle>
-                                  <MegamenuItemDesc>
-                                    {item.desc}
-                                  </MegamenuItemDesc>
-                                </div>
-                              </MegamenuItem>
-                            )}
-                          </For>
-                        </MegamenuCol>
-                      )}
-                    </For>
-                  </MegamenuColumns>
-                  <Show when={menu.feature}>
-                    {(feat) => (
-                      <MegamenuFeature
-                        href={feat().href}
-                        onClick={() => setOpenMenu(null)}
-                      >
-                        <MegamenuFeatureBadge>
-                          <FiZap size={12} />
-                          Featured
-                        </MegamenuFeatureBadge>
-                        <MegamenuFeatureTitle>
-                          {feat().title}
-                        </MegamenuFeatureTitle>
-                        <MegamenuFeatureDesc>
-                          {feat().desc}
-                        </MegamenuFeatureDesc>
-                        <MegamenuFeatureCta>
-                          {feat().cta} <FiArrowRight size={14} />
-                        </MegamenuFeatureCta>
-                      </MegamenuFeature>
-                    )}
-                  </Show>
-                </MegamenuPanel>
-              );
-            }}
-          </Show>
+          <MegamenuClip>
+            <MegamenuTrack
+              style={{
+                transform: `translateX(calc(var(--mm-w) * ${-activeMenuIndex()}))`,
+              }}
+            >
+              <For each={Object.values(MEGAMENU)}>
+                {(menu) => (
+                  <MegamenuPanelOuter>
+                    <MegamenuPanel>
+                      <MegamenuColumns>
+                        <For each={menu.columns}>
+                          {(col) => (
+                            <MegamenuCol>
+                              <MegamenuHeading>{col.heading}</MegamenuHeading>
+                              <For each={col.items}>
+                                {(item) => (
+                                  <MegamenuItem
+                                    href={item.href}
+                                    onClick={() => setOpenMenu(null)}
+                                    target={
+                                      item.href.startsWith("http")
+                                        ? "_blank"
+                                        : undefined
+                                    }
+                                    rel={
+                                      item.href.startsWith("http")
+                                        ? "noopener noreferrer"
+                                        : undefined
+                                    }
+                                  >
+                                    <MegamenuItemIcon>
+                                      <item.icon size={18} />
+                                    </MegamenuItemIcon>
+                                    <div>
+                                      <MegamenuItemTitle>
+                                        {item.label}
+                                      </MegamenuItemTitle>
+                                      <MegamenuItemDesc>
+                                        {item.desc}
+                                      </MegamenuItemDesc>
+                                    </div>
+                                  </MegamenuItem>
+                                )}
+                              </For>
+                            </MegamenuCol>
+                          )}
+                        </For>
+                      </MegamenuColumns>
+                      <Show when={menu.feature}>
+                        {(feat) => (
+                          <MegamenuFeature
+                            href={feat().href}
+                            onClick={() => setOpenMenu(null)}
+                          >
+                            <MegamenuFeatureBadge>
+                              <FiZap size={12} />
+                              Featured
+                            </MegamenuFeatureBadge>
+                            <MegamenuFeatureTitle>
+                              {feat().title}
+                            </MegamenuFeatureTitle>
+                            <MegamenuFeatureDesc>
+                              {feat().desc}
+                            </MegamenuFeatureDesc>
+                            <MegamenuFeatureCta>
+                              {feat().cta} <FiArrowRight size={14} />
+                            </MegamenuFeatureCta>
+                          </MegamenuFeature>
+                        )}
+                      </Show>
+                    </MegamenuPanel>
+                  </MegamenuPanelOuter>
+                )}
+              </For>
+            </MegamenuTrack>
+          </MegamenuClip>
         </MegamenuWrap>
       </Nav>
 
@@ -459,15 +491,47 @@ export function Landing() {
             sharing built in.
           </Sub>
 
-          <CtaRow>
-            <a class={primaryBtnLg()} href={URLS.signup}>
-              Get started — it's free
-              <FiArrowRight size={16} />
-            </a>
-            <a class={ghostBtnLg()} href="#download">
-              Download the app
-            </a>
-          </CtaRow>
+          <Show
+            when={isIOS()}
+            fallback={
+              <CtaRow>
+                <a class={primaryBtnLg()} href={URLS.signup}>
+                  Get started — it's free
+                  <FiArrowRight size={16} />
+                </a>
+                <a
+                  class={cx(ghostBtnLg(), hideOnMobile())}
+                  href="#download"
+                >
+                  Download the app
+                </a>
+              </CtaRow>
+            }
+          >
+            <IosHeroBanner>
+              <IosHeroBadge>
+                <IoLogoApple size={16} /> You're on iOS
+              </IosHeroBadge>
+              <IosHeroText>
+                Get the public TestFlight beta — Gangio runs natively on
+                iPhone and iPad.
+              </IosHeroText>
+              <IosHeroCtas>
+                <a
+                  class={primaryBtnLg()}
+                  href={URLS.ios}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Join iOS TestFlight
+                  <FiArrowUpRight size={16} />
+                </a>
+                <a class={ghostBtnLg()} href={URLS.signup}>
+                  Or use the web app
+                </a>
+              </IosHeroCtas>
+            </IosHeroBanner>
+          </Show>
 
           <TrustRow>
             <TrustItem>
@@ -994,11 +1058,41 @@ export function Landing() {
           <CtaRow>
             <a class={primaryBtnLg()} href={URLS.signup}>
               Create your account
+              <FiArrowRight size={16} />
             </a>
-            <a class={ghostBtnLg()} href="#download">
-              Download for desktop
-            </a>
+            <Show
+              when={isIOS()}
+              fallback={
+                <a
+                  class={cx(ghostBtnDarkLg(), hideOnMobile())}
+                  href="#download"
+                >
+                  Download for desktop
+                </a>
+              }
+            >
+              <a
+                class={ghostBtnDarkLg()}
+                href={URLS.ios}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <IoLogoApple size={18} />
+                Get on iOS — TestFlight
+              </a>
+            </Show>
           </CtaRow>
+          <FinalSupport>
+            <a
+              class={finalSupportLink()}
+              href={URLS.donate}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FiHeart size={14} />
+              Like Gangio? <span>Buy me a coffee</span>
+            </a>
+          </FinalSupport>
         </FinalWrap>
       </FinalSection>
 
@@ -1032,9 +1126,11 @@ export function Landing() {
               <a href="/discover/servers">Discover</a>
             </FooterCol>
             <FooterCol>
-              <FooterColTitle>Account</FooterColTitle>
-              <a href={URLS.login}>Log in</a>
-              <a href={URLS.signup}>Sign up</a>
+              <FooterColTitle>App</FooterColTitle>
+              <a href={URLS.login}>Open app</a>
+              <a href={URLS.ios} target="_blank" rel="noopener noreferrer">
+                iOS TestFlight
+              </a>
             </FooterCol>
             <FooterCol>
               <FooterColTitle>Legal</FooterColTitle>
@@ -1042,7 +1138,14 @@ export function Landing() {
               <a href="/privacy">Privacy</a>
             </FooterCol>
             <FooterCol>
-              <FooterColTitle>Community</FooterColTitle>
+              <FooterColTitle>Support</FooterColTitle>
+              <a
+                href={URLS.donate}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Buy me a coffee
+              </a>
               <a
                 href="https://github.com"
                 target="_blank"
@@ -1056,7 +1159,14 @@ export function Landing() {
 
         <FooterBottom>
           <span>© {new Date().getFullYear()} Gangio</span>
-          <span>Made with care.</span>
+          <FooterDonate
+            href={URLS.donate}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <FiCoffee size={14} />
+            Buy me a coffee
+          </FooterDonate>
         </FooterBottom>
       </Footer>
     </Root>
@@ -1209,6 +1319,7 @@ const NavBurger = styled("button", {
 
 const MegamenuWrap = styled("div", {
   base: {
+    "--mm-w": "min(900px, calc(100vw - 64px))",
     position: "absolute",
     top: "100%",
     left: 0,
@@ -1228,9 +1339,34 @@ const MegamenuWrap = styled("div", {
   },
 });
 
-const MegamenuPanel = styled("div", {
+const MegamenuClip = styled("div", {
   base: {
     marginTop: "10px",
+    width: "var(--mm-w)",
+    overflow: "hidden",
+    borderRadius: "20px",
+  },
+});
+
+const MegamenuTrack = styled("div", {
+  base: {
+    display: "flex",
+    transition: "transform 0.42s cubic-bezier(0.65, 0.05, 0.36, 1)",
+    willChange: "transform",
+  },
+});
+
+const MegamenuPanelOuter = styled("div", {
+  base: {
+    width: "var(--mm-w)",
+    flexShrink: 0,
+    padding: "1px",
+    display: "flex",
+  },
+});
+
+const MegamenuPanel = styled("div", {
+  base: {
     background: "#fff",
     border: "1px solid rgba(0,0,0,0.08)",
     borderRadius: "20px",
@@ -1240,8 +1376,7 @@ const MegamenuPanel = styled("div", {
     display: "grid",
     gridTemplateColumns: "1fr 1fr 1fr",
     gap: "24px",
-    width: "min(900px, calc(100vw - 64px))",
-    maxWidth: "900px",
+    width: "100%",
   },
 });
 
@@ -1569,6 +1704,37 @@ const ghostBtnLg = () =>
     },
   });
 
+/* dark-section ghost button — for use on the dark FinalSection.
+   Default: white text + white border, transparent bg.
+   Hover: white bg + dark text. Always remains visible on dark. */
+const ghostBtnDarkLg = () =>
+  css({
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "14px 24px",
+    borderRadius: "12px",
+    color: "#fff",
+    textDecoration: "none",
+    fontSize: "0.98rem",
+    fontWeight: 600,
+    border: "1px solid rgba(255,255,255,0.25)",
+    background: "transparent",
+    transition: "all 0.15s",
+    "&:hover": {
+      background: "#fff",
+      color: "#0a0a0a",
+      borderColor: "#fff",
+      transform: "translateY(-1px)",
+    },
+  });
+
+/* utility — hide on mobile (< 640px) */
+const hideOnMobile = () =>
+  css({
+    "@media (max-width: 640px)": { display: "none" },
+  });
+
 /* hero */
 
 const Hero = styled("section", {
@@ -1719,6 +1885,64 @@ const HeroShotGlow = styled("div", {
       "radial-gradient(ellipse at center, rgba(124,92,255,0.35), transparent 60%)",
     filter: "blur(60px)",
     pointerEvents: "none",
+  },
+});
+
+/* iOS-only hero variant (replaces CtaRow when on iPhone/iPad) */
+
+const IosHeroBanner = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "12px",
+    padding: "20px 24px",
+    borderRadius: "16px",
+    background: "linear-gradient(160deg, #faf7ff 0%, #f0ebff 100%)",
+    border: "1px solid rgba(124,92,255,0.18)",
+    width: "100%",
+    maxWidth: "520px",
+    marginTop: "8px",
+  },
+});
+
+const IosHeroBadge = styled("div", {
+  base: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    padding: "5px 12px",
+    borderRadius: "999px",
+    background: "#0a0a0a",
+    color: "#fff",
+    fontSize: "0.78rem",
+    fontWeight: 700,
+    letterSpacing: "0.02em",
+  },
+});
+
+const IosHeroText = styled("p", {
+  base: {
+    margin: 0,
+    color: "#444",
+    fontSize: "0.95rem",
+    lineHeight: 1.5,
+    textAlign: "center",
+    maxWidth: "440px",
+  },
+});
+
+const IosHeroCtas = styled("div", {
+  base: {
+    display: "flex",
+    gap: "10px",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    width: "100%",
+    "@media (max-width: 480px)": {
+      flexDirection: "column",
+      "& a": { justifyContent: "center" },
+    },
   },
 });
 
@@ -2819,6 +3043,37 @@ const FinalLead = styled("p", {
   },
 });
 
+const FinalSupport = styled("div", {
+  base: {
+    marginTop: "20px",
+    display: "flex",
+    justifyContent: "center",
+  },
+});
+
+const finalSupportLink = () =>
+  css({
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    color: "rgba(255,255,255,0.55)",
+    fontSize: "0.85rem",
+    textDecoration: "none",
+    padding: "6px 12px",
+    borderRadius: "999px",
+    transition: "color 0.15s, background 0.15s",
+    "& svg": { color: "#f472b6" },
+    "& span": {
+      color: "#fff",
+      fontWeight: 600,
+      borderBottom: "1px solid rgba(255,255,255,0.3)",
+    },
+    "&:hover": {
+      color: "rgba(255,255,255,0.85)",
+      background: "rgba(255,255,255,0.05)",
+    },
+  });
+
 /* footer */
 
 const Footer = styled("footer", {
@@ -2924,8 +3179,30 @@ const FooterBottom = styled("div", {
     fontSize: "0.85rem",
     "@media (max-width: 540px)": {
       flexDirection: "column",
-      gap: "8px",
+      gap: "12px",
       alignItems: "flex-start",
+    },
+  },
+});
+
+const FooterDonate = styled("a", {
+  base: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+    padding: "8px 14px",
+    borderRadius: "999px",
+    background: "#fff5e6",
+    color: "#b45309",
+    fontSize: "0.84rem",
+    fontWeight: 600,
+    textDecoration: "none",
+    border: "1px solid #fde4b5",
+    transition: "all 0.15s",
+    "&:hover": {
+      background: "#ffe8c2",
+      borderColor: "#f59e0b",
+      transform: "translateY(-1px)",
     },
   },
 });
