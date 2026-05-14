@@ -36,12 +36,17 @@ import "@revolt/ui/styles";
 import AuthPage from "./Auth";
 import Interface from "./Interface";
 import "./index.css";
+import { AcceptableUse } from "./interface/AcceptableUse";
+import { CommunityGuidelines } from "./interface/CommunityGuidelines";
+import { Contact } from "./interface/Contact";
+import { Cookies } from "./interface/Cookies";
 import { DevelopmentPage } from "./interface/Development";
 import { Discover } from "./interface/Discover";
 import { Downloads } from "./interface/Downloads";
 import { Friends } from "./interface/Friends";
 import { HomePage } from "./interface/Home";
 import { Privacy } from "./interface/Privacy";
+import { Safety } from "./interface/Safety";
 import { ServerHome } from "./interface/ServerHome";
 import { Terms } from "./interface/Terms";
 import { ChannelPage } from "./interface/channels/ChannelPage";
@@ -157,6 +162,11 @@ render(
         </Route>
         <Route path="/privacy" component={Privacy as never} />
         <Route path="/terms" component={Terms as never} />
+        <Route path="/cookies" component={Cookies as never} />
+        <Route path="/acceptable-use" component={AcceptableUse as never} />
+        <Route path="/guidelines" component={CommunityGuidelines as never} />
+        <Route path="/safety" component={Safety as never} />
+        <Route path="/contact" component={Contact as never} />
         <Route path="/download" component={Downloads as never} />
         <Route path="/downloads" component={Downloads as never} />
         <Route path="/" component={Interface as never}>

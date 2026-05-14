@@ -1,96 +1,191 @@
-import { Trans } from "@lingui-solid/solid/macro";
-import { css } from "styled-system/css";
-import { Column } from "@revolt/ui";
+import { LegalLayout } from "./legal/LegalLayout";
+
+const LAST_UPDATED = "May 14, 2026";
 
 export function Privacy() {
   return (
-    <div
-      class={css({
-        width: "100%",
-        height: "100%",
-        padding: "64px 32px",
-        overflowY: "auto",
-        background: "var(--md-sys-color-background)",
-        color: "var(--md-sys-color-on-background)",
-      })}
+    <LegalLayout
+      current="/privacy"
+      title="Privacy Policy"
+      tagline="What we collect, why we collect it, and the controls you have."
+      updated={LAST_UPDATED}
+      summary="Gangio doesn't sell your data and doesn't use ads. We collect only what's needed to run the service, keep it safe and improve it. You can delete your account at any time, and we honor data-subject requests under GDPR, UK GDPR, CCPA/CPRA and similar laws."
     >
-      <Column gap="lg" class={css({ maxWidth: "800px", margin: "0 auto", lineHeight: "1.6" })}>
-        <h1 class={css({ fontSize: "2.5rem", fontWeight: "900", marginBottom: "16px" })}>
-          <Trans>Privacy Policy</Trans>
-        </h1>
-        <p>
-          <Trans>Last updated: {new Date().toLocaleDateString()}</Trans>
-        </p>
-        <div class={css({ display: "flex", flexDirection: "column", gap: "16px" })}>
-          <p>
-            <Trans>Welcome to Gangio. This Privacy Policy outlines how we collect, use, and protect your personal information when you use our services.</Trans>
-          </p>
+      <p>
+        This Privacy Policy explains how Gangio (&quot;Gangio&quot;,
+        &quot;we&quot;, &quot;us&quot;) handles personal data when you use
+        our websites, desktop and mobile apps, and APIs (the
+        &quot;Service&quot;). It applies in addition to our{" "}
+        <a href="/terms">Terms of Service</a> and{" "}
+        <a href="/cookies">Cookie Policy</a>.
+      </p>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>1. Information We Collect</Trans>
-          </h2>
-          <p>
-            <Trans>We collect information to provide better services to all our users. This includes:</Trans>
-          </p>
-          <ul class={css({ listStyleType: "disc", paddingLeft: "32px", display: "flex", flexDirection: "column", gap: "8px" })}>
-            <li><Trans>Account Information: When you register, we collect your email address, username, and password.</Trans></li>
-            <li><Trans>Usage Data: We automatically collect information about your interactions with the service, including IP addresses, browser types, and device information.</Trans></li>
-            <li><Trans>Communications: Messages, posts, and files you share within the platform are stored securely to facilitate communication.</Trans></li>
-          </ul>
+      <h2>1. Who is the data controller?</h2>
+      <p>
+        For users worldwide, Gangio acts as the data controller for the
+        personal data described below. You can reach us at any time via the{" "}
+        <a href="/contact">contact</a> page.
+      </p>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>2. How We Use Your Information</Trans>
-          </h2>
-          <p>
-            <Trans>We use the information we collect for the following purposes:</Trans>
-          </p>
-          <ul class={css({ listStyleType: "disc", paddingLeft: "32px", display: "flex", flexDirection: "column", gap: "8px" })}>
-            <li><Trans>To provide, maintain, and improve our services.</Trans></li>
-            <li><Trans>To communicate with you regarding updates, security alerts, and support messages.</Trans></li>
-            <li><Trans>To ensure platform safety, investigate suspicious activity, and enforce our Terms of Service.</Trans></li>
-          </ul>
+      <h2>2. Information we collect</h2>
+      <h3>a. Information you provide</h3>
+      <ul>
+        <li>
+          <strong>Account data:</strong> email address, username, password
+          hash, and (optionally) display name and avatar.
+        </li>
+        <li>
+          <strong>Profile data:</strong> bios, status, banners and other
+          profile information you choose to share.
+        </li>
+        <li>
+          <strong>Content you share:</strong> messages, attachments, voice
+          and video calls, server settings, role configuration and similar
+          content you create or upload.
+        </li>
+        <li>
+          <strong>Support communications:</strong> the content of any
+          messages you send us, including bug reports.
+        </li>
+      </ul>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>3. How We Share Your Information</Trans>
-          </h2>
-          <p>
-            <Trans>We do not sell your personal information. We may share your information only in the following scenarios:</Trans>
-          </p>
-          <ul class={css({ listStyleType: "disc", paddingLeft: "32px", display: "flex", flexDirection: "column", gap: "8px" })}>
-            <li><Trans>With third-party service providers who assist us in operating our platform.</Trans></li>
-            <li><Trans>To comply with legal obligations, enforce our policies, or protect our rights and the rights of others.</Trans></li>
-            <li><Trans>With your active and explicit consent.</Trans></li>
-          </ul>
+      <h3>b. Information collected automatically</h3>
+      <ul>
+        <li>
+          <strong>Device and connection data:</strong> IP address, user-agent,
+          OS, locale, app version and rough geo (country/region) for
+          security, abuse prevention and routing.
+        </li>
+        <li>
+          <strong>Usage data:</strong> events such as login, message-sent
+          counts, feature usage, error reports.
+        </li>
+        <li>
+          <strong>Real-time media metadata:</strong> codec, bitrate, packet
+          loss and similar diagnostics. Voice and video traffic is{" "}
+          <strong>not stored</strong> unless you explicitly start a recording
+          feature.
+        </li>
+      </ul>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>4. Data Security</Trans>
-          </h2>
-          <p>
-            <Trans>We implement industry-standard security measures to protect your personal information from unauthorized access, alteration, disclosure, or destruction. However, no data transmission over the internet is completely secure, and we cannot guarantee absolute security.</Trans>
-          </p>
+      <h3>c. Information from third parties</h3>
+      <p>
+        If you sign in with a third-party identity provider (where supported)
+        or link an external integration, we receive the data those services
+        share with us under your authorization.
+      </p>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>5. Your Privacy Rights</Trans>
-          </h2>
-          <p>
-            <Trans>You have the right to access, update, or delete your personal information at any time through your account settings. You may also contact us to exercise your data protection rights under applicable laws.</Trans>
-          </p>
+      <h2>3. How we use your information</h2>
+      <ul>
+        <li>operate, maintain and improve the Service;</li>
+        <li>authenticate accounts and prevent fraud, spam and abuse;</li>
+        <li>route messages, voice and video to the right participants;</li>
+        <li>respond to support requests and legal obligations;</li>
+        <li>send service-related notifications (you can opt out of optional emails at any time);</li>
+        <li>conduct aggregated analytics about feature usage and platform health.</li>
+      </ul>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>6. Changes to This Policy</Trans>
-          </h2>
-          <p>
-            <Trans>We may update this Privacy Policy from time to time. We will notify you of any significant changes by posting the new policy on this page and updating the "Last updated" date.</Trans>
-          </p>
+      <h2>4. Legal bases (EEA / UK)</h2>
+      <p>
+        Where the GDPR or UK GDPR applies, we rely on the following legal
+        bases: (a) <strong>contract</strong> — to provide the Service you
+        requested; (b) <strong>legitimate interests</strong> — to keep the
+        Service safe, secure and improving; (c) <strong>consent</strong> —
+        for optional features such as email newsletters or non-essential
+        cookies; (d) <strong>legal obligation</strong> — when we must comply
+        with applicable law.
+      </p>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>7. Contact Us</Trans>
-          </h2>
-          <p>
-            <Trans>If you have any questions about this Privacy Policy, please contact our support team.</Trans>
-          </p>
-        </div>
-      </Column>
-    </div>
+      <h2>5. Sharing</h2>
+      <p>
+        We do not sell or rent your personal data. We share it only with:
+      </p>
+      <ul>
+        <li>
+          <strong>Service providers</strong> that host infrastructure,
+          deliver media (e.g. SFU/TURN servers), send transactional email,
+          provide error reporting, or perform other operational tasks under
+          a contract that requires confidentiality and data protection;
+        </li>
+        <li>
+          <strong>Other users</strong> — content you post in a server or
+          channel is visible to its members;
+        </li>
+        <li>
+          <strong>Legal recipients</strong> when required to comply with
+          valid legal process or to protect the rights, property or safety
+          of Gangio, our users or the public;
+        </li>
+        <li>
+          <strong>Successors</strong> in connection with a merger,
+          acquisition or sale of assets, subject to confidentiality.
+        </li>
+      </ul>
+
+      <h2>6. International transfers</h2>
+      <p>
+        Gangio is operated globally. Personal data may be transferred to and
+        processed in countries other than your own. When we transfer
+        personal data from the EEA, UK or Switzerland, we use appropriate
+        safeguards such as Standard Contractual Clauses.
+      </p>
+
+      <h2>7. Retention</h2>
+      <p>
+        We retain account data for as long as your account is active.
+        Messages are retained until you or your community owner delete them.
+        Backups may persist for a limited period after deletion (typically
+        up to 30 days) for disaster recovery. Aggregated, de-identified data
+        may be retained indefinitely.
+      </p>
+
+      <h2>8. Your rights</h2>
+      <p>
+        Depending on where you live you have rights to access, correct,
+        delete, port and restrict processing of your personal data, and to
+        object to certain processing. EEA/UK residents may lodge a complaint
+        with their local data protection authority. California residents
+        have rights under the CCPA/CPRA. To exercise any right, visit the{" "}
+        <a href="/contact">contact</a> page or use the in-app account
+        deletion control.
+      </p>
+
+      <h2>9. Children</h2>
+      <p>
+        The Service is not directed to children under 13 (or under the age
+        of digital consent in your country). If we learn we have collected
+        personal data from a child without parental consent, we will delete
+        it. Parents/guardians can contact us at any time.
+      </p>
+
+      <h2>10. Security</h2>
+      <p>
+        We use industry-standard technical and organizational measures
+        including TLS in transit, encrypted password storage, principle of
+        least privilege, and continuous monitoring. No system is 100%
+        secure; please choose a strong, unique password and enable
+        multi-factor authentication where available.
+      </p>
+
+      <h2>11. Cookies and similar technologies</h2>
+      <p>
+        See our <a href="/cookies">Cookie Policy</a> for details on the
+        cookies and local-storage technologies we use, and how to control
+        them.
+      </p>
+
+      <h2>12. Changes</h2>
+      <p>
+        We may update this Privacy Policy from time to time. Material
+        changes will be announced via the app or by email before they take
+        effect.
+      </p>
+
+      <h2>13. Contact</h2>
+      <p>
+        For privacy questions, data-subject requests or to reach our Data
+        Protection contact, visit the <a href="/contact">contact</a> page.
+      </p>
+    </LegalLayout>
   );
 }

@@ -154,14 +154,17 @@ export function AuthPage(props: { children: JSX.Element }) {
             </NavItems>
             <Bullet />
             <NavItems>
-              <a href="https://gangio.chat/about" target="_blank">
+              <a href="/">
                 <Trans>About</Trans>
               </a>
-              <a href="https://gangio.chat/terms" target="_blank">
+              <a href="/terms">
                 <Trans>Terms of Service</Trans>
               </a>
-              <a href="https://gangio.chat/privacy" target="_blank">
+              <a href="/privacy">
                 <Trans>Privacy Policy</Trans>
+              </a>
+              <a href="/safety">
+                <Trans>Safety</Trans>
               </a>
             </NavItems>
           </NavItems>

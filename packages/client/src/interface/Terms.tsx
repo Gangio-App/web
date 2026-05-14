@@ -1,101 +1,188 @@
-import { Trans } from "@lingui-solid/solid/macro";
-import { css } from "styled-system/css";
-import { Column } from "@revolt/ui";
+import { LegalLayout } from "./legal/LegalLayout";
+
+const LAST_UPDATED = "May 14, 2026";
 
 export function Terms() {
   return (
-    <div
-      class={css({
-        width: "100%",
-        height: "100%",
-        padding: "64px 32px",
-        overflowY: "auto",
-        background: "var(--md-sys-color-background)",
-        color: "var(--md-sys-color-on-background)",
-      })}
+    <LegalLayout
+      current="/terms"
+      title="Terms of Service"
+      tagline="The agreement between you and Gangio when you use our services."
+      updated={LAST_UPDATED}
+      summary="Use Gangio kindly: don't break the law, don't harm other people, and don't try to wreck the platform. We can suspend abusive accounts. Your data is yours, but you grant us a license to host and display the content you post so the service can work."
     >
-      <Column gap="lg" class={css({ maxWidth: "800px", margin: "0 auto", lineHeight: "1.6" })}>
-        <h1 class={css({ fontSize: "2.5rem", fontWeight: "900", marginBottom: "16px" })}>
-          <Trans>Terms of Service</Trans>
-        </h1>
-        <p>
-          <Trans>Last updated: {new Date().toLocaleDateString()}</Trans>
-        </p>
-        <div class={css({ display: "flex", flexDirection: "column", gap: "16px" })}>
-          <p>
-            <Trans>Welcome to Gangio. By accessing or using our platform, you agree to be bound by these Terms of Service. If you disagree with any part of these terms, you may not access the service.</Trans>
-          </p>
+      <p>
+        These Terms of Service (the &quot;Terms&quot;) govern your access to and
+        use of the Gangio websites, desktop and mobile applications, APIs, and
+        any related services (together, the &quot;Service&quot;) provided by
+        Gangio (&quot;Gangio&quot;, &quot;we&quot;, &quot;us&quot; or
+        &quot;our&quot;). By creating an account or otherwise using the Service
+        you agree to these Terms and to our{" "}
+        <a href="/privacy">Privacy Policy</a>,{" "}
+        <a href="/acceptable-use">Acceptable Use Policy</a>, and{" "}
+        <a href="/guidelines">Community Guidelines</a>.
+      </p>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>1. Acceptance of Terms</Trans>
-          </h2>
-          <p>
-            <Trans>By creating an account or using Gangio, you confirm that you have read, understood, and agreed to these Terms of Service, as well as our Privacy Policy.</Trans>
-          </p>
+      <h2>1. Eligibility</h2>
+      <p>
+        You must be at least 13 years old (or the minimum age of digital
+        consent in your country, if higher) to use Gangio. If you are under 18
+        you confirm that a parent or legal guardian has reviewed these Terms
+        and agreed on your behalf. We may at any time require age verification
+        and may suspend accounts that we reasonably believe do not meet the
+        eligibility requirements.
+      </p>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>2. User Accounts</Trans>
-          </h2>
-          <p>
-            <Trans>You are responsible for safeguarding the password that you use to access the service and for any activities or actions under your password. You must notify us immediately upon becoming aware of any breach of security or unauthorized use of your account.</Trans>
-          </p>
+      <h2>2. Your Account</h2>
+      <p>
+        You are responsible for safeguarding your account credentials and for
+        every action taken from your account. Notify us immediately at{" "}
+        <a href="/contact">contact</a> if you suspect unauthorized access.
+        You may not impersonate another person, transfer your account to
+        someone else, or operate multiple accounts to evade enforcement.
+      </p>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>3. Acceptable Use</Trans>
-          </h2>
-          <p>
-            <Trans>You agree not to use the service to:</Trans>
-          </p>
-          <ul class={css({ listStyleType: "disc", paddingLeft: "32px", display: "flex", flexDirection: "column", gap: "8px" })}>
-            <li><Trans>Post or transmit any content that is unlawful, harmful, threatening, abusive, or discriminatory.</Trans></li>
-            <li><Trans>Impersonate any person or entity, or falsely state your affiliation with a person or entity.</Trans></li>
-            <li><Trans>Upload malicious software, viruses, or any code that disrupts the functionality of the platform.</Trans></li>
-            <li><Trans>Engage in spamming, phishing, or unauthorized scraping of our services.</Trans></li>
-          </ul>
+      <h2>3. License to Use the Service</h2>
+      <p>
+        Subject to your compliance with these Terms, Gangio grants you a
+        limited, personal, non-exclusive, non-transferable, revocable license
+        to use the Service. The Service&apos;s source code is open source and
+        separately licensed; nothing here restricts rights granted under that
+        license.
+      </p>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>4. User-Generated Content</Trans>
-          </h2>
-          <p>
-            <Trans>You retain all your ownership rights to the content you post on Gangio. However, by posting content, you grant us a worldwide, non-exclusive, royalty-free license to use, reproduce, display, and distribute that content in connection with providing our services.</Trans>
-          </p>
+      <h2>4. User Content</h2>
+      <p>
+        You retain ownership of the messages, voice recordings, video, files,
+        avatars and other materials you create or upload (&quot;User
+        Content&quot;). To run the Service, however, you grant Gangio a
+        worldwide, royalty-free, non-exclusive, sublicensable license to host,
+        store, transmit, reproduce, modify (for technical purposes such as
+        thumbnailing or transcoding), display and distribute your User Content
+        for the limited purposes of operating, providing and improving the
+        Service.
+      </p>
+      <p>
+        You are solely responsible for your User Content. You represent that
+        you have all rights necessary to grant this license and that your User
+        Content does not violate any law or third-party right.
+      </p>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>5. Termination</Trans>
-          </h2>
-          <p>
-            <Trans>We may terminate or suspend your account and bar access to the service immediately, without prior notice or liability, under our sole discretion, for any reason whatsoever and without limitation, including but not limited to a breach of the Terms.</Trans>
-          </p>
+      <h2>5. Acceptable Use</h2>
+      <p>
+        Use of the Service is subject to our{" "}
+        <a href="/acceptable-use">Acceptable Use Policy</a> and{" "}
+        <a href="/guidelines">Community Guidelines</a>. You agree not to:
+      </p>
+      <ul>
+        <li>
+          post content that is illegal, harassing, hateful, threatening,
+          defamatory, sexually explicit involving minors, or that incites
+          violence;
+        </li>
+        <li>
+          transmit malware, attempt to gain unauthorized access, perform
+          denial-of-service attacks, or otherwise interfere with the Service;
+        </li>
+        <li>
+          spam, phish, scrape, or use automated means to interact with the
+          Service except via our official APIs;
+        </li>
+        <li>
+          impersonate any person or entity, or misrepresent your affiliation;
+        </li>
+        <li>resell, sublicense or commercially exploit the Service without our written consent.</li>
+      </ul>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>6. Disclaimer of Warranties</Trans>
-          </h2>
-          <p>
-            <Trans>Your use of the service is at your sole risk. The service is provided on an "AS IS" and "AS AVAILABLE" basis. Gangio disclaims all warranties of any kind, whether express, implied, or statutory, including but not limited to implied warranties of merchantability and fitness for a particular purpose.</Trans>
-          </p>
+      <h2>6. Servers and Communities</h2>
+      <p>
+        Servers, communities and channels created on Gangio are operated by
+        their owners and moderators. Gangio is not responsible for the
+        moderation decisions of community owners. If you operate a community
+        you must enforce our Community Guidelines and applicable law within
+        your space.
+      </p>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>7. Limitation of Liability</Trans>
-          </h2>
-          <p>
-            <Trans>In no event shall Gangio, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the service.</Trans>
-          </p>
+      <h2>7. Voice, Video and Live Streaming</h2>
+      <p>
+        Real-time voice, video and screen-share traffic is processed through
+        our media infrastructure. By participating in a call you consent to
+        the routing and temporary processing required to deliver media to
+        other participants. Recording calls is the responsibility of the user
+        who initiates the recording and may be subject to local consent laws.
+      </p>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>8. Governing Law</Trans>
-          </h2>
-          <p>
-            <Trans>These Terms shall be governed and construed in accordance with the laws of the jurisdiction in which Gangio operates, without regard to its conflict of law provisions.</Trans>
-          </p>
+      <h2>8. Subscriptions, Donations and Payments</h2>
+      <p>
+        Gangio is free to use. Optional features or community-tier upgrades
+        may be offered for a fee in the future. Donations made via partners
+        such as Buy Me a Coffee are voluntary, non-refundable and not subject
+        to these Terms.
+      </p>
 
-          <h2 class={css({ fontSize: "1.5rem", fontWeight: "700", marginTop: "24px" })}>
-            <Trans>9. Changes to Terms</Trans>
-          </h2>
-          <p>
-            <Trans>We reserve the right, at our sole discretion, to modify or replace these Terms at any time. By continuing to access or use our Service after those revisions become effective, you agree to be bound by the revised terms.</Trans>
-          </p>
-        </div>
-      </Column>
-    </div>
+      <h2>9. Suspension and Termination</h2>
+      <p>
+        We may suspend or terminate your access to the Service, with or
+        without notice, if we reasonably believe you have violated these
+        Terms, our policies, or the law. You may terminate your account at
+        any time from your account settings. Sections of these Terms that by
+        their nature should survive termination will survive (including
+        ownership, indemnity, limitation of liability and dispute resolution).
+      </p>
+
+      <h2>10. Disclaimers</h2>
+      <p>
+        The Service is provided <strong>&quot;AS IS&quot;</strong> and
+        <strong> &quot;AS AVAILABLE&quot;</strong>. To the maximum extent
+        permitted by law, Gangio disclaims all warranties, express or
+        implied, including warranties of merchantability, fitness for a
+        particular purpose, non-infringement, and availability or accuracy of
+        content.
+      </p>
+
+      <h2>11. Limitation of Liability</h2>
+      <p>
+        To the maximum extent permitted by law, Gangio and its affiliates,
+        directors, employees and agents will not be liable for any indirect,
+        incidental, special, consequential, exemplary or punitive damages, or
+        for any loss of profits, revenue, data, goodwill, or anticipated
+        savings, arising out of or relating to your use of the Service. Our
+        total aggregate liability for any claim arising under these Terms
+        will not exceed the greater of (a) the amount you paid Gangio in the
+        12 months preceding the claim or (b) one hundred US dollars (US $100).
+      </p>
+
+      <h2>12. Indemnity</h2>
+      <p>
+        You will defend, indemnify and hold harmless Gangio from and against
+        any claims, liabilities, damages, losses and expenses (including
+        reasonable attorneys&apos; fees) arising out of or in any way
+        connected with your User Content, your use of the Service in
+        violation of these Terms, or your violation of any law or third-party
+        right.
+      </p>
+
+      <h2>13. Changes to the Service or Terms</h2>
+      <p>
+        We may modify the Service and these Terms from time to time. If we
+        make material changes we will provide reasonable notice (for example,
+        by email or in-app banner). Continued use after the effective date of
+        the change constitutes acceptance.
+      </p>
+
+      <h2>14. Governing Law</h2>
+      <p>
+        These Terms are governed by the laws of the jurisdiction in which
+        Gangio is established, without regard to its conflict-of-laws
+        principles. Mandatory consumer-protection rights under the law of
+        your country of residence are not affected.
+      </p>
+
+      <h2>15. Contact</h2>
+      <p>
+        Questions about these Terms? Visit our <a href="/contact">contact</a>{" "}
+        page or open an issue on <a href="https://github.com/Gangio-App" target="_blank" rel="noopener noreferrer">GitHub</a>.
+      </p>
+    </LegalLayout>
   );
 }

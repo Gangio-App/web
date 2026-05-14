@@ -33,6 +33,7 @@ import {
   FiMonitor,
   FiPhoneOff,
   FiShield,
+  FiUsers,
   FiVideo,
   FiX,
   FiZap,
@@ -44,6 +45,7 @@ import { styled } from "styled-system/jsx";
 import Wordmark from "../../public/assets/web/wordmark.svg?component-solid";
 import desktopShot from "../../assets/web/landing/desktop-screenshot.png";
 import iosShot from "../../assets/web/landing/ios.webp";
+import streamVideo from "../../assets/web/landing/video-stream_gangioHD_Homepage.mp4?url";
 
 /* ---------------- constants ---------------- */
 
@@ -140,7 +142,7 @@ const MEGAMENU: Record<
             icon: FiDownload,
             label: "Download",
             desc: "Native apps for Windows, macOS, and iOS.",
-            href: "/download",
+            href: "/#download",
           },
           {
             icon: FiCompass,
@@ -151,18 +153,24 @@ const MEGAMENU: Record<
         ],
       },
       {
-        heading: "Learn & Support",
+        heading: "Trust & Safety",
         items: [
           {
-            icon: FiBookOpen,
-            label: "Docs",
-            desc: "Guides, references, and bot tutorials.",
-            href: "#",
+            icon: FiShield,
+            label: "Safety Center",
+            desc: "Tools, blocking, reports, and crisis resources.",
+            href: "/safety",
           },
           {
-            icon: FiShield,
-            label: "Privacy",
-            desc: "What we collect, what we don't.",
+            icon: FiUsers,
+            label: "Community Guidelines",
+            desc: "How we keep Gangio kind and inclusive.",
+            href: "/guidelines",
+          },
+          {
+            icon: FiBookOpen,
+            label: "Privacy Policy",
+            desc: "What we collect, why, and your data rights.",
             href: "/privacy",
           },
           {
@@ -638,31 +646,15 @@ export function Landing() {
 
           {/* The stream itself */}
           <StreamStage>
-            {/*
-              VIDEO GOES HERE — once you drop screenshare.mp4 into
-              packages/client/assets/web/landing/, replace this comment with:
-
-              <StreamVideo
-                src={streamVideo}
-                autoplay
-                muted
-                loop
-                playsinline
-              />
-
-              and add at the top:
-                import streamVideo from "../../assets/web/landing/screenshare.mp4";
-            */}
-
-            {/* Animated placeholder (shown until video is wired up) */}
-            <StreamPlaceholder>
-              <StreamPlaceholderGrid />
-              <StreamPlaceholderGlow />
-              <StreamPlaceholderText>
-                <strong>Live preview</strong>
-                <span>Your stream will play here</span>
-              </StreamPlaceholderText>
-            </StreamPlaceholder>
+            <StreamVideo
+              src={streamVideo}
+              autoplay
+              muted
+              loop
+              playsinline
+              preload="metadata"
+              aria-label="Gangio screen-share preview"
+            />
 
             {/* On-screen quality overlay */}
             <QualityChip>
@@ -1168,8 +1160,16 @@ export function Landing() {
             </FooterCol>
             <FooterCol>
               <FooterColTitle>Legal</FooterColTitle>
-              <a href="/terms">Terms</a>
-              <a href="/privacy">Privacy</a>
+              <a href="/terms">Terms of Service</a>
+              <a href="/privacy">Privacy Policy</a>
+              <a href="/cookies">Cookie Policy</a>
+              <a href="/acceptable-use">Acceptable Use</a>
+            </FooterCol>
+            <FooterCol>
+              <FooterColTitle>Trust & Safety</FooterColTitle>
+              <a href="/safety">Safety Center</a>
+              <a href="/guidelines">Community Guidelines</a>
+              <a href="/contact">Contact</a>
             </FooterCol>
             <FooterCol>
               <FooterColTitle>Connect</FooterColTitle>
@@ -2227,69 +2227,6 @@ const StreamVideo = styled("video", {
   },
 });
 
-const StreamPlaceholder = styled("div", {
-  base: {
-    position: "absolute",
-    inset: 0,
-    zIndex: 0,
-    background:
-      "radial-gradient(ellipse at 30% 40%, rgba(124,92,255,0.35), transparent 60%), radial-gradient(ellipse at 80% 70%, rgba(88,101,242,0.3), transparent 60%), #0b0c14",
-    overflow: "hidden",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
-
-const StreamPlaceholderGrid = styled("div", {
-  base: {
-    position: "absolute",
-    inset: 0,
-    backgroundImage:
-      "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)",
-    backgroundSize: "32px 32px",
-    transform: "perspective(600px) rotateX(40deg) translateY(20%) scale(1.4)",
-    transformOrigin: "center bottom",
-    maskImage:
-      "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)",
-    WebkitMaskImage:
-      "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.2) 60%, transparent 100%)",
-  },
-});
-
-const StreamPlaceholderGlow = styled("div", {
-  base: {
-    position: "absolute",
-    width: "70%",
-    height: "60%",
-    background:
-      "radial-gradient(circle, rgba(124,92,255,0.4) 0%, transparent 70%)",
-    filter: "blur(40px)",
-    animation: "landing-pulse-glow 4s ease-in-out infinite",
-  },
-});
-
-const StreamPlaceholderText = styled("div", {
-  base: {
-    position: "relative",
-    zIndex: 2,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "6px",
-    "& strong": {
-      fontSize: "1.05rem",
-      fontWeight: 700,
-      color: "#fff",
-      letterSpacing: "-0.01em",
-    },
-    "& span": {
-      fontSize: "0.82rem",
-      color: "rgba(255,255,255,0.5)",
-    },
-  },
-});
-
 const QualityChip = styled("div", {
   base: {
     position: "absolute",
@@ -3258,8 +3195,9 @@ const FooterBadge = styled("span", {
 const FooterCols = styled("div", {
   base: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
+    gridTemplateColumns: "repeat(5, 1fr)",
     gap: "24px",
+    "@media (max-width: 1024px)": { gridTemplateColumns: "repeat(3, 1fr)" },
     "@media (max-width: 640px)": { gridTemplateColumns: "repeat(2, 1fr)" },
   },
 });

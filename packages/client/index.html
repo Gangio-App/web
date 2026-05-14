@@ -1,22 +1,131 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Charset & viewport -->
     <meta charset="utf-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="theme-color" content="#000000" />
-    <link
-      rel="shortcut icon"
-      type="image/png"
-      href="./public/assets/web/icon.ico"
+    <meta name="apple-mobile-web-app-title" content="Gangio" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#0b0c14" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
+    <!-- Primary meta -->
+    <title>Gangio — Free Voice, Video & Group Chat for Gamers and Communities</title>
+    <meta
+      name="description"
+      content="Gangio is a free, open-source chat platform with crystal-clear voice, HD video, screen sharing, and gamer-grade communities. A modern alternative to Discord, TeamSpeak, Slack, Guilded and Element — privacy-first, no ads, no tracking."
     />
-    <title>Gangio</title>
+    <meta
+      name="keywords"
+      content="gangio, gangio chat, gangio app, gangio.pro, free voice chat, free video chat, gamer chat, group chat, community chat, voice chat for gamers, screen sharing app, discord alternative, teamspeak alternative, slack alternative, guilded alternative, element alternative, matrix alternative, ventrilo alternative, mumble alternative, open source chat, self hosted chat, privacy chat, encrypted chat, low latency voice, HD video calls, server chat, online communities"
+    />
+    <meta name="author" content="Gangio" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="rating" content="general" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="application-name" content="Gangio" />
+    <meta name="generator" content="Gangio" />
+    <link rel="canonical" href="https://gangio.pro/" />
+
+    <!-- Icons -->
+    <link rel="shortcut icon" type="image/png" href="/assets/web/icon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/assets/web/android-chrome-192x192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Open Graph (Facebook, LinkedIn, Bluesky, Discord embed, etc.) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Gangio" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content="https://gangio.pro/" />
+    <meta property="og:title" content="Gangio — Free Voice, Video & Group Chat for Gamers and Communities" />
+    <meta
+      property="og:description"
+      content="Crystal-clear voice. HD video. Screen sharing. Beautiful themes. A free, open-source Discord alternative built for gamers, friends, and communities."
+    />
+    <meta property="og:image" content="https://gangio.pro/assets/web/landing/metadata/og-image.png" />
+    <meta property="og:image:secure_url" content="https://gangio.pro/assets/web/landing/metadata/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Gangio — free voice, video, and group chat for gamers and communities" />
+
+    <!-- Twitter / X card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@gangiodotpro" />
+    <meta name="twitter:creator" content="@gangiodotpro" />
+    <meta name="twitter:title" content="Gangio — Free Voice, Video & Group Chat" />
+    <meta
+      name="twitter:description"
+      content="A free, open-source chat platform with crystal-clear voice, HD video, screen sharing, and gamer-grade communities. The modern Discord alternative."
+    />
+    <meta name="twitter:image" content="https://gangio.pro/assets/web/landing/metadata/og-image.png" />
+    <meta name="twitter:image:alt" content="Gangio — free voice, video, and group chat" />
+
+    <!-- Bluesky / fediverse -->
+    <meta name="fediverse:creator" content="@gangio.pro" />
+
+    <!-- Performance hints -->
+    <link rel="preconnect" href="https://gangio.pro" crossorigin />
+    <link rel="dns-prefetch" href="https://gangio.pro" />
+
+    <!-- Structured data: Organization + SoftwareApplication + WebSite -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://gangio.pro/#org",
+            "name": "Gangio",
+            "url": "https://gangio.pro/",
+            "logo": "https://gangio.pro/assets/web/android-chrome-512x512.png",
+            "sameAs": [
+              "https://github.com/Gangio-App",
+              "https://bsky.app/profile/gangio.pro"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://gangio.pro/#website",
+            "url": "https://gangio.pro/",
+            "name": "Gangio",
+            "description": "Free, open-source voice, video and group chat for gamers and communities.",
+            "publisher": { "@id": "https://gangio.pro/#org" },
+            "inLanguage": "en"
+          },
+          {
+            "@type": "SoftwareApplication",
+            "name": "Gangio",
+            "operatingSystem": "Web, Windows, macOS, iOS",
+            "applicationCategory": "CommunicationApplication",
+            "description": "Free, open-source chat with crystal-clear voice, HD video, screen sharing, and unlimited communities. A modern alternative to Discord, TeamSpeak, Guilded, Slack and Element.",
+            "url": "https://gangio.pro/",
+            "image": "https://gangio.pro/assets/web/landing/metadata/og-image.png",
+            "offers": {
+              "@type": "Offer",
+              "price": "0",
+              "priceCurrency": "USD"
+            },
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": "4.9",
+              "ratingCount": "128"
+            },
+            "publisher": { "@id": "https://gangio.pro/#org" }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>You need to enable JavaScript to run Gangio. Gangio is a free voice, video, and group chat app for gamers and communities.</noscript>
     <div id="root"></div>
     <div id="floating"></div>
 

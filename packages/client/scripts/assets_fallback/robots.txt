@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /login/
+Disallow: /channel/
+Disallow: /server/
+Disallow: /friends
+Disallow: /settings
+Disallow: /pwa
+
+Sitemap: https://gangio.pro/sitemap.xml

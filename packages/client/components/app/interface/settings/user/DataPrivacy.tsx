@@ -205,7 +205,7 @@ export default function DataPrivacy() {
       </CategoryCollapse>
 
       <CategoryButtonGroup>
-        <Link href="https://gangio.chat/privacy" target="_blank">
+        <Link href="https://gangio.pro/privacy" target="_blank">
           <CategoryButton
             action="external"
             icon={<MdPolicy {...iconSize(22)} />}
@@ -215,7 +215,7 @@ export default function DataPrivacy() {
             <Trans>Privacy Policy</Trans>
           </CategoryButton>
         </Link>
-        <Link href="https://gangio.chat/terms" target="_blank">
+        <Link href="https://gangio.pro/terms" target="_blank">
           <CategoryButton
             action="external"
             icon={<MdGavel {...iconSize(22)} />}
@@ -228,7 +228,7 @@ export default function DataPrivacy() {
       </CategoryButtonGroup>
 
       <CategoryButtonGroup>
-        <Link href="https://gangio.chat/privacy" target="_blank">
+        <Link href="https://gangio.pro/privacy" target="_blank">
           <CategoryButton
             action="external"
             icon={<MdDownload {...iconSize(22)} />}
