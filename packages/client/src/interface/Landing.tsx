@@ -47,6 +47,8 @@ import Wordmark from "../../public/assets/web/wordmark.svg?component-solid";
 import desktopShot from "../../assets/web/landing/desktop-screenshot.png";
 import iosShot from "../../assets/web/landing/ios.webp";
 import streamVideo from "../../assets/web/landing/video-stream_gangioHD_Homepage.mp4?url";
+import serverIcon1 from "../../assets/web/landing/theme-component/gg_landing_server1_icon.png";
+import serverIcon2 from "../../assets/web/landing/theme-component/gg_landing_server2_icon.png";
 
 /* ---------------- constants ---------------- */
 
@@ -70,6 +72,97 @@ const THEMES: { name: string; bg: string; accent: string; text: string }[] = [
   { name: "Sunset", bg: "#1a0f12", accent: "#f97316", text: "#fff7ed" },
   { name: "Ocean", bg: "#0b1220", accent: "#22d3ee", text: "#ecfeff" },
   { name: "Rose", bg: "#fbf1f4", accent: "#e11d48", text: "#0a0a0a" },
+];
+
+/* Servers shown in the interactive theme preview. Auto-cycles every few
+ * seconds so the demo feels alive — you can also click a server to switch
+ * manually. The "${theme}" token in messages is replaced at render time. */
+type PreviewServer = {
+  id: string;
+  name: string;
+  icon: "letter" | string; // "letter" or an image url
+  letter?: string;
+  channels: { name: string; active?: boolean; mentions?: number }[];
+  messages: {
+    user: string;
+    avatar: "accent" | "muted" | string;
+    text: string;
+    badge?: "bot" | "mod";
+  }[];
+  typing?: { user: string; avatar: "accent" | "muted" | string };
+};
+
+const PREVIEW_SERVERS: PreviewServer[] = [
+  {
+    id: "gangio",
+    name: "Gangio HQ",
+    icon: "letter",
+    letter: "g",
+    channels: [
+      { name: "general" },
+      { name: "announcements", active: true, mentions: 2 },
+      { name: "off-topic" },
+    ],
+    messages: [
+      {
+        user: "luna",
+        avatar: "accent",
+        text: "pick any color you want — it's your server.",
+      },
+      {
+        user: "kai",
+        avatar: "muted",
+        text: "this theme is ${theme}. nice.",
+      },
+    ],
+    typing: { user: "korybantes", avatar: "accent" },
+  },
+  {
+    id: "design",
+    name: "Design Lab",
+    icon: serverIcon1,
+    channels: [
+      { name: "showcase", active: true },
+      { name: "feedback", mentions: 1 },
+      { name: "resources" },
+    ],
+    messages: [
+      {
+        user: "ren",
+        avatar: "accent",
+        text: "shipped a new wordmark — thoughts?",
+      },
+      {
+        user: "noor",
+        avatar: "muted",
+        text: "buttery. ship it.",
+      },
+    ],
+    typing: { user: "milo", avatar: "muted" },
+  },
+  {
+    id: "voice",
+    name: "Late Night Voice",
+    icon: serverIcon2,
+    channels: [
+      { name: "lobby", active: true },
+      { name: "music" },
+      { name: "gaming", mentions: 4 },
+    ],
+    messages: [
+      {
+        user: "korybantes",
+        avatar: "accent",
+        text: "joining voice in 2",
+      },
+      {
+        user: "alex",
+        avatar: "muted",
+        text: "lfg. queue up?",
+      },
+    ],
+    typing: { user: "luna", avatar: "accent" },
+  },
 ];
 
 const MEGAMENU: Record<
@@ -288,6 +381,19 @@ export function Landing() {
   const [lastMenu, setLastMenu] = createSignal<string>(MENU_KEYS[0]);
   const [drawerOpen, setDrawerOpen] = createSignal(false);
 
+  /* Interactive theme-preview state */
+  const [activeServer, setActiveServer] = createSignal(0);
+  const [messageKey, setMessageKey] = createSignal(0);
+  const [showTyping, setShowTyping] = createSignal(false);
+  /* When the user manually picks a server / theme, freeze auto-cycle for
+   * a while so the demo doesn't fight their interaction. */
+  let pauseUntil = 0;
+  const pauseAutoCycle = (ms = 12000) => {
+    pauseUntil = Date.now() + ms;
+  };
+
+  const server = () => PREVIEW_SERVERS[activeServer()];
+
   const activeMenuIndex = () => MENU_KEYS.indexOf(lastMenu());
 
   const isIOS = createMemo(() =>
@@ -367,9 +473,53 @@ export function Landing() {
     ScrollTrigger.refresh();
   });
 
+  /* Theme-preview "alive" loop: every 5.5s nudge to the next server, with a
+   * typing indicator appearing 2.5s after each switch and clearing 2s
+   * later. Pauses for ~12s after any manual interaction so the demo
+   * doesn't talk over the user. */
+  let previewTimer: ReturnType<typeof setInterval> | undefined;
+  let typingTimer: ReturnType<typeof setTimeout> | undefined;
+  let typingHideTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const scheduleTyping = () => {
+    if (typingTimer) clearTimeout(typingTimer);
+    if (typingHideTimer) clearTimeout(typingHideTimer);
+    setShowTyping(false);
+    typingTimer = setTimeout(() => {
+      setShowTyping(true);
+      typingHideTimer = setTimeout(() => setShowTyping(false), 2200);
+    }, 2400);
+  };
+
+  onMount(() => {
+    scheduleTyping();
+    previewTimer = setInterval(() => {
+      if (Date.now() < pauseUntil) return;
+      setActiveServer((i) => (i + 1) % PREVIEW_SERVERS.length);
+      setMessageKey((k) => k + 1);
+      scheduleTyping();
+    }, 5500);
+  });
+
   onCleanup(() => {
     triggers.forEach((t) => t.kill());
+    if (previewTimer) clearInterval(previewTimer);
+    if (typingTimer) clearTimeout(typingTimer);
+    if (typingHideTimer) clearTimeout(typingHideTimer);
   });
+
+  const selectServer = (i: number) => {
+    if (i === activeServer()) return;
+    setActiveServer(i);
+    setMessageKey((k) => k + 1);
+    scheduleTyping();
+    pauseAutoCycle();
+  };
+
+  const selectTheme = (i: number) => {
+    setTheme(i);
+    pauseAutoCycle();
+  };
 
   return (
     <Root ref={rootRef}>
@@ -1049,60 +1199,266 @@ export function Landing() {
             color: t().text,
           }}
         >
+          {/* Top window chrome — fake macOS traffic lights + server name */}
+          <ThemePreviewChrome
+            style={{ borderColor: `${t().text}10` }}
+          >
+            <ChromeDots>
+              <ChromeDot style={{ background: "#ff5f57" }} />
+              <ChromeDot style={{ background: "#febc2e" }} />
+              <ChromeDot style={{ background: "#28c840" }} />
+            </ChromeDots>
+            <ChromeServerName style={{ color: `${t().text}aa` }}>
+              {server().name}
+            </ChromeServerName>
+            <ChromePresence>
+              <PresenceDot style={{ background: "#22c55e" }} />
+              <span style={{ color: `${t().text}aa` }}>online</span>
+            </ChromePresence>
+          </ThemePreviewChrome>
+
           <ThemePreviewBody>
             <ThemePreviewSidebar
               style={{ borderColor: `${t().text}15` }}
             >
-              <ThemePreviewServer style={{ background: t().accent }}>
-                g
-              </ThemePreviewServer>
-              <ThemePreviewServer style={{ background: `${t().text}10` }} />
-              <ThemePreviewServer style={{ background: `${t().text}10` }} />
+              <For each={PREVIEW_SERVERS}>
+                {(s, i) => (
+                  <ServerButton
+                    type="button"
+                    aria-label={`Switch to ${s.name}`}
+                    data-active={activeServer() === i() ? "true" : undefined}
+                    onClick={() => selectServer(i())}
+                    style={{
+                      "--ind-color": t().accent,
+                    }}
+                  >
+                    <ServerActiveBar
+                      style={{ background: t().accent }}
+                    />
+                    <Show
+                      when={s.icon === "letter"}
+                      fallback={
+                        <ServerImg
+                          src={s.icon}
+                          alt={s.name}
+                          style={{
+                            "box-shadow": activeServer() === i()
+                              ? `0 0 0 2px ${t().bg}, 0 0 0 4px ${t().accent}`
+                              : "none",
+                          }}
+                        />
+                      }
+                    >
+                      <ServerLetter
+                        style={{
+                          background:
+                            activeServer() === i()
+                              ? t().accent
+                              : `${t().text}12`,
+                          color:
+                            activeServer() === i()
+                              ? "#fff"
+                              : `${t().text}aa`,
+                          "box-shadow": activeServer() === i()
+                            ? `0 0 0 2px ${t().bg}, 0 0 0 4px ${t().accent}`
+                            : "none",
+                        }}
+                      >
+                        {s.letter}
+                      </ServerLetter>
+                    </Show>
+                  </ServerButton>
+                )}
+              </For>
+              <ServerDivider style={{ background: `${t().text}12` }} />
+              <ServerAdd style={{
+                background: `${t().text}08`,
+                color: `${t().text}66`,
+                borderColor: `${t().text}18`,
+              }}>
+                +
+              </ServerAdd>
             </ThemePreviewSidebar>
+
             <ThemePreviewChannels
               style={{ borderColor: `${t().text}15` }}
             >
               <ThemePreviewLabel style={{ color: `${t().text}60` }}>
-                COMMUNITY
+                {server().name.toUpperCase()}
               </ThemePreviewLabel>
-              <ThemePreviewChannel style={{ color: `${t().text}70` }}>
-                # general
-              </ThemePreviewChannel>
-              <ThemePreviewChannel
-                data-active
+              <For each={server().channels}>
+                {(ch) => (
+                  <ThemePreviewChannel
+                    data-active={ch.active ? "true" : undefined}
+                    style={{
+                      color: ch.active ? t().text : `${t().text}70`,
+                      background: ch.active
+                        ? `${t().accent}20`
+                        : "transparent",
+                    }}
+                  >
+                    <span># {ch.name}</span>
+                    <Show when={ch.mentions}>
+                      <MentionPill style={{ background: t().accent }}>
+                        {ch.mentions}
+                      </MentionPill>
+                    </Show>
+                  </ThemePreviewChannel>
+                )}
+              </For>
+
+              <ChannelsSpacer />
+
+              {/* Voice channels block at the bottom of the channel list */}
+              <ThemePreviewLabel style={{ color: `${t().text}60` }}>
+                VOICE
+              </ThemePreviewLabel>
+              <VoiceChannel style={{ color: `${t().text}80` }}>
+                <FiHeadphones size={11} />
+                <span>General Voice</span>
+                <VoicePulse style={{ background: t().accent }} />
+              </VoiceChannel>
+            </ThemePreviewChannels>
+
+            <ThemePreviewMainCol>
+              {/* Channel header */}
+              <ChannelHeader
+                style={{ borderColor: `${t().text}10` }}
+              >
+                <ChannelHeaderHash style={{ color: `${t().text}60` }}>
+                  #
+                </ChannelHeaderHash>
+                <ChannelHeaderName style={{ color: t().text }}>
+                  {(server().channels.find((c) => c.active)?.name) ??
+                    server().channels[0].name}
+                </ChannelHeaderName>
+                <ChannelHeaderDivider
+                  style={{ background: `${t().text}20` }}
+                />
+                <ChannelHeaderTopic style={{ color: `${t().text}66` }}>
+                  pick a theme, build your vibe.
+                </ChannelHeaderTopic>
+              </ChannelHeader>
+
+              {/* Animated message list — keyed by activeServer + messageKey so
+                  the entrance animation replays on every switch. */}
+              <ThemePreviewMain data-key={messageKey()}>
+                <For each={server().messages}>
+                  {(m, i) => (
+                    <ThemePreviewMessage
+                      style={{ "animation-delay": `${i() * 90}ms` }}
+                    >
+                      <ThemePreviewAvatar
+                        style={{
+                          background:
+                            m.avatar === "accent"
+                              ? t().accent
+                              : m.avatar === "muted"
+                              ? `${t().text}30`
+                              : m.avatar,
+                        }}
+                      />
+                      <ThemePreviewMessageBody>
+                        <ThemePreviewMessageRow>
+                          <ThemePreviewName style={{ color: t().text }}>
+                            {m.user}
+                          </ThemePreviewName>
+                          <Show when={m.badge}>
+                            <UserBadge
+                              style={{
+                                background: t().accent,
+                                color: "#fff",
+                              }}
+                            >
+                              {m.badge}
+                            </UserBadge>
+                          </Show>
+                          <MessageTime style={{ color: `${t().text}40` }}>
+                            now
+                          </MessageTime>
+                        </ThemePreviewMessageRow>
+                        <ThemePreviewText
+                          style={{ color: `${t().text}cc` }}
+                        >
+                          {m.text.replace(
+                            "${theme}",
+                            t().name.toLowerCase(),
+                          )}
+                        </ThemePreviewText>
+                      </ThemePreviewMessageBody>
+                    </ThemePreviewMessage>
+                  )}
+                </For>
+
+                {/* Typing indicator */}
+                <Show when={showTyping() && server().typing}>
+                  <TypingRow>
+                    <ThemePreviewAvatar
+                      style={{
+                        background:
+                          server().typing!.avatar === "accent"
+                            ? t().accent
+                            : `${t().text}30`,
+                        width: "24px",
+                        height: "24px",
+                      }}
+                    />
+                    <TypingBubble
+                      style={{
+                        background: `${t().text}10`,
+                        color: `${t().text}cc`,
+                      }}
+                    >
+                      <strong style={{ color: t().text }}>
+                        {server().typing!.user}
+                      </strong>{" "}
+                      is typing
+                      <TypingDots>
+                        <TypingDot
+                          style={{
+                            background: `${t().text}aa`,
+                            "animation-delay": "0ms",
+                          }}
+                        />
+                        <TypingDot
+                          style={{
+                            background: `${t().text}aa`,
+                            "animation-delay": "160ms",
+                          }}
+                        />
+                        <TypingDot
+                          style={{
+                            background: `${t().text}aa`,
+                            "animation-delay": "320ms",
+                          }}
+                        />
+                      </TypingDots>
+                    </TypingBubble>
+                  </TypingRow>
+                </Show>
+              </ThemePreviewMain>
+
+              {/* Composer */}
+              <ChatComposer
                 style={{
-                  background: `${t().accent}20`,
-                  color: t().text,
+                  background: `${t().text}08`,
+                  borderColor: `${t().text}12`,
                 }}
               >
-                # announcements
-              </ThemePreviewChannel>
-              <ThemePreviewChannel style={{ color: `${t().text}70` }}>
-                # off-topic
-              </ThemePreviewChannel>
-            </ThemePreviewChannels>
-            <ThemePreviewMain>
-              <ThemePreviewMessage>
-                <ThemePreviewAvatar style={{ background: t().accent }} />
-                <ThemePreviewMessageBody>
-                  <ThemePreviewName style={{ color: t().text }}>
-                    luna
-                  </ThemePreviewName>
-                  <ThemePreviewText style={{ color: `${t().text}99` }}>
-                    pick any color you want — it's your server.
-                  </ThemePreviewText>
-                </ThemePreviewMessageBody>
-              </ThemePreviewMessage>
-              <ThemePreviewMessage>
-                <ThemePreviewAvatar style={{ background: `${t().text}30` }} />
-                <ThemePreviewMessageBody>
-                  <ThemePreviewName style={{ color: t().text }}>kai</ThemePreviewName>
-                  <ThemePreviewText style={{ color: `${t().text}99` }}>
-                    this theme is {t().name.toLowerCase()}. nice.
-                  </ThemePreviewText>
-                </ThemePreviewMessageBody>
-              </ThemePreviewMessage>
-            </ThemePreviewMain>
+                <ComposerPlus style={{ color: `${t().text}60` }}>
+                  +
+                </ComposerPlus>
+                <ComposerPlaceholder style={{ color: `${t().text}50` }}>
+                  Message #
+                  {(server().channels.find((c) => c.active)?.name) ??
+                    server().channels[0].name}
+                </ComposerPlaceholder>
+                <ComposerSendCircle
+                  style={{ background: t().accent }}
+                  aria-hidden="true"
+                />
+              </ChatComposer>
+            </ThemePreviewMainCol>
           </ThemePreviewBody>
         </ThemePreview>
 
@@ -1112,7 +1468,7 @@ export function Landing() {
               <ThemeSwatch
                 type="button"
                 data-active={theme() === i() ? "true" : undefined}
-                onClick={() => setTheme(i())}
+                onClick={() => selectTheme(i())}
                 aria-label={`Select ${th.name} theme`}
               >
                 <ThemeSwatchDot style={{ background: th.bg }}>
@@ -2745,12 +3101,69 @@ const ThemePreview = styled("div", {
   },
 });
 
+const ThemePreviewChrome = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    padding: "10px 14px",
+    borderBottom: "1px solid",
+    transition: "border-color 0.3s",
+    "@media (max-width: 640px)": { padding: "8px 12px" },
+  },
+});
+
+const ChromeDots = styled("div", {
+  base: { display: "flex", gap: "6px", flexShrink: 0 },
+});
+
+const ChromeDot = styled("span", {
+  base: {
+    width: "10px",
+    height: "10px",
+    borderRadius: "50%",
+    display: "block",
+  },
+});
+
+const ChromeServerName = styled("div", {
+  base: {
+    flex: 1,
+    textAlign: "center",
+    fontSize: "0.78rem",
+    fontWeight: 600,
+    letterSpacing: "0.01em",
+    transition: "color 0.3s",
+  },
+});
+
+const ChromePresence = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    fontSize: "0.72rem",
+    fontWeight: 600,
+    "@media (max-width: 640px)": { display: "none" },
+  },
+});
+
+const PresenceDot = styled("span", {
+  base: {
+    width: "8px",
+    height: "8px",
+    borderRadius: "50%",
+    display: "inline-block",
+    boxShadow: "0 0 0 2px rgba(34,197,94,0.25)",
+  },
+});
+
 const ThemePreviewBody = styled("div", {
   base: {
     display: "grid",
-    gridTemplateColumns: "64px 180px 1fr",
-    minHeight: "300px",
-    "@media (max-width: 640px)": {
+    gridTemplateColumns: "64px 200px 1fr",
+    minHeight: "380px",
+    "@media (max-width: 720px)": {
       gridTemplateColumns: "56px 1fr",
       "& > :nth-child(2)": { display: "none" },
     },
@@ -2759,15 +3172,63 @@ const ThemePreviewBody = styled("div", {
 
 const ThemePreviewSidebar = styled("div", {
   base: {
-    padding: "14px 10px",
+    padding: "14px 0",
     display: "flex",
     flexDirection: "column",
+    alignItems: "center",
     gap: "8px",
     borderRight: "1px solid",
+    transition: "border-color 0.3s",
   },
 });
 
-const ThemePreviewServer = styled("div", {
+/* Click-able server button with a left-edge active bar (Discord/Gangio
+ * style). The active indicator is positioned absolutely so the icon
+ * itself never shifts when toggled. */
+const ServerButton = styled("button", {
+  base: {
+    position: "relative",
+    width: "44px",
+    height: "44px",
+    border: "none",
+    background: "transparent",
+    padding: 0,
+    cursor: "pointer",
+    display: "grid",
+    placeItems: "center",
+    flexShrink: 0,
+    transition: "transform 0.18s ease-out",
+    "&:hover": { transform: "translateX(1px) scale(1.02)" },
+    "&:active": { transform: "scale(0.96)" },
+    "&[data-active='true']": {
+      animation: "landing-fade-in 0.4s ease",
+    },
+  },
+});
+
+const ServerActiveBar = styled("span", {
+  base: {
+    position: "absolute",
+    left: "-12px",
+    top: "50%",
+    width: "4px",
+    height: "8px",
+    borderRadius: "0 4px 4px 0",
+    transform: "translateY(-50%) scaleY(0)",
+    transformOrigin: "center",
+    transition: "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), height 0.25s",
+    "[data-active='true'] > &": {
+      transform: "translateY(-50%) scaleY(1)",
+      height: "26px",
+    },
+    "button:hover:not([data-active='true']) > &": {
+      transform: "translateY(-50%) scaleY(1)",
+      height: "10px",
+    },
+  },
+});
+
+const ServerLetter = styled("div", {
   base: {
     width: "40px",
     height: "40px",
@@ -2775,8 +3236,48 @@ const ThemePreviewServer = styled("div", {
     display: "grid",
     placeItems: "center",
     fontWeight: 800,
-    color: "#fff",
-    fontSize: "0.9rem",
+    fontSize: "0.95rem",
+    transition:
+      "background 0.25s, color 0.25s, border-radius 0.25s, box-shadow 0.25s",
+    "[data-active='true'] > &": { borderRadius: "14px" },
+  },
+});
+
+const ServerImg = styled("img", {
+  base: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "12px",
+    objectFit: "cover",
+    display: "block",
+    transition: "border-radius 0.25s, box-shadow 0.25s",
+    "[data-active='true'] > &": { borderRadius: "14px" },
+  },
+});
+
+const ServerDivider = styled("div", {
+  base: {
+    width: "32px",
+    height: "2px",
+    borderRadius: "2px",
+    margin: "4px 0",
+    transition: "background 0.3s",
+  },
+});
+
+const ServerAdd = styled("div", {
+  base: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "12px",
+    border: "1.5px dashed",
+    display: "grid",
+    placeItems: "center",
+    fontSize: "1.2rem",
+    fontWeight: 500,
+    cursor: "pointer",
+    transition: "all 0.2s",
+    "&:hover": { borderRadius: "14px", transform: "scale(1.04)" },
   },
 });
 
@@ -2787,6 +3288,7 @@ const ThemePreviewChannels = styled("div", {
     flexDirection: "column",
     gap: "2px",
     borderRight: "1px solid",
+    transition: "border-color 0.3s",
   },
 });
 
@@ -2797,6 +3299,7 @@ const ThemePreviewLabel = styled("div", {
     textTransform: "uppercase",
     letterSpacing: "0.1em",
     padding: "8px 10px 4px",
+    transition: "color 0.3s",
   },
 });
 
@@ -2806,21 +3309,135 @@ const ThemePreviewChannel = styled("div", {
     borderRadius: "6px",
     fontSize: "0.82rem",
     fontWeight: 500,
-    transition: "all 0.3s",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "8px",
+    cursor: "pointer",
+    transition: "background 0.3s, color 0.3s",
+    "&:not([data-active='true']):hover": {
+      background: "rgba(127,127,127,0.08)",
+    },
+  },
+});
+
+const MentionPill = styled("span", {
+  base: {
+    minWidth: "18px",
+    height: "18px",
+    padding: "0 6px",
+    borderRadius: "999px",
+    color: "#fff",
+    fontSize: "0.68rem",
+    fontWeight: 700,
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transition: "background 0.3s",
+    animation: "landing-pulse 2.2s ease-out infinite",
+  },
+});
+
+const ChannelsSpacer = styled("div", {
+  base: { flex: 1, minHeight: "20px" },
+});
+
+const VoiceChannel = styled("div", {
+  base: {
+    padding: "7px 10px",
+    borderRadius: "6px",
+    fontSize: "0.78rem",
+    fontWeight: 500,
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    "& > span": { flex: 1 },
+    transition: "color 0.3s",
+  },
+});
+
+const VoicePulse = styled("span", {
+  base: {
+    width: "8px",
+    height: "8px",
+    borderRadius: "50%",
+    animation: "landing-live 1.6s ease-in-out infinite",
+    transition: "background 0.3s",
+  },
+});
+
+const ThemePreviewMainCol = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    minHeight: "380px",
+  },
+});
+
+const ChannelHeader = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    padding: "12px 22px",
+    borderBottom: "1px solid",
+    transition: "border-color 0.3s",
+    "@media (max-width: 720px)": { padding: "10px 16px" },
+  },
+});
+
+const ChannelHeaderHash = styled("span", {
+  base: {
+    fontSize: "1rem",
+    fontWeight: 600,
+    transition: "color 0.3s",
+  },
+});
+
+const ChannelHeaderName = styled("span", {
+  base: {
+    fontSize: "0.95rem",
+    fontWeight: 700,
+    transition: "color 0.3s",
+  },
+});
+
+const ChannelHeaderDivider = styled("span", {
+  base: {
+    width: "1px",
+    height: "16px",
+    transition: "background 0.3s",
+  },
+});
+
+const ChannelHeaderTopic = styled("span", {
+  base: {
+    fontSize: "0.8rem",
+    fontWeight: 500,
+    transition: "color 0.3s",
+    "@media (max-width: 720px)": { display: "none" },
   },
 });
 
 const ThemePreviewMain = styled("div", {
   base: {
+    flex: 1,
     padding: "22px 26px",
     display: "flex",
     flexDirection: "column",
     gap: "14px",
+    overflow: "hidden",
+    "@media (max-width: 720px)": { padding: "16px 18px" },
   },
 });
 
 const ThemePreviewMessage = styled("div", {
-  base: { display: "flex", gap: "12px", alignItems: "flex-start" },
+  base: {
+    display: "flex",
+    gap: "12px",
+    alignItems: "flex-start",
+    animation: "landing-fade-in 0.45s ease both",
+  },
 });
 
 const ThemePreviewAvatar = styled("div", {
@@ -2834,7 +3451,15 @@ const ThemePreviewAvatar = styled("div", {
 });
 
 const ThemePreviewMessageBody = styled("div", {
-  base: { display: "flex", flexDirection: "column", gap: "2px" },
+  base: { display: "flex", flexDirection: "column", gap: "2px", minWidth: 0 },
+});
+
+const ThemePreviewMessageRow = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "baseline",
+    gap: "8px",
+  },
 });
 
 const ThemePreviewName = styled("div", {
@@ -2845,10 +3470,125 @@ const ThemePreviewName = styled("div", {
   },
 });
 
+const UserBadge = styled("span", {
+  base: {
+    padding: "1px 6px",
+    borderRadius: "4px",
+    fontSize: "0.6rem",
+    fontWeight: 800,
+    letterSpacing: "0.04em",
+    textTransform: "uppercase",
+    transition: "background 0.3s",
+  },
+});
+
+const MessageTime = styled("span", {
+  base: {
+    fontSize: "0.7rem",
+    fontWeight: 500,
+    transition: "color 0.3s",
+  },
+});
+
 const ThemePreviewText = styled("div", {
   base: {
     fontSize: "0.85rem",
+    lineHeight: 1.45,
     transition: "color 0.3s",
+  },
+});
+
+const TypingRow = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    animation: "landing-fade-in 0.3s ease both",
+  },
+});
+
+const TypingBubble = styled("div", {
+  base: {
+    padding: "8px 14px",
+    borderRadius: "14px",
+    fontSize: "0.78rem",
+    fontWeight: 500,
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "4px",
+    transition: "background 0.3s, color 0.3s",
+    "& strong": { fontWeight: 700, marginRight: "2px", transition: "color 0.3s" },
+  },
+});
+
+const TypingDots = styled("span", {
+  base: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "3px",
+    marginLeft: "6px",
+  },
+});
+
+const TypingDot = styled("span", {
+  base: {
+    width: "5px",
+    height: "5px",
+    borderRadius: "50%",
+    display: "inline-block",
+    animation: "landing-typing 1.1s ease-in-out infinite",
+    transition: "background 0.3s",
+  },
+});
+
+const ChatComposer = styled("div", {
+  base: {
+    margin: "12px 22px 18px",
+    padding: "10px 14px",
+    borderRadius: "12px",
+    border: "1px solid",
+    display: "flex",
+    alignItems: "center",
+    gap: "10px",
+    transition: "background 0.3s, border-color 0.3s",
+    "@media (max-width: 720px)": { margin: "10px 16px 14px" },
+  },
+});
+
+const ComposerPlus = styled("span", {
+  base: {
+    width: "22px",
+    height: "22px",
+    borderRadius: "50%",
+    display: "grid",
+    placeItems: "center",
+    fontSize: "1rem",
+    fontWeight: 500,
+    flexShrink: 0,
+    transition: "color 0.3s",
+  },
+});
+
+const ComposerPlaceholder = styled("span", {
+  base: {
+    flex: 1,
+    fontSize: "0.85rem",
+    fontWeight: 500,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    transition: "color 0.3s",
+  },
+});
+
+const ComposerSendCircle = styled("span", {
+  base: {
+    width: "10px",
+    height: "10px",
+    borderRadius: "50%",
+    flexShrink: 0,
+    transition: "background 0.3s",
+    animation: "landing-live 2.4s ease-in-out infinite",
   },
 });
 
